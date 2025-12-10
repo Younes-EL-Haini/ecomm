@@ -11,20 +11,20 @@ const NavBar = () => {
 
   const links = [
     { label: "Dashboard", href: "/" },
-    { label: "Issues", href: "/issues" },
+    { label: "Product", href: "/products" },
   ];
 
   return (
-    <nav className="flex space-x-6 border-b mb-5 px-5 h-14 items-center">
+    <nav className="flex space-x-6 mb-5 px-5 h-14 items-center bg-blue-100">
       <Link href="/">Logo</Link>
       <ul className="flex space-x-6">
         {links.map((link) => (
           <li key={link.href}>
             <Link
               className={classNames({
-                "text-zinc-900": link.href === currentPath,
-                "text-zinc-500": link.href !== currentPath,
-                "hover:text-zinc-800 transition-colors": true,
+                "text-blue-900": link.href === currentPath,
+                "text-blue-500": link.href !== currentPath,
+                "hover:text-blue-800 transition-colors": true,
               })}
               href={link.href}
             >
