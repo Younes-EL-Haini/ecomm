@@ -15,8 +15,225 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
+  id        String   @id @default(cuid())
   name      String?
+  email     String   @unique
+  password  String
+  role      Role     @default(CUSTOMER)
+  phone     String?
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relations
+  products  Product[]  @relation("sellerProducts")
+  orders    Order[]    @relation("userOrders")
+  reviews   Review[]
+  addresses Address[]
+  cartItems CartItem[]
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+  SELLER
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products Product[]
+}
+
+model Product {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  description String
+  price       Decimal   @db.Decimal(10, 2)
+  currency    String    @default("USD")
+  sku         String?   @unique
+  stock       Int       @default(0)
+  isPublished Boolean   @default(false)
+  featured    Boolean   @default(false)
+  sellerId    String?
+  seller      User?     @relation("sellerProducts", fields: [sellerId], references: [id])
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // relations
+  images     ProductImage[]
+  variants   ProductVariant[]
+  reviews    Review[]
+  orderItems OrderItem[]
+  inventory  Inventory?
+
+  cartItems CartItem[] @relation("ProductToCart") // ❗ Opposite of CartItem.product
+
+  @@index([title])
+  @@index([slug])
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  url       String
+  alt       String?
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([productId])
+}
+
+model ProductVariant {
+  id         String   @id @default(cuid())
+  productId  String
+  name       String
+  value      String
+  sku        String?
+  priceDelta Decimal? @db.Decimal(10, 2)
+  stock      Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+
+  orderItems OrderItem[] @relation("VariantToOrderItem") // ❗ opposite
+  cartItems  CartItem[]  @relation("VariantToCartItem") // ❗ opposite
+
+  @@index([productId])
+}
+
+model Inventory {
+  productId String   @id
+  quantity  Int      @default(0)
+  reserved  Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  userId     String
+  label      String?
+  line1      String
+  line2      String?
+  city       String
+  state      String?
+  postalCode String
+  country    String
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  shippingOrders Order[] @relation("orderShipping")
+  billingOrders  Order[] @relation("orderBilling")
+
+  @@index([userId])
+}
+
+model Order {
+  id                String      @id @default(cuid())
+  userId            String
+  status            OrderStatus @default(PENDING)
+  totalPrice        Decimal     @db.Decimal(10, 2)
+  currency          String      @default("USD")
+  shippingAddressId String?
+  billingAddressId  String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  user  User        @relation("userOrders", fields: [userId], references: [id])
+  items OrderItem[]
+
+  shippingAddress Address? @relation("orderShipping", fields: [shippingAddressId], references: [id])
+  billingAddress  Address? @relation("orderBilling", fields: [billingAddressId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+model OrderItem {
+  id         String  @id @default(cuid())
+  orderId    String
+  productId  String
+  variantId  String?
+  quantity   Int
+  unitPrice  Decimal @db.Decimal(10, 2)
+  totalPrice Decimal @db.Decimal(10, 2)
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  variant ProductVariant? @relation("VariantToOrderItem", fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  rating    Int
+  title     String?
+  comment   String?
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([productId])
+  @@index([userId])
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  variantId String?
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  product Product         @relation("ProductToCart", fields: [productId], references: [id])
+  variant ProductVariant? @relation("VariantToCartItem", fields: [variantId], references: [id])
+
+  @@unique([userId, productId, variantId])
+  @@index([userId])
+}
+
+model TransactionLog {
+  id          String   @id @default(cuid())
+  orderId     String?
+  type        String
+  provider    String?
+  providerId  String?
+  amount      Decimal? @db.Decimal(10, 2)
+  currency    String?
+  status      String?
+  rawResponse Json?
+  createdAt   DateTime @default(now())
+
+  @@index([orderId])
 }
