@@ -1,17 +1,16 @@
-import React from "react";
 import HeroContent from "./HeroContent";
 import HeroImage from "./HeroImage";
 
 const HeroSection = () => {
   return (
-    <section className="flex items-center justify-between p-12 bg-gray-50 min-h-[50vh]">
-      {/* Left Side */}
-      <div className="w-1/2">
+    <section className="flex flex-col items-center justify-center p-6 md:flex-row md:justify-between bg-gray-50 min-h-[60vh] gap-6">
+      {/* Text comes first on mobile */}
+      <div className="w-full md:w-1/2 order-1">
         <HeroContent />
       </div>
 
-      {/* Right Side */}
-      <div className="w-1/2">
+      {/* Image below text on mobile */}
+      <div className="w-full md:w-1/2 order-2">
         <HeroImage />
       </div>
     </section>
