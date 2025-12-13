@@ -1,42 +1,14 @@
-"use client";
-
 import Hero from "@/components/hero/Hero";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-
-// Example product type
-interface Product {
-  id: number;
-  name: string;
-  price: string;
-  image: string;
-}
-
-const featuredProducts: Product[] = [
-  {
-    id: 1,
-    name: "Wireless Headphones",
-    price: "$99",
-    image: "/products/headphones.jpg",
-  },
-  {
-    id: 2,
-    name: "Smart Watch",
-    price: "$149",
-    image: "/products/smartwatch.jpg",
-  },
-  {
-    id: 3,
-    name: "Bluetooth Speaker",
-    price: "$79",
-    image: "/products/speaker.jpg",
-  },
-];
+import ProductCard from "@/components/products/ProductCard";
+import ProductGrid from "@/components/products/ProductGrid";
 
 const MainPage = () => {
   return (
-    <div>
+    <div className="flex flex-col">
       <Hero />
+      <section className="px-4 md:px-10 mt-10">
+        <ProductGrid />
+      </section>
     </div>
   );
 };
