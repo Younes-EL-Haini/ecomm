@@ -50,22 +50,22 @@ model Category {
 }
 
 model Product {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   title       String
-  slug        String    @unique
+  slug        String   @unique
   description String
-  price       Decimal   @db.Decimal(10, 2)
-  currency    String    @default("USD")
-  sku         String?   @unique
-  stock       Int       @default(0)
-  isPublished Boolean   @default(false)
-  featured    Boolean   @default(false)
+  price       Decimal  @db.Decimal(10, 2)
+  currency    String   @default("USD")
+  sku         String?  @unique
+  stock       Int      @default(0)
+  isPublished Boolean  @default(false)
+  featured    Boolean  @default(false)
   sellerId    String?
-  seller      User?     @relation("sellerProducts", fields: [sellerId], references: [id])
-  categoryId  String?
-  category    Category? @relation(fields: [categoryId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  seller      User?    @relation("sellerProducts", fields: [sellerId], references: [id])
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // relations
   images     ProductImage[]
@@ -85,7 +85,8 @@ model ProductImage {
   productId String
   url       String
   alt       String?
-  position  Int      @default(0)
+  isMain    Boolean  @default(false)
+  position  Int
   createdAt DateTime @default(now())
 
   product Product @relation(fields: [productId], references: [id])
@@ -94,14 +95,18 @@ model ProductImage {
 }
 
 model ProductVariant {
-  id         String   @id @default(cuid())
-  productId  String
-  name       String
-  value      String
+  id        String @id @default(cuid())
+  productId String
+  name      String
+
+  type  String // SIZE, COLOR
+  value String
+
   sku        String?
   priceDelta Decimal? @db.Decimal(10, 2)
   stock      Int      @default(0)
-  createdAt  DateTime @default(now())
+
+  createdAt DateTime @default(now())
 
   product Product @relation(fields: [productId], references: [id])
 
@@ -109,6 +114,11 @@ model ProductVariant {
   cartItems  CartItem[]  @relation("VariantToCartItem") // ❗ opposite
 
   @@index([productId])
+}
+
+enum VariantType {
+  SIZE
+  COLOR
 }
 
 model Inventory {
