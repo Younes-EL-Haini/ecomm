@@ -10,7 +10,7 @@ const ProductImageCard = ({ image, stock }: ProductImageCardProps) => {
   return (
     <div className="relative h-72 w-full bg-gray-100 overflow-hidden">
       <Image
-        src="/images/hero-product.jpg"
+        src={image?.url || "/images/hero-product.jpg"}
         alt={image?.alt || "Product Image"}
         fill
         className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
