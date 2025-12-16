@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { CldImage } from "next-cloudinary";
 import { useState } from "react";
 import { ProductImage } from "@/lib/generated/prisma";
 
@@ -19,11 +19,16 @@ const ProductGallery = ({ images, title }: Props) => {
     <div>
       {/* MAIN IMAGE */}
       <div className="relative h-[420px] w-full overflow-hidden rounded-2xl bg-gray-100">
-        <Image
-          src={selected?.url || "/images/placeholder.png"}
-          alt={selected?.alt || title}
+        <CldImage
+          src={selected.publicId || "/images/hero-product.jpg"}
+          alt={selected.alt || title}
           fill
-          className="object-cover"
+          crop="fill"
+          gravity="center"
+          aspectRatio="1:1"
+          quality="auto"
+          format="auto"
+          sizes="(max-width: 768px) 100vw, 50vw"
         />
       </div>
 
@@ -37,11 +42,16 @@ const ProductGallery = ({ images, title }: Props) => {
               selected.id === img.id ? "border-blue-600" : "border-transparent"
             }`}
           >
-            <Image
-              src={img.url || "/images/placeholder.png"}
+            <CldImage
+              src={img.publicId || "/images/hero-product.jpg"}
               alt={img.alt || title}
               fill
-              className="object-cover"
+              crop="fill"
+              gravity="center"
+              aspectRatio="1:1"
+              quality="auto"
+              format="auto"
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
           </button>
         ))}
