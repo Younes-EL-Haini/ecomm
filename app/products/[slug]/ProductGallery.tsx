@@ -1,8 +1,9 @@
 "use client";
 
-import { CldImage } from "next-cloudinary";
 import { useState } from "react";
+import Image from "next/image";
 import { ProductImage } from "@/lib/generated/prisma";
+import { cn } from "@/lib/utils";
 
 type Props = {
   images: ProductImage[];
@@ -16,42 +17,36 @@ const ProductGallery = ({ images, title }: Props) => {
   const thumbnails = images.slice(0, 4);
 
   return (
-    <div>
+    <div className="space-y-4">
       {/* MAIN IMAGE */}
-      <div className="relative h-[420px] w-full overflow-hidden rounded-2xl bg-gray-100">
-        <CldImage
-          src={selected.publicId || "/images/hero-product.jpg"}
-          alt={selected.alt || title}
+      <div className="relative aspect-4/5 w-full max-h-[520px] overflow-hidden rounded-2xl bg-muted">
+        <Image
+          src={selected?.url || "/images/hero-product.jpg"}
+          alt={selected?.alt || title}
           fill
-          crop="fill"
-          gravity="center"
-          aspectRatio="1:1"
-          quality="auto"
-          format="auto"
-          sizes="(max-width: 768px) 100vw, 50vw"
+          priority
+          sizes="(max-width: 768px) 100vw, 40vw"
+          className="object-cover transition-transform duration-300 ease-in-out hover:scale-105"
         />
       </div>
 
       {/* THUMBNAILS */}
-      <div className="mt-4 flex gap-3">
+      <div className="flex gap-3">
         {thumbnails.map((img) => (
           <button
             key={img.id}
             onClick={() => setSelected(img)}
-            className={`relative h-24 w-24 overflow-hidden rounded-xl border ${
-              selected.id === img.id ? "border-blue-600" : "border-transparent"
-            }`}
+            className={cn(
+              "relative h-24 w-24 overflow-hidden rounded-xl border",
+              selected.id === img.id ? "border-primary" : "border-transparent"
+            )}
           >
-            <CldImage
-              src={img.publicId || "/images/hero-product.jpg"}
+            <Image
+              src={img.url}
               alt={img.alt || title}
               fill
-              crop="fill"
-              gravity="center"
-              aspectRatio="1:1"
-              quality="auto"
-              format="auto"
-              sizes="(max-width: 768px) 100vw, 50vw"
+              sizes="96px"
+              className="object-cover"
             />
           </button>
         ))}
