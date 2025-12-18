@@ -1,4 +1,9 @@
-import React from "react";
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { ProductVariant } from "@/lib/generated/prisma";
+import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 type Props = {
   title: string;
@@ -6,6 +11,8 @@ type Props = {
   price: number;
   avgRating: string;
   ratingCount: number;
+  stock: number;
+  variants?: ProductVariant[];
 };
 
 const ProductInfo = ({
@@ -14,24 +21,123 @@ const ProductInfo = ({
   price,
   avgRating,
   ratingCount,
+  stock,
+  variants,
 }: Props) => {
-  return (
-    <div>
-      <h1 className="text-3xl font-bold">{title}</h1>
+  const inStock = stock > 0;
 
-      {/* Rating */}
-      <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
+  const sizes = Array.from(
+    new Set(variants?.map((v) => v.size).filter(Boolean))
+  );
+  const colors = Array.from(
+    new Set(variants?.map((v) => v.color).filter(Boolean))
+  );
+
+  const [selectedSize, setSelectedSize] = useState(sizes[0]);
+  const [selectedColor, setSelectedColor] = useState(colors[0]);
+
+  const selectedVariant = variants?.find(
+    (v) =>
+      (v.size ?? undefined) === selectedSize &&
+      (v.color ?? undefined) === selectedColor
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* TITLE */}
+      <h1 className="text-2xl lg:text-3xl font-bold leading-tight">{title}</h1>
+
+      {/* RATING */}
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <span>⭐ {avgRating}</span>
-        <span>({ratingCount} reviews)</span>
+        <span>•</span>
+        <span>{ratingCount} reviews</span>
       </div>
 
-      {/* Price */}
-      <p className="mt-4 text-2xl font-semibold text-blue-600">
-        ${price.toFixed(2)}
+      {/* PRICE */}
+      <p className="text-2xl font-semibold text-primary">
+        {price.toFixed(2)} MAD
       </p>
 
-      {/* Description */}
-      <p className="mt-6 text-gray-700 leading-relaxed">{description}</p>
+      {/* STOCK */}
+      <p
+        className={`text-sm font-medium ${
+          inStock ? "text-green-600" : "text-red-600"
+        }`}
+      >
+        {inStock ? "In stock" : "Out of stock"}
+      </p>
+
+      {/* VARIANTS */}
+      {sizes.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium">
+            Size:{" "}
+            <span className="text-primary font-semibold">{selectedSize}</span>
+          </p>
+
+          <div className="flex gap-2">
+            {sizes.map((size) => {
+              const isSelected = selectedSize === size;
+
+              return (
+                <button
+                  key={size}
+                  onClick={() => setSelectedSize(size)}
+                  className={cn(
+                    "flex-none h-10 w-12 rounded-lg border text-sm font-medium transition-all",
+                    isSelected
+                      ? "border-primary bg-primary/10 text-primary ring-1 ring-primary"
+                      : "border-border hover:border-primary/50"
+                  )}
+                >
+                  {size}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      {colors.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium">
+            Color:{" "}
+            <span className="text-primary font-semibold">{selectedColor}</span>
+          </p>
+
+          <div className="flex gap-3 flex-wrap">
+            {colors.map((color) => {
+              const isSelected = selectedColor === color;
+
+              return (
+                <button
+                  key={color}
+                  onClick={() => setSelectedColor(color)}
+                  className={cn(
+                    "flex-none h-10 w-16 rounded-full border transition-all",
+                    isSelected
+                      ? "ring-2 ring-primary border-primary"
+                      : "border-border hover:ring-1 hover:ring-primary/50"
+                  )}
+                  style={{ backgroundColor: color?.toLowerCase() }}
+                  aria-label={color ?? undefined}
+                  title={color ?? undefined}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* CTA */}
+      <Button size="lg" disabled={!inStock} className="w-full lg:w-auto">
+        {inStock ? "Add to cart" : "Unavailable"}
+      </Button>
+
+      {/* DESCRIPTION */}
+      <div className="border-t pt-6 text-sm text-muted-foreground leading-relaxed">
+        {description}
+      </div>
     </div>
   );
 };

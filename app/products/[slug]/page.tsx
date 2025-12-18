@@ -1,5 +1,4 @@
 import prisma from "@/lib/prisma";
-import Image from "next/image";
 import ProductGallery from "./ProductGallery";
 import ProductInfo from "./ProductInfo";
 
@@ -15,15 +14,13 @@ const ProductPage = async ({ params }: Props) => {
     include: {
       images: true,
       reviews: true,
+      variants: true,
     },
   });
 
   if (!product) {
     return <div className="p-10">Product not found</div>;
   }
-
-  const mainImage = product.images[0];
-  const thumbnails = product.images.slice(1, 4);
 
   const ratingCount = product.reviews.length;
   const avgRating =
@@ -39,13 +36,17 @@ const ProductPage = async ({ params }: Props) => {
         {/* LEFT: IMAGES */}
         <ProductGallery images={product.images} title={product.title} />
         {/* RIGHT: INFO */}
-        <ProductInfo
-          title={product.title}
-          description={product.description}
-          price={Number(product.price)}
-          ratingCount={ratingCount}
-          avgRating={avgRating}
-        />
+        <div className="lg:sticky lg:top-24">
+          <ProductInfo
+            title={product.title}
+            description={product.description}
+            price={Number(product.price)}
+            ratingCount={ratingCount}
+            avgRating={avgRating}
+            stock={product.stock}
+            variants={product.variants}
+          />
+        </div>
       </div>
     </div>
   );
