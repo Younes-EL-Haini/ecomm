@@ -36,11 +36,53 @@ const ProductInfo = ({
   const [selectedSize, setSelectedSize] = useState(sizes[0]);
   const [selectedColor, setSelectedColor] = useState(colors[0]);
 
+  // Compute available colors for the selected size
+  const availableColors =
+    variants
+      ?.filter((v) => v.size === selectedSize && v.stock > 0)
+      .map((v) => v.color)
+      .filter(Boolean) || [];
+
+  // Compute available sizes for the selected color
+  const availableSizes =
+    variants
+      ?.filter((v) => v.color === selectedColor && v.stock > 0)
+      .map((v) => v.size)
+      .filter(Boolean) || [];
+
   const selectedVariant = variants?.find(
     (v) =>
       (v.size ?? undefined) === selectedSize &&
       (v.color ?? undefined) === selectedColor
   );
+
+  const handleSizeChange = (size: string) => {
+    // update selected size
+    setSelectedSize(size);
+
+    // auto-correct color if current selection is invalid
+    const validColorsForSize = variants
+      ?.filter((v) => v.size === size && v.stock > 0)
+      .map((v) => v.color)
+      .filter(Boolean);
+
+    if (!validColorsForSize?.includes(selectedColor)) {
+      setSelectedColor(validColorsForSize?.[0] ?? null);
+    }
+  };
+
+  const handleColorChange = (color: string) => {
+    setSelectedColor(color);
+
+    const validSizesForColor = variants
+      ?.filter((v) => v.color === color && v.stock > 0)
+      .map((v) => v.size)
+      .filter(Boolean);
+
+    if (!validSizesForColor?.includes(selectedSize)) {
+      setSelectedSize(validSizesForColor?.[0] ?? null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -78,18 +120,21 @@ const ProductInfo = ({
 
           <div className="flex gap-2">
             {sizes.map((size) => {
+              const isDisabled = !availableSizes.includes(size);
               const isSelected = selectedSize === size;
 
               return (
                 <Button
                   key={size}
                   variant="outline"
-                  onClick={() => setSelectedSize(size)}
+                  disabled={isDisabled}
+                  onClick={() => !isDisabled && handleSizeChange(size!)}
                   className={cn(
-                    "flex-none h-10 w-12 rounded-lg border text-sm font-medium transition-all",
+                    "flex-none h-10 w-12 rounded-lg border text-sm font-medium transition-all duration-200 transform",
                     isSelected
-                      ? "border-primary bg-primary/10 text-primary ring-1 ring-primary"
-                      : "border-border hover:border-primary/50"
+                      ? "border-primary bg-primary/10 text-primary ring-1 ring-primary scale-105"
+                      : "border-border hover:border-primary/50",
+                    isDisabled ? "opacity-40 cursor-not-allowed" : ""
                   )}
                 >
                   {size}
@@ -99,6 +144,7 @@ const ProductInfo = ({
           </div>
         </div>
       )}
+
       {colors.length > 0 && (
         <div className="space-y-2">
           <p className="text-sm font-medium">
@@ -106,18 +152,18 @@ const ProductInfo = ({
             <span className="text-primary font-semibold">{selectedColor}</span>
           </p>
 
-          <div className="flex gap-3 flex-wrap">
+          <div className="flex gap-5 flex-wrap">
             {colors.map((color) => {
               const isSelected = selectedColor === color;
 
               return (
                 <Button
                   key={color}
-                  onClick={() => setSelectedColor(color)}
+                  onClick={() => handleColorChange(color!)}
                   className={cn(
-                    "flex-none h-10 w-16 rounded-full border transition-all",
+                    "flex-1 h-10 w-16 rounded-full border transition-all duration-200 transform",
                     isSelected
-                      ? "ring-2 ring-primary border-primary"
+                      ? "ring-2 ring-primary scale-110"
                       : "border-border hover:ring-1 hover:ring-primary/50"
                   )}
                   style={{ backgroundColor: color?.toLowerCase() }}
