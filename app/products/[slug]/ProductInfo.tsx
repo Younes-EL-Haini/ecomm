@@ -81,8 +81,9 @@ const ProductInfo = ({
               const isSelected = selectedSize === size;
 
               return (
-                <button
+                <Button
                   key={size}
+                  variant="outline"
                   onClick={() => setSelectedSize(size)}
                   className={cn(
                     "flex-none h-10 w-12 rounded-lg border text-sm font-medium transition-all",
@@ -92,7 +93,7 @@ const ProductInfo = ({
                   )}
                 >
                   {size}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -110,7 +111,7 @@ const ProductInfo = ({
               const isSelected = selectedColor === color;
 
               return (
-                <button
+                <Button
                   key={color}
                   onClick={() => setSelectedColor(color)}
                   className={cn(

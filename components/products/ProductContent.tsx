@@ -1,6 +1,7 @@
 import { Decimal } from "@prisma/client/runtime/library";
 import Link from "next/link";
 import { CardContent } from "../ui/card";
+import { Button } from "../ui/button";
 
 type ProductContentProps = {
   title: string;
@@ -27,9 +28,12 @@ const ProductContent = ({
           ${price.toFixed(2)}
         </span>
         <Link href={`/products/${slug}`}>
-          <button className="px-3 py-1 text-sm font-medium border rounded hover:bg-blue-600 hover:text-white transition">
+          <Button
+            variant="outline"
+            className="px-3 py-1 text-sm font-medium border rounded hover:bg-blue-600 hover:text-white transition"
+          >
             View
-          </button>
+          </Button>
         </Link>
       </div>
     </CardContent>
