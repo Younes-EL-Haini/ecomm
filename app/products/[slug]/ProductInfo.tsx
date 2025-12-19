@@ -56,6 +56,8 @@ const ProductInfo = ({
       (v.color ?? undefined) === selectedColor
   );
 
+  const variantInStock = selectedVariant && selectedVariant.stock > 0;
+
   const handleSizeChange = (size: string) => {
     // update selected size
     setSelectedSize(size);
@@ -178,8 +180,14 @@ const ProductInfo = ({
 
       {/* CTA */}
       <Button size="lg" disabled={!inStock} className="w-full lg:w-auto">
-        {inStock ? "Add to cart" : "Unavailable"}
+        {variantInStock ? "Add to cart" : "Unavailable"}
       </Button>
+
+      {selectedVariant && selectedVariant.stock <= 5 && (
+        <p className="text-sm text-orange-600 font-medium">
+          ⚠️ Only {selectedVariant.stock} left in stock
+        </p>
+      )}
 
       {/* DESCRIPTION */}
       <div className="border-t pt-6 text-sm text-muted-foreground leading-relaxed">

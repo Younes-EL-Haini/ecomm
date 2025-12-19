@@ -85,6 +85,7 @@ model ProductImage {
   productId String
   publicId  String?
   url       String
+  color     String?   // 👈 link image to a color
   alt       String?
   isMain    Boolean  @default(false)
   position  Int
