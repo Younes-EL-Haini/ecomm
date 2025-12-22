@@ -14,8 +14,8 @@ import Link from "next/link";
 const AuthStatus = () => {
   const { status, data: session } = useSession();
 
-  if (status === "loading")
-    return <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />;
+  //   if (status === "loading")
+  //     return <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />;
 
   if (status === "unauthenticated") {
     return (

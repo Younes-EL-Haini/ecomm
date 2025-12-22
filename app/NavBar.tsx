@@ -1,25 +1,16 @@
-// // components/NavBar.tsx
-// import NavLinks from "./NavLinks";
-// import AuthStatus from "./AuthStatus";
-
-// const NavBar = () => {
-//   return (
-//     <nav className="flex justify-between space-x-6 mb-5 px-5 h-14 items-center bg-blue-100">
-//       <NavLinks />
-//       <AuthStatus />
-//     </nav>
-//   );
-// };
-
-// export default NavBar;
-
 // components/NavBar.tsx
+"use client";
 import NavLinks from "./NavLinks";
 import AuthStatus from "./AuthStatus";
 import MobileNav from "./MobileNav";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import NavSkeleton from "./NavSkeleton";
 
 const NavBar = () => {
+  const { status } = useSession();
+  if (status === "loading") return <NavSkeleton />;
+
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto flex justify-between h-16 items-center px-4">
