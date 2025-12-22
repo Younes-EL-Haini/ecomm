@@ -2,9 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-// import { AiFillBug } from "react-icons/ai";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import classNames from "classnames";
-import { useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const NavBar = () => {
   const currentPath = usePathname();
@@ -15,10 +21,12 @@ const NavBar = () => {
     { label: "Product", href: "/products" },
   ];
 
+  if (status === "loading") return <nav className="h-14 bg-blue-100 mb-5" />;
+
   return (
-    <nav className="flex space-x-6 mb-5 px-5 h-14 items-center bg-blue-100">
-      <Link href="/">Logo</Link>
+    <nav className="flex justify-between space-x-6 mb-5 px-5 h-14 items-center bg-blue-100">
       <ul className="flex space-x-6">
+        <Link href="/">Logo</Link>
         {links.map((link) => (
           <li key={link.href}>
             <Link
@@ -33,15 +41,46 @@ const NavBar = () => {
             </Link>
           </li>
         ))}
-        <div>
-          {status === "authenticated" && (
-            <Link href="/api/auth/signout">Log out</Link>
-          )}
-          {status === "unauthenticated" && (
-            <Link href="/api/auth/signin">Login</Link>
-          )}
-        </div>
       </ul>
+      <div className="flex items-center">
+        {status === "unauthenticated" ? (
+          <Link className="nav-link" href="/api/auth/signin">
+            Login
+          </Link>
+        ) : (
+          <DropdownMenu>
+            <DropdownMenuTrigger className="cursor-pointer outline-none">
+              <Avatar>
+                <AvatarImage src={session?.user?.image ?? ""} />
+                <AvatarFallback>{session?.user?.name}</AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent
+              align="end"
+              className="w-48 **:[[role=menuitem]]:cursor-pointer"
+            >
+              <div className="px-3 py-2 border-b">
+                <p className="text-sm font-semibold">{session?.user?.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {session?.user?.email}
+                </p>
+              </div>
+
+              <DropdownMenuItem asChild>
+                <a href="/profile">Profile</a>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                className="text-red-600"
+                onClick={() => signOut()}
+              >
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}{" "}
+      </div>
     </nav>
   );
 };
