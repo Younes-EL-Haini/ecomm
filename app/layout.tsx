@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
-import NavBar from "./NavBar";
+import NavBar from "../components/NavBar/NavBar";
 import AuthProvider from "./auth/Provider";
 
 const inter = Inter({
