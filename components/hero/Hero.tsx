@@ -1,7 +1,12 @@
+"use client";
+import { useSession } from "next-auth/react";
 import HeroContent from "./HeroContent";
 import HeroImage from "./HeroImage";
+import HeroSkeleton from "./HeroSkeleton";
 
 const HeroSection = () => {
+  const { status } = useSession();
+  if (status === "loading") return <HeroSkeleton />;
   return (
     <section className="flex flex-col items-center justify-center p-6 md:flex-row md:justify-between bg-gray-50 min-h-[60vh] gap-6">
       {/* Text comes first on mobile */}
