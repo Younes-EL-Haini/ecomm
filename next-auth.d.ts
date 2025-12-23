@@ -1,0 +1,27 @@
+// next-auth.d.ts
+import NextAuth, { DefaultSession } from "next-auth";
+
+declare module "next-auth" {
+  /**
+   * Returned by `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
+   */
+  interface Session {
+    user: {
+      /** The user's postal address. */
+      id: string;
+      role: string; // Since you have Roles in your Prisma schema!
+    } & DefaultSession["user"];
+  }
+
+  interface User {
+    id: string;
+    role: string;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string;
+    role: string;
+  }
+}
