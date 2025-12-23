@@ -38,6 +38,7 @@ const ProductPage = async ({ params }: Props) => {
         {/* RIGHT: INFO */}
         <div className="lg:sticky lg:top-24">
           <ProductInfo
+            productId={product.id}
             title={product.title}
             description={product.description}
             price={Number(product.price)}

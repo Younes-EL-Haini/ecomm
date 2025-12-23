@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 
 type Props = {
+  productId: string; // Added this
   title: string;
   description: string;
   price: number;
@@ -16,6 +17,7 @@ type Props = {
 };
 
 const ProductInfo = ({
+  productId,
   title,
   description,
   price,
@@ -24,6 +26,39 @@ const ProductInfo = ({
   stock,
   variants,
 }: Props) => {
+  const [isAdding, setIsAdding] = useState(false);
+  const handleAddToCart = async () => {
+    try {
+      setIsAdding(true);
+
+      const response = await fetch("/api/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: productId,
+          variantId: selectedVariant?.id || null,
+          quantity: 1,
+        }),
+      });
+      console.log(response);
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          alert("Please login to add items to cart"); // Replace with a Toast later
+          return;
+        }
+        throw new Error("Failed to add to cart");
+      }
+
+      // Success!
+      alert("Added to cart!"); // Replace with shadcn toast for a pro feel
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
   const inStock = stock > 0;
 
   const sizes = Array.from(
@@ -179,7 +214,12 @@ const ProductInfo = ({
       )}
 
       {/* CTA */}
-      <Button size="lg" disabled={!inStock} className="w-full lg:w-auto">
+      <Button
+        size="lg"
+        disabled={!inStock}
+        onClick={handleAddToCart}
+        className="w-full lg:w-auto"
+      >
         {variantInStock ? "Add to cart" : "Unavailable"}
       </Button>
 
