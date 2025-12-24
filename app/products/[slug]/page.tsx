@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
-import ProductGallery from "./ProductGallery";
-import ProductInfo from "./ProductInfo";
+import ProductGallery from "../../../components/product-details/ProductGallery";
+import ProductInfo from "../../../components/product-details/ProductInfo";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -30,6 +30,10 @@ const ProductPage = async ({ params }: Props) => {
         ).toFixed(1)
       : "0.0";
 
+  // This is a "hacky" but very effective way to strip all
+  // non-plain objects (like Decimals and Dates) into plain data.
+  const serializedProduct = JSON.parse(JSON.stringify(product));
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -38,14 +42,14 @@ const ProductPage = async ({ params }: Props) => {
         {/* RIGHT: INFO */}
         <div className="lg:sticky lg:top-24">
           <ProductInfo
-            productId={product.id}
-            title={product.title}
-            description={product.description}
-            price={Number(product.price)}
-            ratingCount={ratingCount}
-            avgRating={avgRating}
-            stock={product.stock}
-            variants={product.variants}
+            product={serializedProduct}
+            //   title={product.title}
+            //   description={product.description}
+            //   price={Number(product.price)}
+            //   ratingCount={ratingCount}
+            //   avgRating={avgRating}
+            //   stock={product.stock}
+            //   variants={product.variants}
           />
         </div>
       </div>
