@@ -4,6 +4,27 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
 
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    return NextResponse.json([], { status: 200 });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    include: {
+      cartItems: {
+        include: {
+          product: true,
+          variant: true,
+        },
+      },
+    },
+  });
+
+  return NextResponse.json(user?.cartItems || []);
+}
+
 export async function POST(req: NextRequest){
     const session = await getServerSession(authOptions)
 
