@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import CartItemControls from "./CartItemControls";
 
 export default async function CartPage() {
   const session = await getServerSession(authOptions);
@@ -73,11 +74,18 @@ export default async function CartPage() {
 
                 <div className="flex flex-col items-end justify-between">
                   {/* We will add a Client Component here for + / - buttons later */}
-                  <p className="text-sm">Qty: {item.quantity}</p>
-                  <p className="font-bold">
-                    {(Number(item.product.price) * item.quantity).toFixed(2)}{" "}
-                    MAD
-                  </p>
+                  <div className="flex flex-col items-end justify-between gap-4">
+                    {/* Pass the item ID and quantity to the client controls */}
+                    <CartItemControls
+                      itemId={item.id}
+                      initialQuantity={item.quantity}
+                    />
+
+                    <p className="font-bold text-lg">
+                      {(Number(item.product.price) * item.quantity).toFixed(2)}{" "}
+                      MAD
+                    </p>
+                  </div>
                 </div>
               </div>
             ))}
