@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import VariantPicker from "./VariantPicker";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Props {
   product: any; // Using any temporarily to bypass Decimal/Plain object issues
@@ -44,7 +45,20 @@ const ProductInfo = ({ product }: Props) => {
           quantity: 1,
         }),
       });
-      if (res.ok) router.refresh();
+      if (res.ok) {
+        toast.success(`${product.title} added to cart`, {
+          description: "Ready to checkout?",
+          action: {
+            label: "View Cart",
+            onClick: () => router.push("/cart"),
+          },
+        });
+        router.refresh();
+      } else {
+        toast.error("Could not add to cart. Please try again.");
+      }
+    } catch (error) {
+      toast.error("Something went wrong. Please check your connection.");
     } finally {
       setIsAdding(false);
     }

@@ -22,14 +22,6 @@ const ProductPage = async ({ params }: Props) => {
     return <div className="p-10">Product not found</div>;
   }
 
-  const ratingCount = product.reviews.length;
-  const avgRating =
-    ratingCount > 0
-      ? (
-          product.reviews.reduce((a, r) => a + r.rating, 0) / ratingCount
-        ).toFixed(1)
-      : "0.0";
-
   // This is a "hacky" but very effective way to strip all
   // non-plain objects (like Decimals and Dates) into plain data.
   const serializedProduct = JSON.parse(JSON.stringify(product));
@@ -41,16 +33,7 @@ const ProductPage = async ({ params }: Props) => {
         <ProductGallery images={product.images} title={product.title} />
         {/* RIGHT: INFO */}
         <div className="lg:sticky lg:top-24">
-          <ProductInfo
-            product={serializedProduct}
-            //   title={product.title}
-            //   description={product.description}
-            //   price={Number(product.price)}
-            //   ratingCount={ratingCount}
-            //   avgRating={avgRating}
-            //   stock={product.stock}
-            //   variants={product.variants}
-          />
+          <ProductInfo product={serializedProduct} />
         </div>
       </div>
     </div>
