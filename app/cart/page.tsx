@@ -86,6 +86,8 @@ export default async function CartPage() {
                     <CartItemControls
                       itemId={item.id}
                       initialQuantity={item.quantity}
+                      productId={item.productId}
+                      variantId={item.variantId || ""}
                     />
 
                     <p className="font-bold text-lg">

@@ -9,9 +9,16 @@ import { toast } from "sonner";
 interface Props {
   itemId: string;
   initialQuantity: number;
+  productId: string; // Add this
+  variantId?: string; // Add this
 }
 
-export default function CartItemControls({ itemId, initialQuantity }: Props) {
+export default function CartItemControls({
+  itemId,
+  initialQuantity,
+  productId,
+  variantId,
+}: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -30,15 +37,45 @@ export default function CartItemControls({ itemId, initialQuantity }: Props) {
   };
 
   const removeItem = async () => {
-    setLoading(true);
+    // Capture data for Undo before the item is deleted
+    const itemData = { productId, variantId, quantity: initialQuantity };
+
+    toast.promise(
+      fetch(`/api/cart/${itemId}`, { method: "DELETE" }).then((res) => {
+        if (!res.ok) throw new Error();
+        return res;
+      }),
+      {
+        loading: "Removing item...",
+        // 1. The function takes the response as 'data'
+        // 2. We return the main title string
+        success: (data) => {
+          router.refresh();
+          return "Item removed from cart";
+        },
+        error: "Could not remove item",
+        // 3. We use the 'description' and 'action' inside the options object
+        description: "Changed your mind?",
+        action: {
+          label: "Undo",
+          onClick: () => undoDelete(itemData),
+        },
+      }
+    );
+  };
+
+  const undoDelete = async (data: any) => {
     try {
-      const res = await fetch(`/api/cart/${itemId}`, { method: "DELETE" });
+      const res = await fetch("/api/cart", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
       if (res.ok) {
-        toast.success("Item removed");
+        toast.success("Item restored!");
         router.refresh();
       }
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      toast.error("Failed to restore item");
     }
   };
 
