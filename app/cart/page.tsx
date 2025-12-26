@@ -46,13 +46,20 @@ export default async function CartPage() {
           <div className="lg:col-span-2 space-y-6">
             {cartItems.map((item) => (
               <div key={item.id} className="flex gap-4 border-b pb-6">
-                <div className="relative h-24 w-24 rounded-md overflow-hidden border">
+                <div className="relative h-28 w-28 md:h-32 md:w-32 rounded-lg overflow-hidden border bg-white shrink-0 shadow-sm group">
                   <Image
                     src={item.product.images[0]?.url || "/placeholder.png"}
                     alt={item.product.title}
                     fill
-                    className="object-cover"
+                    className="object-cover transition-transform duration-300 ease-out group-hover:scale-110"
                   />
+
+                  {/* Hover overlay (desktop only) */}
+                  <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex items-center justify-center">
+                    <span className="text-white text-xs font-medium tracking-wide">
+                      View
+                    </span>
+                  </div>
                 </div>
 
                 <div className="flex-1">
