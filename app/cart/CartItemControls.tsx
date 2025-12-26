@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import confetti from "canvas-confetti";
 
 interface Props {
   itemId: string;
@@ -50,6 +51,12 @@ export default function CartItemControls({
         // 1. The function takes the response as 'data'
         // 2. We return the main title string
         success: (data) => {
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }, // Fires from roughly where the toast is
+            colors: ["#ff0000", "#000000", "#ffffff"], // Match your store colors (Red/Black)
+          });
           router.refresh();
           return "Item removed from cart";
         },
