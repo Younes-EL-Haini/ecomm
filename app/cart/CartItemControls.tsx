@@ -6,6 +6,7 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
+import { useCartStore } from "@/cartStore";
 
 interface Props {
   itemId: string;
@@ -22,6 +23,9 @@ export default function CartItemControls({
 }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const decrement = useCartStore((state) => state.decrement);
+  const increment = useCartStore((state) => state.increment);
+  const count = useCartStore((state) => state.count);
 
   const updateQuantity = async (newQty: number) => {
     if (newQty < 1) return;
@@ -57,6 +61,7 @@ export default function CartItemControls({
             origin: { y: 0.6 }, // Fires from roughly where the toast is
             colors: ["#ff0000", "#000000", "#ffffff"], // Match your store colors (Red/Black)
           });
+          if (count > 0) decrement();
           router.refresh();
           return "Item removed from cart";
         },
@@ -79,6 +84,7 @@ export default function CartItemControls({
       });
       if (res.ok) {
         toast.success("Item restored!");
+        increment();
         router.refresh();
       }
     } catch (error) {

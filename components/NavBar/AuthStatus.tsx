@@ -12,17 +12,19 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ShoppingCart } from "lucide-react";
+import { useCartStore } from "@/cartStore";
 
 const AuthStatus = () => {
   const { status, data: session } = useSession();
-  const [cartCount, setCartCount] = useState(0);
+  const count = useCartStore((state) => state.count);
+  const setCount = useCartStore((state) => state.setCount);
 
   useEffect(() => {
     const fetchCartCount = async () => {
       try {
         const res = await fetch("/api/cart/count");
         const data = await res.json();
-        setCartCount(data.count);
+        setCount(data.count);
       } catch (error) {
         console.error("Failed to fetch cart count", error);
       }
@@ -51,9 +53,12 @@ const AuthStatus = () => {
         className="relative p-2 hover:bg-accent rounded-full transition-colors"
       >
         <ShoppingCart className="w-6 h-6" />
-        {cartCount > 0 && (
-          <span className="absolute top-0 right-0 bg-red-600 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
-            {cartCount}
+        {count > 0 && (
+          <span
+            key={count}
+            className="absolute top-0 right-0 bg-red-600 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center animate-bounce-once"
+          >
+            {count}
           </span>
         )}
       </Link>

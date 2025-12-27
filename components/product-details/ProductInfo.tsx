@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import VariantPicker from "./VariantPicker";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useCartStore } from "@/cartStore";
 
 interface Props {
   product: any; // Using any temporarily to bypass Decimal/Plain object issues
@@ -15,6 +16,7 @@ interface Props {
 const ProductInfo = ({ product }: Props) => {
   const router = useRouter();
   const [isAdding, setIsAdding] = useState(false);
+  const increment = useCartStore((state) => state.increment);
 
   const {
     selectedSize,
@@ -53,6 +55,7 @@ const ProductInfo = ({ product }: Props) => {
             onClick: () => router.push("/cart"),
           },
         });
+        increment();
         router.refresh();
       } else {
         toast.error("Could not add to cart. Please try again.");
