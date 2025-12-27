@@ -60,7 +60,10 @@ const AuthStatus = () => {
       <DropdownMenu>
         <DropdownMenuTrigger className="cursor-pointer outline-none">
           <Avatar>
-            <AvatarImage src={session?.user?.image ?? ""} />
+            <AvatarImage
+              src={session?.user?.image ?? ""}
+              referrerPolicy="no-referrer"
+            />
             <AvatarFallback>{session?.user?.name?.charAt(0)}</AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
