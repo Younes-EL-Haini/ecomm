@@ -13,11 +13,15 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ShoppingCart } from "lucide-react";
 import { useCartStore } from "@/cartStore";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 const AuthStatus = () => {
   const { status, data: session } = useSession();
   const count = useCartStore((state) => state.count);
   const setCount = useCartStore((state) => state.setCount);
+  const pathname = usePathname();
+  const isActive = pathname === "/cart";
 
   useEffect(() => {
     const fetchCartCount = async () => {
@@ -34,9 +38,6 @@ const AuthStatus = () => {
     }
   }, [status]); // Runs when login status changes
 
-  // if (status === "loading")
-  //   return <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />;
-
   if (status === "unauthenticated") {
     return (
       <Link className="nav-link" href="/api/auth/signin">
@@ -50,9 +51,16 @@ const AuthStatus = () => {
       {/* 1. THE CART LINK */}
       <Link
         href="/cart"
-        className="relative p-2 hover:bg-accent rounded-full transition-colors"
+        className={cn(
+          "relative p-2 rounded-full transition-all duration-200",
+          isActive
+            ? "text-primary fill-current" // Active styles
+            : "text-muted-foreground hover:bg-accent" // Default styles
+        )}
       >
-        <ShoppingCart className="w-6 h-6" />
+        <ShoppingCart
+          className={cn("w-6 h-6", isActive && "fill-current")} // Makes the icon "Solid" if it supports it
+        />
         {count > 0 && (
           <span
             key={count}
