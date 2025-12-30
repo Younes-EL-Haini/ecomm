@@ -11,9 +11,10 @@ import { useCartStore } from "@/cartStore";
 
 interface Props {
   product: any; // Using any temporarily to bypass Decimal/Plain object issues
+  onColorChange: (color: string | null) => void;
 }
 
-const ProductInfo = ({ product }: Props) => {
+const ProductInfo = ({ product, onColorChange }: Props) => {
   const router = useRouter();
   const [isAdding, setIsAdding] = useState(false);
   const increment = useCartStore((state) => state.increment);
@@ -28,7 +29,7 @@ const ProductInfo = ({ product }: Props) => {
     availableSizes,
     sizes,
     colors,
-  } = useProductVariants(product.variants);
+  } = useProductVariants(product.variants, onColorChange);
 
   // General stock check
   const inStock = product.stock > 0;

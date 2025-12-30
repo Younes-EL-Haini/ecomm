@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { ProductVariant } from "@/lib/generated/prisma";
 
-export const useProductVariants = (variants: ProductVariant[] = []) => {
+export const useProductVariants = (variants: ProductVariant[] = [], onColorChange?: (color: string | null) => void) => {
   const sizes = useMemo(() => 
     Array.from(new Set(variants.map((v) => v.size).filter(Boolean))), 
   [variants]);
@@ -34,6 +34,7 @@ export const useProductVariants = (variants: ProductVariant[] = []) => {
   // HANDLE COLOR CHANGE (Your specific request)
   const handleColorChange = (color: string) => {
     setSelectedColor(color);
+    onColorChange?.(color);
 
     const validSizes = getValidSizesForColor(color);
     // If current size isn't available in the new color, snap to the first available size
