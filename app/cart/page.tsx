@@ -15,6 +15,9 @@ export default async function CartPage() {
     where: { email: session.user.email },
     include: {
       cartItems: {
+        orderBy: {
+          createdAt: "asc",
+        },
         include: {
           product: { include: { images: true } }, // Include images!
           variant: true,
@@ -28,6 +31,8 @@ export default async function CartPage() {
     (acc, item) => acc + Number(item.product.price) * item.quantity,
     0
   );
+
+  console.log(cartItems);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
