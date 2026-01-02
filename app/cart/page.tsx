@@ -116,9 +116,11 @@ export default async function CartPage() {
               <span>Total</span>
               <span>{subtotal.toFixed(2)} MAD</span>
             </div>
-            <Button className="w-full" size="lg">
-              Proceed to Checkout
-            </Button>
+            <Link href={`/checkout`}>
+              <Button className="w-full" size="lg">
+                Proceed to Checkout
+              </Button>
+            </Link>
           </div>
         </div>
       )}
