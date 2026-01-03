@@ -167,11 +167,31 @@ export async function POST(req: Request) {
     }, 0);
 
     // 3. Create Stripe Payment Intent
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(totalAmount * 100), // Convert to cents/santimat
-      currency: "usd",
-      automatic_payment_methods: { enabled: true },
-    });
+    // const paymentIntent = await stripe.paymentIntents.create({
+    //   amount: Math.round(totalAmount * 100), // Convert to cents/santimat
+    //   currency: "usd",
+    //   automatic_payment_methods: { enabled: true },
+    // });
+
+    if (!user) {
+  return new NextResponse("User not found in database", { status: 404 });
+}
+const paymentIntent = await stripe.paymentIntents.create({
+  amount: Math.round(totalAmount * 100),
+  currency: "usd",
+  automatic_payment_methods: { enabled: true },
+  metadata: {
+    userId: user.id,
+    cartItems: JSON.stringify(
+      cartItems.map((item) => ({
+        id: item.product.id,
+        q: item.quantity,
+        variantId: item.variantId || null, // ✅ include variantId here
+      }))
+    ),
+  },
+});
+
 
     // 4. Send BOTH the secret AND the real total back to the UI
     return NextResponse.json({ 

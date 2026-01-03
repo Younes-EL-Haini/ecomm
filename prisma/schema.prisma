@@ -203,6 +203,7 @@ model Order {
   status            OrderStatus @default(PENDING)
   totalPrice        Decimal     @db.Decimal(10, 2)
   currency          String      @default("USD")
+  stripeSessionId   String      @unique
   shippingAddressId String?
   billingAddressId  String?
   createdAt         DateTime    @default(now())
