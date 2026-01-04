@@ -40,7 +40,17 @@ export async function POST(req: Request) {
       return new NextResponse("Missing metadata", { status: 400 });
     }
 
-    // 3️⃣ Fetch products & variants
+    // 3️⃣ Check if order already exists (idempotency)
+    const existingOrder = await prisma.order.findUnique({
+      where: { stripeSessionId: paymentIntent.id },
+    });
+
+    if (existingOrder) {
+      // Order already processed, return success
+      return new NextResponse("Order already exists", { status: 200 });
+    }
+
+    // 4️⃣ Fetch products & variants
     const productIds = cartItems.map(i => i.id);
     const variantIds = cartItems
       .map(i => i.variantId)
@@ -62,16 +72,16 @@ export async function POST(req: Request) {
     const priceMap = new Map(products.map(p => [p.id, p.price]));
     const validVariantIds = new Set(variants.map(v => v.id));
 
-    // 4️⃣ Compute total order price
+    // 5️⃣ Compute total order price
     const totalOrderPrice = cartItems.reduce((sum, item) => {
       const price = priceMap.get(item.id)?.toNumber() || 0;
       return sum + price * item.q;
     }, 0);
 
-    // 5️⃣ Transaction: order + stock updates
+    // 6️⃣ Transaction: create order + update stock + clear cart
     await prisma.$transaction(async (tx) => {
       // Create order
-      const order = await tx.order.create({
+      await tx.order.create({
         data: {
           userId,
           stripeSessionId: paymentIntent.id,
@@ -115,7 +125,7 @@ export async function POST(req: Request) {
         }
       }
 
-      // Clear cart
+      // Clear user's cart
       await tx.cartItem.deleteMany({
         where: { userId },
       });
