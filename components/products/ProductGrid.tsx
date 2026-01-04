@@ -4,6 +4,7 @@ import ProductCard from "./ProductCard";
 const ProductGrid = async () => {
   const products = await prisma.product.findMany({
     where: { isPublished: true },
+    orderBy: { createdAt: "asc" },
     include: {
       images: {
         orderBy: { position: "asc" },
