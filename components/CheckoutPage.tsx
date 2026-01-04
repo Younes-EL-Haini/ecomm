@@ -1,4 +1,3 @@
-import convertToSubcurrency from "@/convertToSubcurrency";
 import {
   PaymentElement,
   useElements,
@@ -13,18 +12,6 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
   const [clientSecret, setClientSecret] = useState("");
   const [dbTotal, setDbTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-
-  //   useEffect(() => {
-  //     fetch("/api/checkout", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({ amount: convertToSubcurrency(amount) }),
-  //     })
-  //       .then((res) => res.json())
-  //       .then((data) => setClientSecret(data.clientSecret));
-  //   }, [amount]);
 
   useEffect(() => {
     fetch("/api/checkout", { method: "POST" }) // No body needed! Server knows who you are.
