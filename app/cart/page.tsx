@@ -27,10 +27,11 @@ export default async function CartPage() {
   });
 
   const cartItems = user?.cartItems || [];
-  const subtotal = cartItems.reduce(
-    (acc, item) => acc + Number(item.product.price) * item.quantity,
-    0
-  );
+  const subtotal = cartItems.reduce((acc, item) => {
+    const basePrice = Number(item.product.price);
+    const variantDelta = Number(item.variant?.priceDelta || 0);
+    return acc + (basePrice + variantDelta) * item.quantity;
+  }, 0);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
@@ -57,6 +58,12 @@ export default async function CartPage() {
                 ) ||
                 item.product.images.find((img) => img.isMain) ||
                 item.product.images[0];
+
+              const unitPrice =
+                Number(item.product.price) +
+                Number(item.variant?.priceDelta || 0);
+
+              const totalPrice = unitPrice * item.quantity;
 
               return (
                 <div key={item.id} className="flex gap-4 border-b pb-6">
@@ -91,7 +98,7 @@ export default async function CartPage() {
                     )}
 
                     <p className="mt-2 font-medium">
-                      {Number(item.product.price).toFixed(2)} MAD
+                      {Number(unitPrice).toFixed(2)} MAD
                     </p>
                   </div>
 
@@ -105,10 +112,7 @@ export default async function CartPage() {
                       />
 
                       <p className="font-bold text-lg">
-                        {(Number(item.product.price) * item.quantity).toFixed(
-                          2
-                        )}{" "}
-                        MAD
+                        {Number(totalPrice).toFixed(2)} MAD
                       </p>
                     </div>
                   </div>

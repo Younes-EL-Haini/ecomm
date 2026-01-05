@@ -68,6 +68,11 @@ const ProductInfo = ({ product, onColorChange }: Props) => {
     }
   };
 
+  const basePrice = Number(product.price);
+  const delta = Number(selectedVariant?.priceDelta || 0);
+
+  const displayedPrice = basePrice + delta;
+
   return (
     <div className="space-y-6">
       {/* TITLE & RATING */}
@@ -83,7 +88,7 @@ const ProductInfo = ({ product, onColorChange }: Props) => {
       </div>
 
       <p className="text-2xl font-semibold text-primary">
-        {Number(product.price).toFixed(2)} MAD
+        {displayedPrice.toFixed(2)} MAD
       </p>
 
       {/* STOCK STATUS */}
