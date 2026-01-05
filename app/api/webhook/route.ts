@@ -8,6 +8,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-12-15.clover" as any,
 });
 
+class OutOfStockError extends Error {}
+
+
 export async function POST(req: Request) {
   const body = await req.text();
   const signature = (await headers()).get("Stripe-Signature") as string;
@@ -79,6 +82,7 @@ export async function POST(req: Request) {
     }, 0);
 
     // 6️⃣ Transaction: create order + update stock + clear cart
+    try {
     await prisma.$transaction(async (tx) => {
       // Create order
       await tx.order.create({
@@ -106,30 +110,59 @@ export async function POST(req: Request) {
       });
 
       // Decrement product stock
-      for (const item of cartItems) {
-        await tx.product.update({
-          where: { id: item.id },
-          data: {
-            stock: { decrement: item.q },
-          },
-        });
+for (const item of cartItems) {
+  // Variant stock has priority
+  if (item.variantId && validVariantIds.has(item.variantId)) {
+    const variant = await tx.productVariant.findUnique({
+      where: { id: item.variantId },
+      select: { stock: true },
+    });
 
-        // Decrement variant stock if exists
-        if (item.variantId && validVariantIds.has(item.variantId)) {
-          await tx.productVariant.update({
-            where: { id: item.variantId },
-            data: {
-              stock: { decrement: item.q },
-            },
-          });
-        }
-      }
+    if (!variant || variant.stock < item.q) {
+      throw new OutOfStockError("Variant out of stock");
+    }
+
+    await tx.productVariant.update({
+      where: { id: item.variantId },
+      data: { stock: { decrement: item.q } },
+    });
+  } else {
+    const product = await tx.product.findUnique({
+      where: { id: item.id },
+      select: { stock: true },
+    });
+
+    if (!product || product.stock < item.q) {
+      throw new OutOfStockError("Product out of stock");
+    }
+
+    await tx.product.update({
+      where: { id: item.id },
+      data: { stock: { decrement: item.q } },
+    });
+  }
+}
+
 
       // Clear user's cart
       await tx.cartItem.deleteMany({
         where: { userId },
       });
     });
+    } catch (err) {
+  if (err instanceof OutOfStockError) {
+    // 🔁 REFUND user
+    await stripe.refunds.create({
+      payment_intent: paymentIntent.id,
+    });
+
+    return new NextResponse("Out of stock, payment refunded", {
+      status: 409,
+    });
+  }
+
+  throw err;
+}
   }
 
   return new NextResponse("Success", { status: 200 });
