@@ -95,10 +95,10 @@ const ProductInfo = ({ product, onColorChange }: Props) => {
       <p
         className={cn(
           "text-sm font-medium",
-          inStock ? "text-green-600" : "text-red-600"
+          variantInStock ? "text-green-600" : "text-red-600"
         )}
       >
-        {inStock ? "In stock" : "Out of stock"}
+        {variantInStock ? "In stock" : "Out of stock"}
       </p>
 
       {/* VARIANTS */}
