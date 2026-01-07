@@ -35,22 +35,26 @@ export async function POST(req: Request) {
 
     // 2️⃣ Calculate total securely (base price + variant delta)
     const totalAmount = cartItems.reduce((acc, item) => {
-      const basePrice = Number(item.product.price);
-      const variantDelta = Number(item.variant?.priceDelta || 0);
-      return acc + (basePrice + variantDelta) * item.quantity;
+    if (!item.variant) {
+      throw new Error("Variant required for purchase");
+    }
+    const price =
+      Number(item.product.price) +
+      Number(item.variant.priceDelta);
+      return acc + price * item.quantity;
     }, 0);
 
     // 3️⃣ Create PaymentIntent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(totalAmount * 100),
-      currency: "mad",
+      currency: "usd",
       automatic_payment_methods: { enabled: true },
       metadata: {
         userId: user.id,
         cartItems: JSON.stringify(
           cartItems.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
+            id: item.productId,
+            q: item.quantity,
             variantId: item.variantId,
           }))
         ),

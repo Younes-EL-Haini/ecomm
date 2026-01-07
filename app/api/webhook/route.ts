@@ -126,20 +126,6 @@ for (const item of cartItems) {
       where: { id: item.variantId },
       data: { stock: { decrement: item.q } },
     });
-  } else {
-    const product = await tx.product.findUnique({
-      where: { id: item.id },
-      select: { stock: true },
-    });
-
-    if (!product || product.stock < item.q) {
-      throw new OutOfStockError("Product out of stock");
-    }
-
-    await tx.product.update({
-      where: { id: item.id },
-      data: { stock: { decrement: item.q } },
-    });
   }
 }
 
