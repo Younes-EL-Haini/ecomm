@@ -1,17 +1,26 @@
 import { Card } from "@/components/ui/card";
-import { Product, ProductImage } from "@/lib/generated/prisma";
+import { Prisma } from "@/lib/generated/prisma";
 import ProductImageCard from "./ProductImage";
 import ProductContent from "./ProductContent";
 
-type ProductWithImage = Product & {
-  images: ProductImage[];
-};
+type ProductWithRelations = Prisma.ProductGetPayload<{
+  include: {
+    images: true;
+    variants: {
+      select: {
+        stock: true;
+      };
+    };
+  };
+}>;
 
-const ProductCard = ({ product }: { product: ProductWithImage }) => {
+const ProductCard = ({ product }: { product: ProductWithRelations }) => {
+  const hasStock = product.variants.some((variant: any) => variant.stock > 0);
+
   return (
     <Card className="group flex h-full flex-col overflow-hidden rounded-2xl transition-transform duration-300 hover:shadow-xl hover:-translate-y-1 p-0 bg-blue-50">
       {/* IMAGE */}
-      <ProductImageCard image={product.images?.[0]} stock={product.stock} />
+      <ProductImageCard image={product.images[0]} stock={hasStock} />
 
       {/* CONTENT */}
       <ProductContent

@@ -10,6 +10,11 @@ const ProductGrid = async () => {
         orderBy: { position: "asc" },
         take: 1, // only main image
       },
+      variants: {
+        select: {
+          stock: true,
+        },
+      },
     },
   });
 
