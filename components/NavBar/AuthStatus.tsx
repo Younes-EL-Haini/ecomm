@@ -92,6 +92,9 @@ const AuthStatus = () => {
           <DropdownMenuItem asChild className="cursor-pointer">
             <Link href="/profile">Profile</Link>
           </DropdownMenuItem>
+          <DropdownMenuItem asChild className="cursor-pointer">
+            <Link href="/orders">Orders</Link>
+          </DropdownMenuItem>
           <DropdownMenuItem
             className="text-red-600 cursor-pointer"
             onClick={() => signOut()}
