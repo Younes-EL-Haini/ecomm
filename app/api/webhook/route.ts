@@ -43,6 +43,11 @@ export async function POST(req: Request) {
       return new NextResponse("Missing metadata", { status: 400 });
     }
 
+    const shippingAddress = paymentIntent.metadata?.shippingAddress
+  ? JSON.parse(paymentIntent.metadata.shippingAddress)
+  : null;
+
+
     // 3️⃣ Check if order already exists (idempotency)
     const existingOrder = await prisma.order.findUnique({
       where: { stripeSessionId: paymentIntent.id },
@@ -84,6 +89,16 @@ export async function POST(req: Request) {
     // 6️⃣ Transaction: create order + update stock + clear cart
     try {
     await prisma.$transaction(async (tx) => {
+      const address = await prisma.address.create({
+  data: {
+    userId,
+    fullName: shippingAddress.fullName,
+    line1: shippingAddress.line1,
+    city: shippingAddress.city,
+    postalCode: shippingAddress.postalCode,
+    country: shippingAddress.country,
+  },
+});
       // Create order
       await tx.order.create({
         data: {
@@ -91,6 +106,7 @@ export async function POST(req: Request) {
           stripeSessionId: paymentIntent.id,
           status: "PAID",
           totalPrice: new Decimal(totalOrderPrice),
+          shippingAddressId: address.id,
           items: {
             create: cartItems.map(item => {
               const price = priceMap.get(item.id)?.toNumber() || 0;

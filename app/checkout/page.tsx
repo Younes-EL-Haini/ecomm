@@ -1,40 +1,63 @@
 "use client";
 
-import CheckoutPage from "@/components/CheckoutPage";
-import convertToSubcurrency from "@/convertToSubcurrency";
+import { useEffect, useState } from "react";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 
-if (process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY === undefined) {
-  throw new Error("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is nut defined");
-}
+import CheckoutAddressForm from "@/components/checkout/CheckoutAddressForm";
+import CheckoutPage from "@/components/checkout/CheckoutPage";
+
 const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 );
 
-export default function Home() {
-  const amount = 49.99;
+export default function Checkout() {
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [address, setAddress] = useState<any>(null);
+  const [step, setStep] = useState<"address" | "payment">("address");
+
+  // 🔑 Create PaymentIntent AFTER address step
+  useEffect(() => {
+    if (step !== "payment" || !address) return;
+
+    const createPaymentIntent = async () => {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address }),
+      });
+
+      const data = await res.json();
+      setClientSecret(data.clientSecret);
+    };
+
+    createPaymentIntent();
+  }, [step, address]);
 
   return (
-    <main className="max-w-6xl mx-auto p-10 text-white text-center border m-10 rounded-md bg-linear-to-tr from-blue-500 to-purple-500">
-      <div className="mb-10">
-        <h1 className="text-4xl font-extrabold mb-2">Sonny</h1>
-        <h2 className="text-2xl">
-          has requested
-          <span className="font-bold"> ${amount}</span>
-        </h2>
-      </div>
+    <div className="max-w-xl mx-auto py-10">
+      {/* STEP 1 — ADDRESS */}
+      {step === "address" && (
+        <CheckoutAddressForm
+          onSuccess={(addr) => {
+            setAddress(addr);
+            setStep("payment");
+          }}
+        />
+      )}
 
-      <Elements
-        stripe={stripePromise}
-        options={{
-          mode: "payment",
-          amount: convertToSubcurrency(amount),
-          currency: "usd",
-        }}
-      >
-        <CheckoutPage amount={amount} />
-      </Elements>
-    </main>
+      {/* STEP 2 — LOADING */}
+      {step === "payment" && loading && (
+        <p className="text-center">Preparing secure payment…</p>
+      )}
+
+      {/* STEP 3 — PAYMENT */}
+      {step === "payment" && clientSecret && (
+        <Elements stripe={stripePromise} options={{ clientSecret }}>
+          <CheckoutPage />
+        </Elements>
+      )}
+    </div>
   );
 }

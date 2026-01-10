@@ -14,6 +14,12 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const { address } = await req.json();
+    if (!address) {
+      return new NextResponse("Missing address", { status: 400 });
+    }
+    
+
     // 1️⃣ Fetch user + cart from DB
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
@@ -58,6 +64,7 @@ export async function POST(req: Request) {
             variantId: item.variantId,
           }))
         ),
+        shippingAddress: JSON.stringify(address),
       },
     });
 
