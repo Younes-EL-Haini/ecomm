@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "../ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 
 type Address = {
   fullName: string;
@@ -52,57 +56,79 @@ export default function CheckoutAddressForm({ onSuccess }: Props) {
   };
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Shipping address</h2>
+    <Card className="max-w-xl mx-auto">
+      <CardHeader>
+        <CardTitle className="text-xl">Shipping address</CardTitle>
+      </CardHeader>
 
-      <input
-        name="fullName"
-        placeholder="Full name"
-        value={form.fullName}
-        onChange={handleChange}
-        className="input"
-      />
+      <CardContent className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="fullName">Full name</Label>
+          <Input
+            id="fullName"
+            name="fullName"
+            value={form?.fullName}
+            onChange={handleChange}
+            placeholder="John Doe"
+          />
+        </div>
 
-      <input
-        name="line1"
-        placeholder="Street address"
-        value={form.line1}
-        onChange={handleChange}
-        className="input"
-      />
+        <div className="space-y-2">
+          <Label htmlFor="line1">Street address</Label>
+          <Input
+            id="line1"
+            name="line1"
+            value={form?.line1}
+            onChange={handleChange}
+            placeholder="123 Main Street"
+          />
+        </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <input
-          name="city"
-          placeholder="City"
-          value={form.city}
-          onChange={handleChange}
-          className="input"
-        />
-        <input
-          name="postalCode"
-          placeholder="Postal code"
-          value={form.postalCode}
-          onChange={handleChange}
-          className="input"
-        />
-      </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="city">City</Label>
+            <Input
+              id="city"
+              name="city"
+              value={form?.city}
+              onChange={handleChange}
+              placeholder="Casablanca"
+            />
+          </div>
 
-      <input
-        name="country"
-        placeholder="Country"
-        value={form.country}
-        onChange={handleChange}
-        className="input"
-      />
+          <div className="space-y-2">
+            <Label htmlFor="postalCode">Postal code</Label>
+            <Input
+              id="postalCode"
+              name="postalCode"
+              value={form?.postalCode}
+              onChange={handleChange}
+              placeholder="20000"
+            />
+          </div>
+        </div>
 
-      <button
-        onClick={submit}
-        disabled={loading}
-        className="btn-primary w-full"
-      >
-        {loading ? "Saving..." : "Continue to payment"}
-      </button>
-    </div>
+        <div className="space-y-2">
+          <Label htmlFor="country">Country</Label>
+          <Input
+            id="country"
+            name="country"
+            value={form?.country}
+            onChange={handleChange}
+            placeholder="Morocco"
+          />
+        </div>
+
+        <Button
+          type="button"
+          onClick={submit}
+          disabled={loading}
+          className="w-full"
+          size="lg"
+        >
+          {loading ? "Saving address..." : "Continue to payment"}
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

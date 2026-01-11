@@ -3,6 +3,7 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
+import { Button } from "../ui/button";
 
 export default function CheckoutPaymentForm() {
   const stripe = useStripe();
@@ -23,9 +24,15 @@ export default function CheckoutPaymentForm() {
           },
         });
       }}
+      className="space-y-6"
     >
-      <PaymentElement />
-      <button className="btn-primary w-full mt-4">Pay now</button>
+      <div className="rounded-lg border border-border bg-muted/40 p-4">
+        <PaymentElement />
+      </div>
+
+      <Button size="lg" className="w-full">
+        Pay now
+      </Button>
     </form>
   );
 }
