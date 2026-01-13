@@ -2,7 +2,7 @@
 import { getServerSession } from "next-auth";
 import prisma from "@/lib/prisma";
 import Image from "next/image";
-import authOptions from "../auth/authOptions";
+import authOptions from "../../auth/authOptions";
 import AddAddressForm from "./AddAddressForm";
 
 const ProfilePage = async () => {
