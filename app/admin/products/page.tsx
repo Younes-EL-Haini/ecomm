@@ -1,52 +1,193 @@
 import prisma from "@/lib/prisma";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { Edit2, Trash2, Package } from "lucide-react";
 
 export default async function AdminProductsPage() {
   const products = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
+    include: {
+      category: true,
+      images: {
+        orderBy: { position: "asc" },
+        take: 1,
+      },
+    },
   });
 
   return (
-    <div className="p-8 w-full">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Products ({products.length})</h1>
-        <Button asChild>
+    <div className="p-4 md:p-10 max-w-7xl mx-auto w-full space-y-8">
+      {/* Header */}
+      <div className="flex justify-between items-center border-b pb-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+            Products
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Manage your store inventory
+          </p>
+        </div>
+        <Button asChild size="sm" className="md:h-10 md:px-4">
           <Link href="/admin/products/new">Add Product</Link>
         </Button>
       </div>
 
-      <div className="border rounded-lg overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-gray-50 border-b">
-            <tr>
-              <th className="p-4 font-medium">Name</th>
-              <th className="p-4 font-medium">Price</th>
-              <th className="p-4 font-medium">Created At</th>
-              <th className="p-4 font-medium text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr key={product.id} className="border-b hover:bg-gray-50">
-                <td className="p-4 font-semibold">{product.title}</td>
-                <td className="p-4">${product.price.toFixed(2)}</td>
-                <td className="p-4 text-sm text-gray-500">
-                  {new Date(product.createdAt).toLocaleDateString()}
-                </td>
-                <td className="p-4 text-right">
-                  <Button variant="ghost" size="sm">
-                    Edit
+      <div className="space-y-3">
+        {products.map((product) => {
+          const mainImage = product.images[0]?.url;
+          const hasUrl = typeof mainImage === "string" && mainImage.length > 0;
+          const isValidProtocol =
+            hasUrl &&
+            (mainImage.startsWith("http") || mainImage.startsWith("/"));
+
+          return (
+            <div key={product.id}>
+              {/* --- DESKTOP VIEW --- */}
+              <div className="hidden md:flex flex-row items-center gap-4 p-4 bg-white border rounded-xl hover:border-slate-400 hover:shadow-md transition-all duration-200">
+                <div className="relative h-16 w-16 bg-slate-100 rounded-lg overflow-hidden border shrink-0">
+                  {isValidProtocol ? (
+                    <Image
+                      src={mainImage}
+                      alt={product.title}
+                      fill
+                      sizes="64px"
+                      className="object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full w-full text-slate-400">
+                      <Package size={20} />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-semibold text-lg truncate">
+                      {product.title}
+                    </h3>
+                    <StatusBadge isPublished={product.isPublished} />
+                  </div>
+                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-medium">
+                      {product.category?.name || "Uncategorized"}
+                    </span>
+                    <span className="text-slate-300">|</span>
+                    <span>SKU: {product.sku || "—"}</span>
+                  </p>
+                </div>
+
+                <div className="flex flex-row gap-12 px-8 border-l border-slate-100">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-tight">
+                      Price
+                    </span>
+                    <span className="font-semibold text-slate-900">
+                      ${Number(product.price).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-tight">
+                      Added
+                    </span>
+                    <span className="text-sm text-slate-600">
+                      {new Date(product.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 border-l pl-6">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-9 w-9 rounded-full"
+                  >
+                    <Edit2 size={15} />
                   </Button>
-                  <Button variant="ghost" size="sm" className="text-red-600">
-                    Delete
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-9 w-9 rounded-full text-red-500 hover:bg-red-50"
+                  >
+                    <Trash2 size={15} />
                   </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </div>
+              </div>
+
+              {/* --- MOBILE VIEW --- */}
+              <div className="md:hidden flex gap-4 p-3 bg-white border rounded-xl shadow-sm items-center">
+                <div className="relative h-20 w-20 rounded-lg overflow-hidden border bg-slate-50 shrink-0">
+                  {isValidProtocol ? (
+                    <Image
+                      src={mainImage}
+                      alt={product.title}
+                      fill
+                      sizes="80px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full w-full text-slate-400">
+                      <Package size={24} />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 flex flex-col min-w-0 justify-between py-0.5">
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-bold text-slate-900 truncate pr-2 text-sm">
+                      {product.title}
+                    </h3>
+                    <StatusBadge isPublished={product.isPublished} />
+                  </div>
+                  <p className="text-[10px] text-slate-500 font-medium uppercase mt-1">
+                    {product.category?.name || "No Cat"} •{" "}
+                    {product.sku || "N/A"}
+                  </p>
+                  <div className="flex justify-between items-end mt-2">
+                    <p className="font-bold text-slate-900 text-base">
+                      ${Number(product.price).toFixed(2)}
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="h-8 w-8 rounded-full bg-slate-100"
+                      >
+                        <Edit2 size={14} />
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="h-8 w-8 rounded-full bg-red-50 text-red-500"
+                      >
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {products.length === 0 && (
+          <div className="text-center py-20 border-2 border-dashed rounded-xl text-muted-foreground">
+            No products found. Start by adding one!
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+function StatusBadge({ isPublished }: { isPublished: boolean }) {
+  return isPublished ? (
+    <span className="px-2 py-0.5 text-[9px] md:text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-700 rounded-md">
+      Live
+    </span>
+  ) : (
+    <span className="px-2 py-0.5 text-[9px] md:text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500 rounded-md">
+      Draft
+    </span>
   );
 }

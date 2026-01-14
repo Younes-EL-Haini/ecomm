@@ -10,16 +10,71 @@ export async function createProduct(formData: FormData) {
   const description = formData.get("description") as string;
   const price = parseFloat(formData.get("price") as string);
   const categoryId = formData.get("categoryId") as string; // From a <select> dropdown
+  const isPublished = formData.get("isPublished") === "on";
+  const featured = formData.get("featured") === "on";
   
   // Get all image URLs from the form
   // We expect fields named "images" in the form
   const imageUrls = formData.getAll("images") as string[];
 
-  const slug = title.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
+  const rawSlug = formData.get("slug") as string;
+
+  const stock = parseInt(formData.get("variantStock") as string) || 0;
+  const priceDelta = parseFloat(formData.get("variantPriceDelta") as string) || 0;
+  const size = formData.get("variantSize") as string;
+  const color = formData.get("variantColor") as string;
+
+  // 1. Create a Prefix (First 3 letters of Title, uppercase)
+  // e.g., "Midnight Shoes" -> "MID"
+  const prefix = title.substring(0, 3).toUpperCase();
+
+  // 2. Clean up Color (First 3 letters) 
+  // e.g., "Red" -> "RED"
+  const colorCode = color ? color.substring(0, 3).toUpperCase() : "000";
+
+  // 3. Assemble the Smart SKU
+  // Result: MID-RED-L
+  const smartSku = `${prefix}-${colorCode}-${size || 'UNI'}`;
+
+  // 1. Generate clean base slug (removes special characters/spaces)
+  let slug = (rawSlug || title)
+    .toLowerCase()
+    .replace(/\s+/g, '-')          // Replace spaces with -
+    .replace(/[^\w-]+/g, '')       // Remove all non-word chars
+    .replace(/--+/g, '-')          // Replace multiple - with single -
+    .trim();
+    
+
+  // 2. Check if slug exists in DB
+  const existing = await prisma.product.findUnique({
+    where: { slug },
+  });
+
+  // 3. If exists, append a random 4-digit number to make it unique
+  if (existing) {
+    slug = `${slug}-${Math.floor(1000 + Math.random() * 9000)}`;
+  }
+
+  let type = "BASE";
+  let value = "Default";
+
+  if (size && color) {
+    type = "COMBINED";
+    value = `${size} / ${color}`;
+  } else if (size) {
+    type = "SIZE";
+    value = size;
+  } else if (color) {
+    type = "COLOR";
+    value = color;
+  }
 
   await prisma.product.create({
     data: {
       title,
+      sku: smartSku,
+      isPublished, // Now this will be true or false
+      featured,    // Now this will be true or false
       description,
       price,
       slug,             // Added this
@@ -34,10 +89,31 @@ export async function createProduct(formData: FormData) {
             position: index,
           })),
       },
+      variants: {
+        create: {
+          name: value, // e.g. "L / Red"
+          type: type,
+          value: value,
+          size: size || null,
+          color: color || null,
+          stock: stock,
+          priceDelta: priceDelta,
+        }
+      }
     },
   });
 
   revalidatePath("/admin/products");
   revalidatePath("/");
   redirect("/admin/products");
+}
+
+export async function togglePublishStatus(id: string, currentStatus: boolean) {
+  await prisma.product.update({
+    where: { id },
+    data: { isPublished: !currentStatus },
+  });
+  
+  revalidatePath("/admin/products");
+  revalidatePath("/"); // Update user site
 }
