@@ -2,9 +2,9 @@
 
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { deleteProduct } from "@/lib/actions/product";
+import { archiveProduct, restoreProduct } from "@/lib/actions/product";
 import { useState } from "react";
-import { toast } from "sonner"; // Import toast from sonner
+import { toast } from "sonner";
 
 export function DeleteProductButton({
   id,
@@ -13,45 +13,43 @@ export function DeleteProductButton({
   id: string;
   productName: string;
 }) {
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleDelete = async () => {
-    // 1. Toast with a "Loading" state or custom confirmation
-    toast.warning(`Are you sure you want to delete ${productName}?`, {
-      action: {
-        label: "Delete",
-        onClick: async () => {
-          setIsDeleting(true);
-          const promise = deleteProduct(id);
+    setIsProcessing(true);
 
-          // 2. Use toast.promise for a high-end feel
-          toast.promise(promise, {
-            loading: `Deleting ${productName}...`,
-            success: (result) => {
-              if (!result.success) throw new Error(result.error);
-              return `${productName} has been removed.`;
-            },
-            error: (err) => err.message || "Failed to delete.",
-            finally: () => setIsDeleting(false),
-          });
+    const result = await archiveProduct(id);
+
+    if (result.success) {
+      toast.success(`${productName} moved to trash`, {
+        description: "You can restore it within the next few seconds.",
+        duration: 5000, // Show for 5 seconds
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            const restoreResult = await restoreProduct(id);
+            if (restoreResult.success) {
+              toast.success(`${productName} restored!`);
+            }
+          },
         },
-      },
-      cancel: {
-        label: "Cancel",
-        onClick: () => console.log("Delete cancelled"),
-      },
-    });
+      });
+    } else {
+      toast.error("Could not delete product");
+    }
+
+    setIsProcessing(false);
   };
 
   return (
     <Button
       variant="outline"
       size="icon"
-      disabled={isDeleting}
+      disabled={isProcessing}
       onClick={handleDelete}
-      className="h-8 w-8 md:h-9 md:w-9 rounded-full text-red-500 hover:bg-red-50 disabled:opacity-50"
+      className="h-8 w-8 md:h-9 md:w-9 rounded-full text-red-500 hover:bg-red-50"
     >
-      <Trash2 size={15} className={isDeleting ? "animate-spin" : ""} />
+      <Trash2 size={15} className={isProcessing ? "animate-spin" : ""} />
     </Button>
   );
 }

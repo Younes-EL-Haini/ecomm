@@ -93,6 +93,7 @@ model Category {
 model Product {
   id          String   @id @default(cuid())
   title       String
+  isArchived  Boolean  @default(false)
   slug        String   @unique
   description String
   price       Decimal  @db.Decimal(10, 2)

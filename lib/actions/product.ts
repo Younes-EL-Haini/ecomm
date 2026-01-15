@@ -148,3 +148,29 @@ export async function deleteProduct(id: string) {
     };
   }
 }
+
+export async function archiveProduct(id: string) {
+  try {
+    await prisma.product.update({
+      where: { id },
+      data: { isArchived: true },
+    });
+    revalidatePath("/admin/products");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to remove product" };
+  }
+}
+
+export async function restoreProduct(id: string) {
+  try {
+    await prisma.product.update({
+      where: { id },
+      data: { isArchived: false },
+    });
+    revalidatePath("/admin/products");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to restore product" };
+  }
+}

@@ -7,6 +7,9 @@ import { DeleteProductButton } from "../DeleteProductButton";
 
 export default async function AdminProductsPage() {
   const products = await prisma.product.findMany({
+    where: {
+      isArchived: false, // ONLY SHOW ACTIVE PRODUCTS
+    },
     orderBy: { createdAt: "desc" },
     include: {
       category: true,
