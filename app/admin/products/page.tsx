@@ -2,7 +2,8 @@ import prisma from "@/lib/prisma";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Edit2, Trash2, Package } from "lucide-react";
+import { Edit2, Package } from "lucide-react";
+import { DeleteProductButton } from "../DeleteProductButton";
 
 export default async function AdminProductsPage() {
   const products = await prisma.product.findMany({
@@ -104,13 +105,10 @@ export default async function AdminProductsPage() {
                   >
                     <Edit2 size={15} />
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-9 w-9 rounded-full text-red-500 hover:bg-red-50"
-                  >
-                    <Trash2 size={15} />
-                  </Button>
+                  <DeleteProductButton
+                    id={product.id}
+                    productName={product.title}
+                  />
                 </div>
               </div>
 
@@ -155,13 +153,10 @@ export default async function AdminProductsPage() {
                       >
                         <Edit2 size={14} />
                       </Button>
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        className="h-8 w-8 rounded-full bg-red-50 text-red-500"
-                      >
-                        <Trash2 size={14} />
-                      </Button>
+                      <DeleteProductButton
+                        id={product.id}
+                        productName={product.title}
+                      />
                     </div>
                   </div>
                 </div>

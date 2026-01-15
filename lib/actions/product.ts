@@ -117,3 +117,34 @@ export async function togglePublishStatus(id: string, currentStatus: boolean) {
   revalidatePath("/admin/products");
   revalidatePath("/"); // Update user site
 }
+
+export async function deleteProduct(id: string) {
+  try {
+    await prisma.$transaction(async (tx) => {
+      // 1. Delete dependent records using 'tx' (the transaction client)
+      await tx.productImage.deleteMany({ where: { productId: id } });
+      await tx.productVariant.deleteMany({ where: { productId: id } });
+      await tx.review.deleteMany({ where: { productId: id } });
+      await tx.cartItem.deleteMany({ where: { productId: id } });
+
+      // 2. Handle Inventory (It might not exist, so we wrap it)
+      try {
+        await tx.inventory.delete({ where: { productId: id } });
+      } catch (e) {
+        // Ignore error if inventory doesn't exist
+      }
+
+      // 3. Finally delete the product
+      await tx.product.delete({ where: { id } });
+    });
+
+    revalidatePath("/admin/products");
+    return { success: true };
+  } catch (error) {
+    console.error("Delete failed:", error);
+    return { 
+      success: false, 
+      error: "Product is linked to active Orders and cannot be deleted." 
+    };
+  }
+}
