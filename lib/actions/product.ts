@@ -105,7 +105,8 @@ export async function createProduct(formData: FormData) {
 
   revalidatePath("/admin/products");
   revalidatePath("/");
-  redirect("/admin/products");
+
+  return { success: true };
 }
 
 export async function togglePublishStatus(id: string, currentStatus: boolean) {
@@ -197,6 +198,9 @@ export async function updateProduct(id: string, formData: FormData) {
         featured,
       },
     });
+
+    revalidatePath("/admin/products");
+    revalidatePath("/");
 
     return { success: true };
   } catch (error) {
