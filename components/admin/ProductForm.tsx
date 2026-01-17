@@ -17,9 +17,11 @@ import {
   Package,
   Globe,
   Image as ImageIcon,
-  CheckCircle2,
-  AlertCircle,
+  X,
+  Plus,
 } from "lucide-react";
+import { CldUploadWidget } from "next-cloudinary";
+import { useState } from "react";
 
 interface ProductFormProps {
   categories: Category[];
@@ -34,6 +36,18 @@ export default function ProductForm({
 }: ProductFormProps) {
   const router = useRouter();
   const isEditing = !!initialData;
+
+  const [images, setImages] = useState<string[]>(
+    initialData?.images.map((img) => img.url) || [],
+  );
+
+  const onUpload = (result: any) => {
+    setImages((prev) => [...prev, result.info.secure_url]);
+  };
+
+  const removeImage = (url: string) => {
+    setImages((prev) => prev.filter((image) => image !== url));
+  };
 
   async function handleSubmit(formData: FormData) {
     // Use a type cast to tell TS both functions return a success object
@@ -286,25 +300,52 @@ export default function ProductForm({
 
           {/* MEDIA CARD */}
           <section className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
-            <div className="flex items-center gap-2 border-b border-slate-50 pb-3">
+            <div className="flex items-center gap-2 border-b pb-3">
               <ImageIcon size={18} className="text-slate-400" />
-              <h2 className="font-semibold text-slate-800">Media</h2>
+              <h2 className="font-semibold text-slate-800">Product Images</h2>
             </div>
-            <Input
-              name="images"
-              defaultValue={initialData?.images[0]?.url}
-              placeholder="Primary image URL"
-              className="text-xs font-mono bg-slate-50"
-            />
-            {initialData?.images[0]?.url && (
-              <div className="mt-2 aspect-square rounded-lg border border-slate-100 overflow-hidden bg-slate-50">
-                <img
-                  src={initialData.images[0].url}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {images.map((url) => (
+                <div
+                  key={url}
+                  className="relative aspect-square rounded-lg overflow-hidden border"
+                >
+                  <img
+                    src={url}
+                    alt="Product"
+                    className="object-cover w-full h-full"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(url)}
+                    className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition"
+                  >
+                    <X size={14} />
+                  </button>
+                  {/* HIDDEN INPUTS: These send the data to your Server Action */}
+                  <input type="hidden" name="images" value={url} />
+                </div>
+              ))}
+
+              <CldUploadWidget
+                uploadPreset="my_shop_preset"
+                onSuccess={onUpload}
+              >
+                {({ open }) => (
+                  <button
+                    type="button"
+                    onClick={() => open()}
+                    className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-lg hover:bg-slate-50 transition"
+                  >
+                    <Plus className="text-slate-400 mb-2" />
+                    <span className="text-xs font-medium text-slate-500">
+                      Upload
+                    </span>
+                  </button>
+                )}
+              </CldUploadWidget>
+            </div>
           </section>
         </div>
       </div>
