@@ -291,7 +291,7 @@ export default function ProductForm({
               <h2 className="font-semibold text-slate-800">Media</h2>
             </div>
             <Input
-              name="image1"
+              name="images"
               defaultValue={initialData?.images[0]?.url}
               placeholder="Primary image URL"
               className="text-xs font-mono bg-slate-50"
