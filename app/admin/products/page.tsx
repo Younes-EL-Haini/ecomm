@@ -17,6 +17,7 @@ export default async function AdminProductsPage() {
         orderBy: { position: "asc" },
         take: 1,
       },
+      variants: { select: { id: true, stock: true } },
     },
   });
 
@@ -104,9 +105,12 @@ export default async function AdminProductsPage() {
                   <Button
                     variant="outline"
                     size="icon"
+                    asChild
                     className="h-9 w-9 rounded-full"
                   >
-                    <Edit2 size={15} />
+                    <Link href={`/admin/products/${product.id}`}>
+                      <Edit2 size={15} />
+                    </Link>
                   </Button>
                   <DeleteProductButton
                     id={product.id}

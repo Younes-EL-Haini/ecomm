@@ -174,3 +174,33 @@ export async function restoreProduct(id: string) {
     return { success: false, error: "Failed to restore product" };
   }
 }
+
+export async function updateProduct(id: string, formData: FormData) {
+  try {
+    const title = formData.get("title") as string;
+    const price = formData.get("price") as string;
+    const categoryId = formData.get("categoryId") as string;
+    const description = formData.get("description") as string;
+    const slug = formData.get("slug") as string;
+    const isPublished = formData.get("isPublished") === "on";
+    const featured = formData.get("featured") === "on";
+
+    await prisma.product.update({
+      where: { id },
+      data: {
+        title,
+        price: parseFloat(price),
+        categoryId,
+        description,
+        slug,
+        isPublished,
+        featured,
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: "Failed to update product" };
+  }
+}
