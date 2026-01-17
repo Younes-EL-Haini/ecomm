@@ -48,6 +48,32 @@ export default function ProductForm({
   return (
     <form action={handleSubmit} className="space-y-8">
       {/* Visibility */}
+      {/* 1. VISIBILITY (Moved from your NewProductPage) */}
+      <section className="p-6 bg-slate-50 border rounded-xl space-y-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+          Visibility & Status
+        </h2>
+        <div className="flex gap-8">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              name="isPublished"
+              defaultChecked={initialData?.isPublished}
+              className="w-5 h-5 rounded border-gray-300 accent-primary"
+            />
+            <span className="font-medium">Published</span>
+          </label>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              name="featured"
+              defaultChecked={initialData?.featured}
+              className="w-5 h-5 rounded border-gray-300 accent-primary"
+            />
+            <span className="font-medium">Featured</span>
+          </label>
+        </div>
+      </section>
       {/* --- SECTION: VARIANTS MANAGER --- */}
       <section className="p-6 border rounded-xl space-y-4 bg-white">
         <div className="flex justify-between items-center border-b pb-4">
