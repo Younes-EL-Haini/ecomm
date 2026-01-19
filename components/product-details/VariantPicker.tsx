@@ -44,7 +44,7 @@ const VariantPicker = ({
               isSelected
                 ? "border-primary bg-primary/10 text-primary ring-1 ring-primary scale-105"
                 : "border-border hover:border-primary/50",
-              isDisabled && "opacity-40 cursor-not-allowed"
+              isDisabled && "opacity-40 cursor-not-allowed",
             )}
             style={isColor ? { backgroundColor: option.toLowerCase() } : {}}
             title={option}

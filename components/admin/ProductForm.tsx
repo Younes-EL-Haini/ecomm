@@ -37,16 +37,32 @@ export default function ProductForm({
   const router = useRouter();
   const isEditing = !!initialData;
 
-  const [images, setImages] = useState<string[]>(
-    initialData?.images.map((img) => img.url) || [],
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+
+  const [images, setImages] = useState<{ url: string; color?: string }[]>(
+    initialData?.images.map((img) => ({
+      url: img.url,
+      color: img.color ?? undefined,
+    })) || [],
   );
 
   const onUpload = (result: any) => {
-    setImages((prev) => [...prev, result.info.secure_url]);
+    setImages((prev) => [
+      ...prev,
+      {
+        url: result.info.secure_url,
+        color: selectedColor ?? undefined,
+      },
+    ]);
   };
 
+  const visibleImages = selectedColor
+    ? images.filter((img) => img.color === selectedColor)
+    : images;
+
   const removeImage = (url: string) => {
-    setImages((prev) => prev.filter((image) => image !== url));
+    setImages((prev) => prev.filter((image: any) => image !== url));
   };
 
   async function handleSubmit(formData: FormData) {
@@ -157,7 +173,16 @@ export default function ProductForm({
                   {initialData?.variants?.map((variant) => (
                     <tr
                       key={variant.id}
-                      className="hover:bg-slate-50/50 transition-colors"
+                      onClick={() => {
+                        setSelectedColor(variant.color ?? null);
+                        setSelectedSize(variant.size ?? null);
+                      }}
+                      className={`cursor-pointer transition-colors ${
+                        selectedColor === variant.color &&
+                        selectedSize === variant.size
+                          ? "bg-slate-100"
+                          : "hover:bg-slate-50"
+                      }`}
                     >
                       <td className="px-6 py-4 font-medium text-slate-900">
                         {variant.name}
@@ -306,25 +331,26 @@ export default function ProductForm({
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {images.map((url) => (
+              {visibleImages.map((img) => (
                 <div
-                  key={url}
-                  className="relative aspect-square rounded-lg overflow-hidden border"
+                  key={img.url}
+                  className="group relative aspect-square rounded-xl overflow-hidden border bg-slate-50"
                 >
                   <img
-                    src={url}
+                    src={img.url}
                     alt="Product"
-                    className="object-cover w-full h-full"
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
+
                   <button
                     type="button"
-                    onClick={() => removeImage(url)}
-                    className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition"
+                    onClick={() => removeImage(img.url)}
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 bg-black/70 text-white p-1.5 rounded-full transition"
                   >
                     <X size={14} />
                   </button>
-                  {/* HIDDEN INPUTS: These send the data to your Server Action */}
-                  <input type="hidden" name="images" value={url} />
+
+                  <input type="hidden" name="images" value={img.url} />
                 </div>
               ))}
 
