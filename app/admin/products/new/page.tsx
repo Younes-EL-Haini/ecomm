@@ -8,14 +8,10 @@ export default async function NewProductPage() {
   });
 
   return (
-    <div className="p-8 max-w-3xl mx-auto pb-20">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Add New Product</h1>
-        <div className="text-sm text-muted-foreground">Draft mode enabled</div>
+    <div className="min-h-screen bg-slate-50">
+      <div className="p-8 max-w-7xl mx-auto">
+        <ProductForm categories={categories} />
       </div>
-
-      {/* 2. Reuse the shared Client Component */}
-      <ProductForm categories={categories} />
     </div>
   );
 }

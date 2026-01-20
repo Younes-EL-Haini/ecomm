@@ -42,12 +42,13 @@ export default async function EditProductPage({
   };
 
   return (
-    <div className="p-8 max-w-3xl mx-auto pb-20">
-      <h1 className="text-3xl font-bold tracking-tight mb-8">Edit Product</h1>
-      <ProductForm
-        categories={categories}
-        initialData={serializedProduct as any}
-      />
+    <div className="min-h-screen bg-slate-50">
+      <div className="p-8 max-w-7xl mx-auto">
+        <ProductForm
+          categories={categories}
+          initialData={serializedProduct as any}
+        />
+      </div>
     </div>
   );
 }
