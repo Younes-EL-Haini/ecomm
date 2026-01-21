@@ -104,7 +104,7 @@ export default function ProductForm({
 
       {/* --- MAIN GRID --- */}
       {/* items-start is crucial to prevent the sidebar from stretching to full height */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-8 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_350px] gap-8 items-start">
         {/* --- LEFT COLUMN: MAIN CONTENT --- */}
         <div className="space-y-8">
           {/* GENERAL INFO */}
