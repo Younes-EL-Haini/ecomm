@@ -17,7 +17,8 @@ export default async function OrderDetailPage({
     include: {
       items: {
         include: {
-          product: true, // If you need product SKUs or specific details
+          product: { include: { images: true } }, // If you need product SKUs or specific details
+          variant: true,
         },
       },
       user: true, // To get customer details like email/name

@@ -9,15 +9,19 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import prisma from "@/lib/prisma";
 
-export default function AdminOrderTemplate({ order }: { order: any }) {
+export default async function AdminOrderTemplate({ order }: { order: any }) {
+  const user = order.user;
   return (
     <div className="space-y-8">
       {/* --- HEADER --- */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-sm text-slate-500 mb-2">
-            <Calendar size={14} /> Ordered on Jan 21, 2026
+            <Calendar size={14} /> Ordered on{" "}
+            {format(order.createdAt, "MMM dd, yyyy")}
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">
             Order #{order.id.slice(-6).toUpperCase()}
@@ -46,21 +50,25 @@ export default function AdminOrderTemplate({ order }: { order: any }) {
                 <div key={item.id} className="p-6 flex items-center gap-4">
                   <div className="h-16 w-16 bg-slate-100 rounded-lg overflow-hidden border">
                     <img
-                      src={item.image}
+                      src={item.product.images?.[0]?.url}
                       alt={item.name}
                       className="object-cover h-full w-full"
                     />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-bold text-slate-900 truncate">
-                      {item.name}
+                      {item.product.title}
                     </h4>
                     <p className="text-sm text-slate-500">
-                      SKU: {item.sku} | Color: {item.color}
+                      SKU: {item.variant.sku} | Color: {item.variant?.color}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold">${item.price}</p>
+                    <p className="font-bold">
+                      $
+                      {Number(item.totalPrice) +
+                        Number(item.variant?.priceDelta || 0)}
+                    </p>
                     <p className="text-xs text-slate-400 font-medium">
                       Qty: {item.quantity}
                     </p>
@@ -71,7 +79,7 @@ export default function AdminOrderTemplate({ order }: { order: any }) {
             <div className="bg-slate-50 p-6 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">Subtotal</span>
-                <span>$198.00</span>
+                <span>{Number(order.totalPrice)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">Shipping</span>
@@ -79,7 +87,7 @@ export default function AdminOrderTemplate({ order }: { order: any }) {
               </div>
               <div className="flex justify-between text-lg font-bold border-t pt-2 mt-2">
                 <span>Total</span>
-                <span>$210.00</span>
+                <span>{Number(order.totalPrice)}</span>
               </div>
             </div>
           </section>
@@ -133,12 +141,12 @@ export default function AdminOrderTemplate({ order }: { order: any }) {
                   JD
                 </div>
                 <div>
-                  <p className="font-bold">John Doe</p>
+                  <p className="font-bold">{user?.name}</p>
                   <p className="text-xs text-slate-500">12 Previous Orders</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-sm text-slate-600">
-                <Mail size={14} /> john@example.com
+                <Mail size={14} /> {user?.email}
               </div>
               <div className="flex items-center gap-2 text-sm text-slate-600">
                 <Phone size={14} /> +1 234 567 890
@@ -153,13 +161,13 @@ export default function AdminOrderTemplate({ order }: { order: any }) {
                 <CreditCard size={18} className="text-emerald-400" /> Payment
               </div>
               <Badge className="bg-emerald-500/20 text-emerald-400 border-none">
-                Paid
+                {order.status}
               </Badge>
             </div>
             <div className="text-xs text-slate-400 space-y-1">
               <p>
                 Transaction ID:{" "}
-                <span className="text-slate-200">ch_3N8x...94k</span>
+                <span className="text-slate-200">{order.stripeSessionId}</span>
               </p>
               <p>
                 Method:{" "}
