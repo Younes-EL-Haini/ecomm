@@ -4,6 +4,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { OrderStatus } from "../generated/prisma";
 
 export async function createProduct(formData: FormData) {
   const title = formData.get("title") as string;
@@ -206,5 +207,20 @@ export async function updateProduct(id: string, formData: FormData) {
   } catch (error) {
     console.error(error);
     return { success: false, error: "Failed to update product" };
+  }
+}
+
+export async function updateOrderStatus(orderId: string, status: OrderStatus) {
+  try {
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { status },
+    });
+
+    // This refreshes the page data immediately
+    revalidatePath(`/admin/orders/${orderId}`);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to update status" };
   }
 }

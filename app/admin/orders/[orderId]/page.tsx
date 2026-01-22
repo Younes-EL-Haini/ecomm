@@ -22,6 +22,7 @@ export default async function OrderDetailPage({
         },
       },
       user: true, // To get customer details like email/name
+      shippingAddress: true,
     },
   });
 

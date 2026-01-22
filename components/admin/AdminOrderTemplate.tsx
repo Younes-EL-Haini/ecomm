@@ -6,14 +6,35 @@ import {
   Mail,
   Phone,
   Calendar,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import prisma from "@/lib/prisma";
+import OrderStatusClient from "./OrderStatusClient";
 
-export default async function AdminOrderTemplate({ order }: { order: any }) {
+export default function AdminOrderTemplate({ order }: { order: any }) {
   const user = order.user;
+  console.log(order);
+
+  const getStatusStyles = (status: string) => {
+    switch (status) {
+      case "DELIVERED":
+        return "bg-emerald-500/20 text-emerald-500";
+      case "PAID":
+        return "bg-blue-500/20 text-blue-500";
+      case "SHIPPED":
+        return "bg-indigo-500/20 text-indigo-500";
+      case "PROCESSING":
+        return "bg-amber-500/20 text-amber-500";
+      case "CANCELLED":
+      case "REFUNDED":
+        return "bg-rose-500/20 text-rose-500";
+      default:
+        return "bg-slate-500/20 text-slate-500";
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* --- HEADER --- */}
@@ -116,18 +137,91 @@ export default async function AdminOrderTemplate({ order }: { order: any }) {
         <aside className="lg:sticky lg:top-8 space-y-6">
           {/* FULFILLMENT STATUS */}
           <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-            <div className="flex items-center gap-2 font-bold text-slate-800">
-              <Truck size={18} /> Order Status
+            <div className="flex items-center justify-between border-b pb-4">
+              <div className="flex items-center gap-2 font-bold text-slate-800">
+                <Truck size={18} /> Order Status
+              </div>
+              <Badge
+                className={`${getStatusStyles(order.status)} border-none capitalize`}
+              >
+                {order.status.toLowerCase()}
+              </Badge>
             </div>
-            <select className="w-full h-10 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm focus:ring-1 focus:ring-black">
-              <option>Pending Fulfillment</option>
-              <option>Processing</option>
-              <option>Shipped</option>
-              <option>Delivered</option>
-            </select>
-            <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
-              Update Status
-            </Button>
+            {/* Replace static HTML with our new Client Component */}
+            <OrderStatusClient
+              orderId={order.id}
+              currentStatus={order.status}
+            />
+          </section>
+
+          {/* SHIPPING ADDRESS CARD */}
+          <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+            <div className="flex items-center justify-between border-b pb-2">
+              <div className="flex items-center gap-2 font-bold text-slate-800">
+                <Truck size={18} className="text-slate-500" />
+                Shipping Address
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-indigo-600 h-8 text-xs"
+              >
+                Edit
+              </Button>
+            </div>
+
+            {order.shippingAddress ? (
+              <div className="space-y-4">
+                {/* SHIP TO LABEL - Subtle and professional */}
+                <div className="text-[10px] font-bold uppercase tracking-widest text-indigo-600/80">
+                  Ship To
+                </div>
+
+                <div className="space-y-1">
+                  {/* Name - Larger and darker */}
+                  <h4 className="text-lg font-extrabold text-slate-900 leading-none mb-2">
+                    {order.shippingAddress.fullName || user?.name}
+                  </h4>
+
+                  {/* Address Lines - Clean with better line height */}
+                  <div className="text-sm text-slate-600 font-medium">
+                    <p>{order.shippingAddress.line1}</p>
+                    {order.shippingAddress.line2 && (
+                      <p className="text-slate-400 text-xs">
+                        {order.shippingAddress.line2}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* City/State/Zip - Grouped clearly */}
+                  <p className="text-sm text-slate-600 font-medium">
+                    {order.shippingAddress.city}
+                    {order.shippingAddress.state &&
+                      `, ${order.shippingAddress.state}`}
+                    <span className="ml-2 text-slate-400 font-normal">
+                      {order.shippingAddress.postalCode}
+                    </span>
+                  </p>
+                </div>
+
+                {/* Country Section - Visual divider with icon */}
+                <div className="pt-3 border-t border-slate-100">
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <Globe size={14} className="text-indigo-500" />
+                    {order.shippingAddress.country}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-4 text-center">
+                <p className="text-sm text-slate-400 italic">
+                  No shipping address linked.
+                </p>
+                <p className="text-[10px] text-slate-300">
+                  ID: {order.shippingAddressId || "Missing"}
+                </p>
+              </div>
+            )}
           </section>
 
           {/* CUSTOMER INFO */}
@@ -137,8 +231,14 @@ export default async function AdminOrderTemplate({ order }: { order: any }) {
             </div>
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-sm">
-                <div className="h-8 w-8 bg-slate-100 rounded-full flex items-center justify-center font-bold">
-                  JD
+                <div className="h-10 w-10 bg-indigo-50 text-indigo-700 rounded-full flex items-center justify-center font-bold border border-indigo-100 uppercase">
+                  {user?.name
+                    ? user.name
+                        .split(" ")
+                        .map((n: string) => n[0])
+                        .join("")
+                        .slice(0, 2) // Ensures only 2 letters (First + Last)
+                    : "???"}
                 </div>
                 <div>
                   <p className="font-bold">{user?.name}</p>
