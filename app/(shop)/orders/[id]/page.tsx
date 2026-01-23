@@ -1,4 +1,6 @@
+import { Badge } from "@/components/ui/badge";
 import prisma from "@/lib/prisma";
+import { getStatusClasses } from "@/lib/utils/order-styles";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -49,9 +51,9 @@ const OrderPage = async ({ params }: Props) => {
           </p>
           <p>
             Status:{" "}
-            <span className="text-green-600 font-semibold uppercase">
+            <Badge className={getStatusClasses(order.status, "sm")}>
               {order.status}
-            </span>
+            </Badge>
           </p>
         </div>
       </div>

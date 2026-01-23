@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingBag, ChevronRight, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { getStatusClasses } from "@/lib/utils/order-styles";
 
 export default async function AdminOrdersPage() {
   // Fetch all orders with customer info and item counts
@@ -85,15 +86,7 @@ export default async function AdminOrdersPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <Badge
-                      className={
-                        order.status === "DELIVERED"
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                          : order.status === "SHIPPED"
-                            ? "bg-blue-50 text-blue-700 border-blue-100"
-                            : "bg-amber-50 text-amber-700 border-amber-100"
-                      }
-                    >
+                    <Badge className={getStatusClasses(order.status, "sm")}>
                       {order.status}
                     </Badge>
                   </td>

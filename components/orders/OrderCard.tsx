@@ -1,13 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-
-const statusColors: Record<string, string> = {
-  PAID: "bg-green-100 text-green-700",
-  PROCESSING: "bg-blue-100 text-blue-700",
-  SHIPPED: "bg-purple-100 text-purple-700",
-  DELIVERED: "bg-gray-100 text-gray-700",
-  CANCELLED: "bg-red-100 text-red-700",
-};
+import { getStatusClasses } from "@/lib/utils/order-styles";
+import { Badge } from "../ui/badge";
 
 const OrderCard = ({ order }: any) => {
   return (
@@ -50,13 +44,9 @@ const OrderCard = ({ order }: any) => {
 
           {/* Larger, cleaner Badge */}
           <div className="flex items-center">
-            <span
-              className={`px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-widest border ${
-                statusColors[order.status]
-              } border-current/10`}
-            >
+            <Badge className={getStatusClasses(order.status, "lg")}>
               {order.status}
-            </span>
+            </Badge>
           </div>
         </div>
       </div>

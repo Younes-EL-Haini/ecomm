@@ -12,28 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import OrderStatusClient from "./OrderStatusClient";
+import { getStatusClasses } from "@/lib/utils/order-styles";
 
 export default function AdminOrderTemplate({ order }: { order: any }) {
   const user = order.user;
-  console.log(order);
-
-  const getStatusStyles = (status: string) => {
-    switch (status) {
-      case "DELIVERED":
-        return "bg-emerald-500/20 text-emerald-500";
-      case "PAID":
-        return "bg-blue-500/20 text-blue-500";
-      case "SHIPPED":
-        return "bg-indigo-500/20 text-indigo-500";
-      case "PROCESSING":
-        return "bg-amber-500/20 text-amber-500";
-      case "CANCELLED":
-      case "REFUNDED":
-        return "bg-rose-500/20 text-rose-500";
-      default:
-        return "bg-slate-500/20 text-slate-500";
-    }
-  };
 
   return (
     <div className="space-y-8">
@@ -141,10 +123,8 @@ export default function AdminOrderTemplate({ order }: { order: any }) {
               <div className="flex items-center gap-2 font-bold text-slate-800">
                 <Truck size={18} /> Order Status
               </div>
-              <Badge
-                className={`${getStatusStyles(order.status)} border-none capitalize`}
-              >
-                {order.status.toLowerCase()}
+              <Badge className={getStatusClasses(order.status, "sm")}>
+                {order.status}
               </Badge>
             </div>
             {/* Replace static HTML with our new Client Component */}
