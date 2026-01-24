@@ -1,4 +1,3 @@
-import prisma from "@/lib/prisma";
 import { format } from "date-fns"; // Recommended for date formatting
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -6,20 +5,11 @@ import { ShoppingBag, ChevronRight, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { getStatusClasses } from "@/lib/utils/order-styles";
 import { formatMoney, toNumber } from "@/lib/utils/pricing";
+import { getAdminOrders } from "@/lib/actions/order";
 
 export default async function AdminOrdersPage() {
   // Fetch all orders with customer info and item counts
-  const orders = await prisma.order.findMany({
-    include: {
-      user: true,
-      _count: {
-        select: { items: true },
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  const orders = await getAdminOrders();
 
   return (
     <div className="space-y-6">

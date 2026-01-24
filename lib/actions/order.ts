@@ -50,3 +50,67 @@ export async function getOrderById(id: string): Promise<OrderWithRelations | nul
     },
   });
 }
+
+/**
+ * Type for the Admin Order List
+ */
+export type AdminOrderSummary = Prisma.OrderGetPayload<{
+  include: {
+    user: true;
+    _count: {
+      select: { items: true };
+    };
+  };
+}>;
+
+/**
+ * Fetch all orders for the admin dashboard
+ */
+export async function getAdminOrders(): Promise<AdminOrderSummary[]> {
+  return await prisma.order.findMany({
+    include: {
+      user: true,
+      _count: {
+        select: { items: true },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
+
+export async function getAdminOrderDetail(orderId: string) {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      items: {
+        include: {
+          product: { include: { images: true } },
+          variant: true,
+        },
+      },
+      user: true,
+      shippingAddress: true,
+    },
+  });
+
+  if (!order) return null;
+
+  return {
+    ...order,
+    totalPrice: Number(order.totalPrice),
+    items: order.items.map((item) => ({
+      ...item,
+      totalPrice: Number(item.totalPrice),
+      // We explicitly transform the variant here
+      variant: item.variant ? {
+        ...item.variant,
+        priceDelta: item.variant.priceDelta ? Number(item.variant.priceDelta) : 0,
+      } : null,
+    })),
+  };
+}
+
+// This helper type will now correctly see 'priceDelta' as a 'number'
+export type AdminOrderDetail = Awaited<ReturnType<typeof getAdminOrderDetail>>;

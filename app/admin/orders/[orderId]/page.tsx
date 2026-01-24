@@ -1,6 +1,6 @@
 // app/admin/orders/[orderId]/page.tsx
 import AdminOrderTemplate from "@/components/admin/AdminOrderTemplate";
-import prisma from "@/lib/prisma"; // Adjust path to your prisma client
+import { getAdminOrderDetail } from "@/lib/actions/order";
 import { notFound } from "next/navigation";
 
 export default async function OrderDetailPage({
@@ -10,21 +10,7 @@ export default async function OrderDetailPage({
 }) {
   const param = await params;
   // 1. Fetch data directly using Prisma
-  const order = await prisma.order.findUnique({
-    where: {
-      id: param.orderId,
-    },
-    include: {
-      items: {
-        include: {
-          product: { include: { images: true } }, // If you need product SKUs or specific details
-          variant: true,
-        },
-      },
-      user: true, // To get customer details like email/name
-      shippingAddress: true,
-    },
-  });
+  const order = await getAdminOrderDetail(param.orderId);
 
   // 2. Handle 404 if order doesn't exist
   if (!order) {

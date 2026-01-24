@@ -18,8 +18,13 @@ import {
   formatMoney,
   toNumber,
 } from "@/lib/utils/pricing";
+import { AdminOrderDetail } from "@/lib/actions/order";
 
-export default function AdminOrderTemplate({ order }: { order: any }) {
+export default function AdminOrderTemplate({
+  order,
+}: {
+  order: NonNullable<AdminOrderDetail>;
+}) {
   const user = order.user;
 
   return (
