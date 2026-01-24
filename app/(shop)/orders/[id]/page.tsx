@@ -1,25 +1,16 @@
 import { Badge } from "@/components/ui/badge";
-import prisma from "@/lib/prisma";
 import { getStatusClasses } from "@/lib/utils/order-styles";
 import Image from "next/image";
 import Link from "next/link";
 import { formatMoney, getOrderItemTotal, toNumber } from "@/lib/utils/pricing";
+import { getOrderById } from "@/lib/actions/order";
 
 type Props = { params: Promise<{ id: string }> };
 
 const OrderPage = async ({ params }: Props) => {
   const param = await params;
-  const order = await prisma.order.findUnique({
-    where: { id: param.id },
-    include: {
-      items: {
-        include: {
-          product: { include: { images: true } },
-          variant: true,
-        },
-      },
-    },
-  });
+
+  const order = await getOrderById(param.id);
 
   if (!order)
     return <p className="p-20 text-center text-gray-500">Order not found</p>;
