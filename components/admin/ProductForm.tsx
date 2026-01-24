@@ -3,13 +3,12 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { createProduct, updateProduct } from "@/lib/actions/product";
 import {
-  Category,
-  Product,
-  ProductImage,
-  ProductVariant,
-} from "@/lib/generated/prisma";
+  createProduct,
+  getProductForEdit,
+  updateProduct,
+} from "@/lib/actions/product";
+import { Category } from "@/lib/generated/prisma";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {
@@ -27,9 +26,7 @@ import { formatMoney, toNumber } from "@/lib/utils/pricing";
 
 interface ProductFormProps {
   categories: Category[];
-  initialData?:
-    | (Product & { images: ProductImage[] } & { variants: ProductVariant[] })
-    | null;
+  initialData?: Awaited<ReturnType<typeof getProductForEdit>>;
 }
 
 export default function ProductForm({

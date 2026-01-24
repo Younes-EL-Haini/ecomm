@@ -1,26 +1,16 @@
-import prisma from "@/lib/prisma";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Edit2, Package } from "lucide-react";
 import { DeleteProductButton } from "../DeleteProductButton";
 import { formatMoney, getProductPrice } from "@/lib/utils/pricing";
+import {
+  AdminProductWithRelations,
+  getAdminProducts,
+} from "@/lib/actions/product";
 
 export default async function AdminProductsPage() {
-  const products = await prisma.product.findMany({
-    where: {
-      isArchived: false, // ONLY SHOW ACTIVE PRODUCTS
-    },
-    orderBy: { createdAt: "desc" },
-    include: {
-      category: true,
-      images: {
-        orderBy: { position: "asc" },
-        take: 1,
-      },
-      variants: { select: { id: true, stock: true } },
-    },
-  });
+  const products = await getAdminProducts();
 
   return (
     <div className="p-4 md:p-10 max-w-7xl mx-auto w-full space-y-8">
@@ -40,7 +30,7 @@ export default async function AdminProductsPage() {
       </div>
 
       <div className="space-y-3">
-        {products.map((product) => {
+        {products.map((product: AdminProductWithRelations) => {
           const mainImage = product.images[0]?.url;
           const hasUrl = typeof mainImage === "string" && mainImage.length > 0;
           const isValidProtocol =

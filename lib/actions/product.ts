@@ -274,3 +274,72 @@ export async function getProductBySlug(slug: string): Promise<ProductFullDetails
     },
   });
 }
+
+// 1. Add the Admin-specific Type
+export type AdminProductWithRelations = Prisma.ProductGetPayload<{
+  include: {
+    category: true;
+    images: { select: { url: true; position: true } };
+    variants: { select: { id: true; stock: true } };
+  };
+}>;
+
+// 2. Add the Admin Query Function
+export async function getAdminProducts(): Promise<AdminProductWithRelations[]> {
+  return await prisma.product.findMany({
+    where: {
+      isArchived: false, // Hide deleted items
+    },
+    orderBy: { createdAt: "desc" },
+    include: {
+      category: true,
+      images: {
+        orderBy: { position: "asc" },
+        take: 1, // Only need the thumbnail
+      },
+      variants: { 
+        select: { id: true, stock: true } 
+      },
+    },
+  });
+}
+
+// Define the shape for the Form
+export type ProductFormValues = Prisma.ProductGetPayload<{
+  include: { images: true; variants: true };
+}>;
+
+/**
+ * Fetch a product and serialize it for Form/Client use
+ */
+export async function getProductForEdit(productId: string) {
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    include: { images: true, variants: true },
+  });
+
+  if (!product) return null;
+
+  // Move your serialization logic here!
+  return {
+    ...product,
+    price: Number(product.price),
+    createdAt: product.createdAt.toISOString(),
+    updatedAt: product.updatedAt.toISOString(),
+    variants: product.variants.map((v) => ({
+      ...v,
+      priceDelta: Number(v.priceDelta),
+      createdAt: v.createdAt.toISOString(),
+    })),
+    images: product.images.map((img) => ({ ...img })),
+  };
+}
+
+/**
+ * Fetch categories for the dropdown
+ */
+export async function getCategories() {
+  return await prisma.category.findMany({
+    orderBy: { name: "asc" },
+  });
+}

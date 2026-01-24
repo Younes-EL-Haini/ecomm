@@ -1,11 +1,9 @@
-import prisma from "@/lib/prisma";
 import ProductForm from "@/components/admin/ProductForm";
+import { getCategories } from "@/lib/actions/product";
 
 export default async function NewProductPage() {
   // 1. Fetch data needed for the form
-  const categories = await prisma.category.findMany({
-    orderBy: { name: "asc" },
-  });
+  const categories = await getCategories();
 
   return (
     <div className="min-h-screen bg-slate-50">
