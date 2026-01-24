@@ -5,6 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import CartItemControls from "./CartItemControls";
+import {
+  calculateVariantPrice,
+  formatMoney,
+  getOrderItemTotal,
+} from "@/lib/utils/pricing";
 
 export default async function CartPage() {
   const session = await getServerSession(authOptions);
@@ -28,9 +33,12 @@ export default async function CartPage() {
 
   const cartItems = user?.cartItems || [];
   const subtotal = cartItems.reduce((acc, item) => {
-    const basePrice = Number(item.product.price);
-    const variantDelta = Number(item.variant?.priceDelta || 0);
-    return acc + (basePrice + variantDelta) * item.quantity;
+    const itemTotal = getOrderItemTotal({
+      unitPrice: item.product.price,
+      quantity: item.quantity,
+      variant: item.variant,
+    });
+    return acc + itemTotal;
   }, 0);
 
   return (
@@ -54,16 +62,23 @@ export default async function CartPage() {
               const image =
                 item.product.images.find(
                   (img) =>
-                    img.color?.toLowerCase() === variantColor?.toLowerCase()
+                    img.color?.toLowerCase() === variantColor?.toLowerCase(),
                 ) ||
                 item.product.images.find((img) => img.isMain) ||
                 item.product.images[0];
 
-              const unitPrice =
-                Number(item.product.price) +
-                Number(item.variant?.priceDelta || 0);
+              // ✅ Use helper for Unit Price
+              const unitPrice = calculateVariantPrice(
+                item.product.price,
+                item.variant?.priceDelta,
+              );
 
-              const totalPrice = unitPrice * item.quantity;
+              // ✅ Use helper for Line Total
+              const lineTotal = getOrderItemTotal({
+                unitPrice: item.product.price,
+                quantity: item.quantity,
+                variant: item.variant,
+              });
 
               return (
                 <div key={item.id} className="flex gap-4 border-b pb-6">
@@ -97,9 +112,7 @@ export default async function CartPage() {
                       </p>
                     )}
 
-                    <p className="mt-2 font-medium">
-                      {Number(unitPrice).toFixed(2)} MAD
-                    </p>
+                    <p className="mt-2 font-medium">{formatMoney(unitPrice)}</p>
                   </div>
 
                   <div className="flex flex-col items-end justify-between">
@@ -112,7 +125,7 @@ export default async function CartPage() {
                       />
 
                       <p className="font-bold text-lg">
-                        {Number(totalPrice).toFixed(2)} MAD
+                        {formatMoney(lineTotal)}
                       </p>
                     </div>
                   </div>

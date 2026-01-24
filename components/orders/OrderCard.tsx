@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getStatusClasses } from "@/lib/utils/order-styles";
 import { Badge } from "../ui/badge";
+import { formatMoney, toNumber } from "@/lib/utils/pricing";
 
 const OrderCard = ({ order }: any) => {
   return (
@@ -37,7 +38,7 @@ const OrderCard = ({ order }: any) => {
 
               {/* Price stands out more */}
               <p className="text-lg font-extrabold text-blue-600">
-                ${order.totalPrice.toFixed(2)}
+                {formatMoney(toNumber(order.totalPrice))}
               </p>
             </div>
           </div>

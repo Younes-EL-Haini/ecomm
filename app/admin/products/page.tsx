@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Edit2, Package } from "lucide-react";
 import { DeleteProductButton } from "../DeleteProductButton";
+import { formatMoney, getProductPrice } from "@/lib/utils/pricing";
 
 export default async function AdminProductsPage() {
   const products = await prisma.product.findMany({
@@ -88,7 +89,11 @@ export default async function AdminProductsPage() {
                       Price
                     </span>
                     <span className="font-semibold text-slate-900">
-                      ${Number(product.price).toFixed(2)}
+                      {formatMoney(
+                        getProductPrice({
+                          price: product.price,
+                        }),
+                      )}
                     </span>
                   </div>
                   <div className="flex flex-col">
@@ -150,7 +155,11 @@ export default async function AdminProductsPage() {
                   </p>
                   <div className="flex justify-between items-end mt-2">
                     <p className="font-bold text-slate-900 text-base">
-                      ${Number(product.price).toFixed(2)}
+                      {formatMoney(
+                        getProductPrice({
+                          price: product.price,
+                        }),
+                      )}
                     </p>
                     <div className="flex gap-2">
                       <Button

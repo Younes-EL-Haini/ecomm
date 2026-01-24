@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { getStatusClasses } from "@/lib/utils/order-styles";
 import Image from "next/image";
 import Link from "next/link";
+import { formatMoney, getOrderItemTotal, toNumber } from "@/lib/utils/pricing";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -93,12 +94,7 @@ const OrderPage = async ({ params }: Props) => {
                 </div>
 
                 <p className="text-lg font-bold">
-                  $
-                  {(
-                    (Number(item.unitPrice) +
-                      Number(item.variant?.priceDelta || 0)) *
-                    item.quantity
-                  ).toFixed(2)}
+                  {formatMoney(getOrderItemTotal(item))}
                 </p>
               </div>
             </div>
@@ -111,7 +107,7 @@ const OrderPage = async ({ params }: Props) => {
         <div className="w-full max-w-xs space-y-3">
           <div className="flex justify-between text-gray-600">
             <span>Subtotal</span>
-            <span>${order.totalPrice.toFixed(2)}</span>
+            <span>{formatMoney(toNumber(order.totalPrice))}</span>
           </div>
           <div className="flex justify-between text-gray-600">
             <span>Shipping</span>
@@ -119,7 +115,7 @@ const OrderPage = async ({ params }: Props) => {
           </div>
           <div className="flex justify-between border-t pt-3 text-xl font-bold text-gray-900">
             <span>Total</span>
-            <span>${order.totalPrice.toFixed(2)}</span>
+            <span>{formatMoney(toNumber(order.totalPrice))}</span>
           </div>
         </div>
       </div>

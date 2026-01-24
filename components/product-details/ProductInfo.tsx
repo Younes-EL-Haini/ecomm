@@ -8,6 +8,7 @@ import VariantPicker from "./VariantPicker";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useCartStore } from "@/cartStore";
+import { formatMoney, calculateVariantPrice } from "@/lib/utils/pricing";
 
 interface Props {
   product: any; // Using any temporarily to bypass Decimal/Plain object issues
@@ -25,14 +26,11 @@ const ProductInfo = ({ product, onColorChange }: Props) => {
     handleSizeChange,
     handleColorChange,
     selectedVariant,
-    availableColors,
     availableSizes,
     sizes,
     colors,
   } = useProductVariants(product.variants, onColorChange);
 
-  // General stock check
-  const inStock = product.stock > 0;
   // Specific variant stock check
   const variantInStock = selectedVariant && selectedVariant.stock > 0;
 
@@ -68,11 +66,6 @@ const ProductInfo = ({ product, onColorChange }: Props) => {
     }
   };
 
-  const basePrice = Number(product.price);
-  const delta = Number(selectedVariant?.priceDelta || 0);
-
-  const displayedPrice = basePrice + delta;
-
   return (
     <div className="space-y-6">
       {/* TITLE & RATING */}
@@ -88,14 +81,17 @@ const ProductInfo = ({ product, onColorChange }: Props) => {
       </div>
 
       <p className="text-2xl font-semibold text-primary">
-        {displayedPrice.toFixed(2)} MAD
+        {formatMoney(
+          calculateVariantPrice(product.price, selectedVariant?.priceDelta),
+          "MAD", // Since you are using MAD
+        )}
       </p>
 
       {/* STOCK STATUS */}
       <p
         className={cn(
           "text-sm font-medium",
-          variantInStock ? "text-green-600" : "text-red-600"
+          variantInStock ? "text-green-600" : "text-red-600",
         )}
       >
         {variantInStock ? "In stock" : "Out of stock"}
@@ -143,8 +139,8 @@ const ProductInfo = ({ product, onColorChange }: Props) => {
         {isAdding
           ? "Adding..."
           : variantInStock
-          ? "Add to cart"
-          : "Unavailable"}
+            ? "Add to cart"
+            : "Unavailable"}
       </Button>
 
       <div className="border-t pt-6 text-sm text-muted-foreground leading-relaxed">

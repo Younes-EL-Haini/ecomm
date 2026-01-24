@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ShoppingBag, ChevronRight, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { getStatusClasses } from "@/lib/utils/order-styles";
+import { formatMoney, toNumber } from "@/lib/utils/pricing";
 
 export default async function AdminOrdersPage() {
   // Fetch all orders with customer info and item counts
@@ -91,7 +92,7 @@ export default async function AdminOrdersPage() {
                     </Badge>
                   </td>
                   <td className="px-6 py-4 text-right font-bold text-slate-900">
-                    ${order.totalPrice.toFixed(2)}
+                    {formatMoney(toNumber(order.totalPrice))}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <Link href={`/admin/orders/${order.id}`}>

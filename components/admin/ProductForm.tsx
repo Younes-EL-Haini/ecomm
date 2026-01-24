@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { CldUploadWidget } from "next-cloudinary";
 import { useState } from "react";
+import { formatMoney, toNumber } from "@/lib/utils/pricing";
 
 interface ProductFormProps {
   categories: Category[];
@@ -198,7 +199,14 @@ export default function ProductForm({
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right font-medium text-slate-600">
-                        {variant.priceDelta ? `+$${variant.priceDelta}` : "—"}
+                        {variant.priceDelta &&
+                        toNumber(variant.priceDelta) !== 0 ? (
+                          <span className="text-indigo-600">
+                            +{formatMoney(toNumber(variant.priceDelta))}
+                          </span>
+                        ) : (
+                          <span className="text-slate-300">—</span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -285,7 +293,7 @@ export default function ProductForm({
                     name="price"
                     type="number"
                     step="0.01"
-                    defaultValue={initialData?.price.toString()}
+                    defaultValue={toNumber(initialData?.price) || ""}
                     className="pl-8 bg-slate-50"
                     required
                   />
@@ -345,7 +353,7 @@ export default function ProductForm({
               </label>
               <div className="flex bg-slate-800 rounded-lg overflow-hidden ring-1 ring-slate-700">
                 <span className="px-3 py-2 text-slate-500 text-xs border-r border-slate-700">
-                  /p/
+                  /products/
                 </span>
                 <input
                   name="slug"

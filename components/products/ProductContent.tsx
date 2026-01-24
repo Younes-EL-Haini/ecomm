@@ -2,6 +2,7 @@ import { Decimal } from "@prisma/client/runtime/library";
 import Link from "next/link";
 import { CardContent } from "../ui/card";
 import { Button } from "../ui/button";
+import { formatMoney, toNumber } from "@/lib/utils/pricing";
 
 type ProductContentProps = {
   title: string;
@@ -25,7 +26,7 @@ const ProductContent = ({
       {/* FOOTER */}
       <div className="mt-auto flex items-center justify-between pt-4">
         <span className="text-lg font-bold text-blue-600">
-          ${price.toFixed(2)}
+          {formatMoney(toNumber(price))}
         </span>
         <Link href={`/products/${slug}`}>
           <Button

@@ -13,6 +13,11 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import OrderStatusClient from "./OrderStatusClient";
 import { getStatusClasses } from "@/lib/utils/order-styles";
+import {
+  calculateVariantPrice,
+  formatMoney,
+  toNumber,
+} from "@/lib/utils/pricing";
 
 export default function AdminOrderTemplate({ order }: { order: any }) {
   const user = order.user;
@@ -68,9 +73,12 @@ export default function AdminOrderTemplate({ order }: { order: any }) {
                   </div>
                   <div className="text-right">
                     <p className="font-bold">
-                      $
-                      {Number(item.totalPrice) +
-                        Number(item.variant?.priceDelta || 0)}
+                      {formatMoney(
+                        calculateVariantPrice(
+                          item.totalPrice,
+                          item.variant?.priceDelta,
+                        ),
+                      )}
                     </p>
                     <p className="text-xs text-slate-400 font-medium">
                       Qty: {item.quantity}
@@ -82,7 +90,7 @@ export default function AdminOrderTemplate({ order }: { order: any }) {
             <div className="bg-slate-50 p-6 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">Subtotal</span>
-                <span>{Number(order.totalPrice)}</span>
+                <span>{formatMoney(toNumber(order.totalPrice))}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">Shipping</span>
@@ -90,7 +98,7 @@ export default function AdminOrderTemplate({ order }: { order: any }) {
               </div>
               <div className="flex justify-between text-lg font-bold border-t pt-2 mt-2">
                 <span>Total</span>
-                <span>{Number(order.totalPrice)}</span>
+                <span>{formatMoney(toNumber(order.totalPrice))}</span>
               </div>
             </div>
           </section>
