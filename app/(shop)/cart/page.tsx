@@ -10,35 +10,24 @@ import {
   formatMoney,
   getOrderItemTotal,
 } from "@/lib/utils/pricing";
+import { getMyCart } from "@/lib/actions/cart";
 
 export default async function CartPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email)
     return <div className="p-10 text-center">Please login...</div>;
 
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
-    include: {
-      cartItems: {
-        orderBy: {
-          createdAt: "asc",
-        },
-        include: {
-          product: { include: { images: true } }, // Include images!
-          variant: true,
-        },
-      },
-    },
-  });
+  const cartItems = await getMyCart(session.user.email);
 
-  const cartItems = user?.cartItems || [];
   const subtotal = cartItems.reduce((acc, item) => {
-    const itemTotal = getOrderItemTotal({
-      unitPrice: item.product.price,
-      quantity: item.quantity,
-      variant: item.variant,
-    });
-    return acc + itemTotal;
+    return (
+      acc +
+      getOrderItemTotal({
+        unitPrice: item.product.price,
+        quantity: item.quantity,
+        variant: item.variant,
+      })
+    );
   }, 0);
 
   return (
