@@ -1,22 +1,8 @@
-import prisma from "@/lib/prisma";
 import ProductCard from "./ProductCard";
+import { getProducts } from "@/lib/actions/product";
 
 const ProductGrid = async () => {
-  const products = await prisma.product.findMany({
-    where: { isPublished: true },
-    orderBy: { createdAt: "asc" },
-    include: {
-      images: {
-        orderBy: { position: "asc" },
-        take: 1, // only main image
-      },
-      variants: {
-        select: {
-          stock: true,
-        },
-      },
-    },
-  });
+  const products = await getProducts();
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-7">

@@ -139,11 +139,11 @@ export default async function CartPage() {
             <h2 className="text-xl font-semibold">Order Summary</h2>
             <div className="flex justify-between border-b pb-2">
               <span>Subtotal</span>
-              <span>{subtotal.toFixed(2)} MAD</span>
+              <span>{formatMoney(subtotal)}</span>
             </div>
             <div className="flex justify-between font-bold text-lg">
               <span>Total</span>
-              <span>{subtotal.toFixed(2)} MAD</span>
+              <span>{formatMoney(subtotal)}</span>
             </div>
             <Link href={`/checkout`}>
               <Button className="w-full" size="lg">

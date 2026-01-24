@@ -3,15 +3,16 @@
 import { useState } from "react";
 import ProductGallery from "./ProductGallery";
 import ProductInfo from "./ProductInfo";
+import { ProductFullDetails } from "@/lib/actions/product";
 
-const ProductClient = ({ product }: { product: any }) => {
+const ProductClient = ({ product }: { product: ProductFullDetails }) => {
   // 1. Get the same default color that your hook will pick (the first one)
   const initialColor =
     product.variants.find((v: any) => v.color)?.color || null;
 
   // 2. Set that as the starting state
   const [selectedColor, setSelectedColor] = useState<string | null>(
-    initialColor
+    initialColor,
   );
 
   return (

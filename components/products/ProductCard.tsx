@@ -1,18 +1,7 @@
 import { Card } from "@/components/ui/card";
-import { Prisma } from "@/lib/generated/prisma";
 import ProductImageCard from "./ProductImage";
 import ProductContent from "./ProductContent";
-
-type ProductWithRelations = Prisma.ProductGetPayload<{
-  include: {
-    images: true;
-    variants: {
-      select: {
-        stock: true;
-      };
-    };
-  };
-}>;
+import { ProductWithRelations } from "@/lib/actions/product";
 
 const ProductCard = ({ product }: { product: ProductWithRelations }) => {
   const hasStock = product.variants.some((variant: any) => variant.stock > 0);

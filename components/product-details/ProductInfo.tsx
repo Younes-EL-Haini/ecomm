@@ -9,9 +9,10 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useCartStore } from "@/cartStore";
 import { formatMoney, calculateVariantPrice } from "@/lib/utils/pricing";
+import { ProductFullDetails } from "@/lib/actions/product";
 
 interface Props {
-  product: any; // Using any temporarily to bypass Decimal/Plain object issues
+  product: ProductFullDetails;
   onColorChange: (color: string | null) => void;
 }
 

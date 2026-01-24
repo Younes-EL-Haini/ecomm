@@ -4,7 +4,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { OrderStatus } from "../generated/prisma";
+import { OrderStatus, Prisma } from "../generated/prisma";
 
 export async function createProduct(formData: FormData) {
   const title = formData.get("title") as string;
@@ -223,4 +223,54 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
   } catch (error) {
     return { success: false, error: "Failed to update status" };
   }
+}
+
+export type ProductWithRelations = Prisma.ProductGetPayload<{
+  include: {
+    images: { select: { url: true; position: true } };
+    variants: { select: { stock: true } };
+  };
+}>;
+
+export type ProductFullDetails = Prisma.ProductGetPayload<{
+  include: {
+    images: true;
+    reviews: true;
+    variants: true;
+  };
+}> & {
+  avgRating?: string | number;
+  ratingCount?: number;
+};
+
+export async function getProducts(): Promise<ProductWithRelations[]> {
+  return await prisma.product.findMany({
+    where: { 
+      isPublished: true,
+      isArchived: false // Good practice to filter out archived items
+    },
+    orderBy: { createdAt: "asc" },
+    include: {
+      images: {
+        orderBy: { position: "asc" },
+        take: 1, // We only need the first image for the grid
+      },
+      variants: {
+        select: {
+          stock: true,
+        },
+      },
+    },
+  });
+}
+
+export async function getProductBySlug(slug: string): Promise<ProductFullDetails | null> {
+  return await prisma.product.findUnique({
+    where: { slug },
+    include: {
+      images: true,
+      reviews: true,
+      variants: true,
+    },
+  });
 }
