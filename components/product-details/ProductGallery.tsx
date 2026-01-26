@@ -34,13 +34,13 @@ const ProductGallery = ({ images, title, selectedColor }: Props) => {
   return (
     <div className="space-y-4">
       {/* MAIN IMAGE CONTAINER */}
-      <div className="relative aspect-4/5 w-full max-h-[520px] overflow-hidden rounded-2xl bg-muted border">
+      <div className="relative aspect-4/5 w-full max-h-[520px] overflow-hidden rounded-2xl">
         <Image
           src={selected?.url || "/images/hero-product.jpg"}
           alt={selected?.alt || title}
           fill
           priority
-          className="object-cover"
+          className="object-contain"
         />
       </div>
 
@@ -51,10 +51,10 @@ const ProductGallery = ({ images, title, selectedColor }: Props) => {
             key={img.id}
             onClick={() => setSelected(img)}
             className={cn(
-              "relative h-20 w-20 overflow-hidden rounded-xl border-2 transition-all",
+              "relative h-20 w-20 overflow-hidden rounded-xl transition-all duration-200",
               selected?.id === img.id
-                ? "border-primary ring-2 ring-primary/20"
-                : "border-transparent hover:border-muted-foreground/20"
+                ? "ring-2 ring-zinc-900 ring-offset-2 scale-105"
+                : "border border-zinc-100 opacity-70 hover:opacity-100",
             )}
           >
             <Image
@@ -62,7 +62,7 @@ const ProductGallery = ({ images, title, selectedColor }: Props) => {
               alt={img.alt || title}
               fill
               sizes="80px"
-              className="object-cover"
+              className="object-contain"
             />
           </button>
         ))}
