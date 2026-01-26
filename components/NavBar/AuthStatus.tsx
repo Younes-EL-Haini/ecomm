@@ -55,11 +55,11 @@ const AuthStatus = () => {
           "relative p-2 rounded-full transition-all duration-200",
           isActive
             ? "text-primary fill-current" // Active styles
-            : "text-muted-foreground hover:bg-accent" // Default styles
+            : "text-muted-foreground hover:bg-accent", // Default styles
         )}
       >
         <ShoppingCart
-          className={cn("w-6 h-6", isActive && "fill-current")} // Makes the icon "Solid" if it supports it
+          className={cn("w-5 h-5", isActive && "fill-current")} // Makes the icon "Solid" if it supports it
         />
         {count > 0 && (
           <span
@@ -72,7 +72,7 @@ const AuthStatus = () => {
       </Link>
       <DropdownMenu>
         <DropdownMenuTrigger className="cursor-pointer outline-none">
-          <Avatar>
+          <Avatar className="h-7 w-7">
             <AvatarImage
               src={session?.user?.image ?? ""}
               referrerPolicy="no-referrer"

@@ -12,31 +12,29 @@ const NavBar = () => {
   if (status === "loading") return <NavSkeleton />;
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto flex justify-between h-16 items-center px-4">
-        {/* Left Side: Logo */}
-        <div className="flex items-center gap-8">
+    // We use bg-white/70 for a more "glassy" look
+    <nav className="sticky top-0 z-50 w-full border-b border-black/5 bg-gray-100 backdrop-blur-xl">
+      {/* Reduced h-16 to h-12 */}
+      <div className="max-w-7xl mx-auto flex justify-between h-12 items-center px-6">
+        <div className="flex items-center gap-10">
           <Link
             href="/"
-            className="text-xl font-bold tracking-tighter text-blue-600"
+            /* Removed blue, made it zinc-900, reduced size to text-lg */
+            className="text-lg font-bold tracking-tighter text-zinc-900 hover:opacity-70 transition-opacity"
           >
             STORE.
           </Link>
 
-          {/* Desktop Navigation (Hidden on Mobile) */}
           <div className="hidden md:block">
-            <NavLinks className="space-x-1" />
+            {/* Ensure NavLinks uses text-xs or text-[13px] */}
+            <NavLinks className="space-x-8" />
           </div>
         </div>
 
-        {/* Right Side */}
-        <div className="flex items-center gap-4">
-          {/* Desktop Auth (Hidden on Mobile) */}
+        <div className="flex items-center gap-2">
           <div className="hidden md:block">
             <AuthStatus />
           </div>
-
-          {/* Mobile Trigger */}
           <MobileNav />
         </div>
       </div>
