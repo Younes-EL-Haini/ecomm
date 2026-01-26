@@ -43,20 +43,17 @@ export default function ProfessionalHero() {
         {/* TEXT LAYER */}
         <div className="absolute inset-0 z-20 flex items-center justify-center md:justify-start p-6 md:pr-18 lg:p-24">
           <div className="max-w-xl text-center md:text-left">
-            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.9] mb-6">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.1] mb-6 text-zinc-900">
               EXPLORE <br className="hidden md:block" /> THE NEW
             </h1>
 
             <p className="text-slate-600 text-base sm:text-lg mb-8 max-w-sm mx-auto md:mx-0">
-              Premium quality. Timeless design.{" "}
+              Premium quality. Timeless design.
               <br className="hidden sm:block" />
               Our latest drop is now live.
             </p>
 
-            <Button
-              size="lg"
-              className="rounded-full px-10 h-14 bg-blue-600 text-white hover:bg-blue-700"
-            >
+            <Button className="bg-[#0071e3] hover:bg-[#0077ed] rounded-full px-8 py-6 text-md font-medium transition-all hover:scale-105">
               Shop Now
             </Button>
           </div>
