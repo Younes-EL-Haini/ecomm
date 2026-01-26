@@ -7,11 +7,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ShoppingCart } from "lucide-react";
+import { LogOut, Package, ShoppingCart, User } from "lucide-react";
 import { useCartStore } from "@/cartStore";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -89,7 +91,7 @@ const AuthStatus = () => {
               {session?.user?.email}
             </p>
           </div>
-          <DropdownMenuItem asChild className="cursor-pointer">
+          {/* <DropdownMenuItem asChild className="cursor-pointer">
             <Link href="/profile">Profile</Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild className="cursor-pointer">
@@ -100,7 +102,58 @@ const AuthStatus = () => {
             onClick={() => signOut()}
           >
             Log out
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
+          /* --- User Account Dropdown --- */
+          <DropdownMenuContent
+            align="end"
+            className="w-56 p-2 rounded-2xl shadow-xl border-zinc-100"
+          >
+            <DropdownMenuLabel className="px-2 py-3">
+              <div className="flex flex-col gap-0.5">
+                <p className="text-sm font-bold text-zinc-900 leading-none">
+                  {session?.user?.name}
+                </p>
+                <p className="text-[10px] text-zinc-500 font-medium truncate">
+                  {session?.user?.email}
+                </p>
+              </div>
+            </DropdownMenuLabel>
+
+            <DropdownMenuSeparator className="bg-zinc-100 mx-1" />
+
+            {/* PROFILE LINK */}
+            <DropdownMenuItem
+              asChild
+              className="cursor-pointer rounded-lg px-2 py-2.5 focus:bg-zinc-50"
+            >
+              <Link href="/profile" className="flex items-center gap-3 w-full">
+                <User className="h-4 w-4 text-zinc-500" />
+                <span className="text-sm font-medium">Profile</span>
+              </Link>
+            </DropdownMenuItem>
+
+            {/* ORDERS LINK */}
+            <DropdownMenuItem
+              asChild
+              className="cursor-pointer rounded-lg px-2 py-2.5 focus:bg-zinc-50"
+            >
+              <Link href="/orders" className="flex items-center gap-3 w-full">
+                <Package className="h-4 w-4 text-zinc-500" />
+                <span className="text-sm font-medium">Orders</span>
+              </Link>
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator className="bg-zinc-100 mx-1" />
+
+            {/* LOG OUT */}
+            <DropdownMenuItem
+              className="text-red-600 cursor-pointer rounded-lg px-2 py-2.5 focus:bg-red-50 focus:text-red-600 flex items-center gap-3"
+              onClick={() => signOut()}
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="text-sm font-bold">Log out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
