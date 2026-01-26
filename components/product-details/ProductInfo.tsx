@@ -1,15 +1,9 @@
-"use client";
-
-import { useState } from "react";
 import { useProductVariants } from "./useProductVariants";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 import VariantPicker from "./VariantPicker";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-import { useCartStore } from "@/cartStore";
 import { formatMoney, calculateVariantPrice } from "@/lib/utils/pricing";
 import { ProductFullDetails } from "@/lib/actions/product";
+import AddToCartActions from "../products/AddToCartActions";
 
 interface Props {
   product: ProductFullDetails;
@@ -17,10 +11,6 @@ interface Props {
 }
 
 const ProductInfo = ({ product, onColorChange }: Props) => {
-  const router = useRouter();
-  const [isAdding, setIsAdding] = useState(false);
-  const increment = useCartStore((state) => state.increment);
-
   const {
     selectedSize,
     selectedColor,
@@ -34,38 +24,6 @@ const ProductInfo = ({ product, onColorChange }: Props) => {
 
   // Specific variant stock check
   const variantInStock = selectedVariant && selectedVariant.stock > 0;
-
-  const handleAddToCart = async () => {
-    setIsAdding(true);
-    try {
-      const res = await fetch("/api/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId: product.id,
-          variantId: selectedVariant?.id || null,
-          quantity: 1,
-        }),
-      });
-      if (res.ok) {
-        toast.success(`${product.title} added to cart`, {
-          description: "Ready to checkout?",
-          action: {
-            label: "View Cart",
-            onClick: () => router.push("/cart"),
-          },
-        });
-        increment();
-        router.refresh();
-      } else {
-        toast.error("Could not add to cart. Please try again.");
-      }
-    } catch (error) {
-      toast.error("Something went wrong. Please check your connection.");
-    } finally {
-      setIsAdding(false);
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -130,19 +88,11 @@ const ProductInfo = ({ product, onColorChange }: Props) => {
           </p>
         )}
 
-      {/* CTA */}
-      <Button
-        size="lg"
-        className="w-full lg:w-auto"
-        disabled={isAdding || !variantInStock}
-        onClick={handleAddToCart}
-      >
-        {isAdding
-          ? "Adding..."
-          : variantInStock
-            ? "Add to cart"
-            : "Unavailable"}
-      </Button>
+      <AddToCartActions
+        productId={product.id}
+        variantId={selectedVariant?.id || null}
+        disabled={!variantInStock}
+      />
 
       <div className="border-t pt-6 text-sm text-muted-foreground leading-relaxed">
         {product.description}

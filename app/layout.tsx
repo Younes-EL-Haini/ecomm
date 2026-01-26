@@ -36,7 +36,21 @@ export default function RootLayout({
       >
         <AuthProvider>
           {children}
-          <Toaster position="top-right" richColors />
+          <Toaster
+            toastOptions={{
+              // className: "rounded-2xl border-zinc-200 shadow-lg", // Match your gallery rounded corners
+              actionButtonStyle: {
+                backgroundColor: "blue", // zinc-900 (Black)
+                borderRadius: "9999px", // Pill shape
+              },
+              cancelButtonStyle: {
+                backgroundColor: "transparent",
+                color: "#71717a", // zinc-500
+              },
+            }}
+            position="top-right"
+            richColors
+          />
         </AuthProvider>
       </body>
     </html>

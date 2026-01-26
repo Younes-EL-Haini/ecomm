@@ -44,6 +44,16 @@ export async function POST(req: NextRequest){
   const { productId, variantId, quantity = 1 } = await req.json();
 
   try {
+    const existingItem = await prisma.cartItem.findUnique({
+      where: {
+        userId_productId_variantId: {
+          userId: user.id,
+          productId,
+          variantId: variantId || null,
+        },
+      },
+    });
+
     // This is the "Atomic" way to handle Add to Cart
     const cartItem = await prisma.cartItem.upsert({
       where: {
@@ -66,7 +76,10 @@ export async function POST(req: NextRequest){
       },
     });
 
-    return NextResponse.json(cartItem);
+    return NextResponse.json({
+      ...cartItem,
+      isNewRow: !existingItem // True if it didn't exist before
+    });
   } catch (error) {
     console.error("CART_ERROR", error);
     return new NextResponse("Internal Server Error", { status: 500 });
