@@ -103,7 +103,7 @@ const MobileNav = () => {
                 {/* Account Actions - HERE IS WHERE PROFILE/ORDERS GO */}
                 <div className="grid grid-cols-2 gap-2">
                   <Link
-                    href="/profile"
+                    href="/account/profile"
                     className="flex flex-col items-center justify-center p-3 bg-white border border-zinc-100 rounded-2xl hover:bg-zinc-100 transition-colors"
                   >
                     <User className="h-5 w-5 text-zinc-600 mb-1" />
@@ -112,7 +112,7 @@ const MobileNav = () => {
                     </span>
                   </Link>
                   <Link
-                    href="/orders"
+                    href="/account/orders"
                     className="flex flex-col items-center justify-center p-3 bg-white border border-zinc-100 rounded-2xl hover:bg-zinc-100 transition-colors"
                   >
                     <Package className="h-5 w-5 text-zinc-600 mb-1" />

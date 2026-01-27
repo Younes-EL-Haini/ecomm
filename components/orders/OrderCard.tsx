@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 const OrderCard = ({ order }: any) => {
   return (
-    <Link href={`/orders/${order.id}`} className="group block mb-6">
+    <Link href={`/account/orders/${order.id}`} className="group block mb-6">
       <div className="border border-zinc-100 rounded-4xl p-6 bg-white shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:border-zinc-200">
         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-6">
           <div className="flex items-center gap-6">

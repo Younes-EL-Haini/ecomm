@@ -91,19 +91,7 @@ const AuthStatus = () => {
               {session?.user?.email}
             </p>
           </div>
-          {/* <DropdownMenuItem asChild className="cursor-pointer">
-            <Link href="/profile">Profile</Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild className="cursor-pointer">
-            <Link href="/orders">Orders</Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="text-red-600 cursor-pointer"
-            onClick={() => signOut()}
-          >
-            Log out
-          </DropdownMenuItem> */}
-          /* --- User Account Dropdown --- */
+
           <DropdownMenuContent
             align="end"
             className="w-56 p-2 rounded-2xl shadow-xl border-zinc-100"
@@ -126,7 +114,10 @@ const AuthStatus = () => {
               asChild
               className="cursor-pointer rounded-lg px-2 py-2.5 focus:bg-zinc-50"
             >
-              <Link href="/profile" className="flex items-center gap-3 w-full">
+              <Link
+                href="/account/profile"
+                className="flex items-center gap-3 w-full"
+              >
                 <User className="h-4 w-4 text-zinc-500" />
                 <span className="text-sm font-medium">Profile</span>
               </Link>
@@ -137,7 +128,10 @@ const AuthStatus = () => {
               asChild
               className="cursor-pointer rounded-lg px-2 py-2.5 focus:bg-zinc-50"
             >
-              <Link href="/orders" className="flex items-center gap-3 w-full">
+              <Link
+                href="/account/orders"
+                className="flex items-center gap-3 w-full"
+              >
                 <Package className="h-4 w-4 text-zinc-500" />
                 <span className="text-sm font-medium">Orders</span>
               </Link>
