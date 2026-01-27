@@ -228,7 +228,7 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
 export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
     images: { select: { url: true; position: true } };
-    variants: { select: { stock: true } };
+    variants: { select: { stock: true; color: true; } };
   };
 }>;
 
@@ -258,6 +258,7 @@ export async function getProducts(): Promise<ProductWithRelations[]> {
       variants: {
         select: {
           stock: true,
+          color: true,
         },
       },
     },
