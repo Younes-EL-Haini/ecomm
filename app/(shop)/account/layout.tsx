@@ -49,7 +49,7 @@ export default function AccountLayout({
         <div className="flex flex-col lg:flex-row gap-12">
           {/* DESKTOP SIDEBAR */}
           <aside className="hidden lg:block lg:w-56 shrink-0">
-            <div className="sticky top-24 rounded-3xl bg-zinc-50 border border-zinc-200 p-4">
+            <div className="sticky mt-10 rounded-3xl bg-zinc-50 border border-zinc-200 p-4">
               <h2 className="text-xl font-black mb-6 px-2">Account</h2>
               <nav className="flex flex-col gap-1">
                 {navItems.map((item) => {
@@ -75,7 +75,7 @@ export default function AccountLayout({
           </aside>
 
           {/* PAGE CONTENT */}
-          <main className="flex-1 min-w-0">{children}</main>
+          <main className="mt-10 flex-1 min-w-0">{children}</main>
         </div>
       </div>
     </div>

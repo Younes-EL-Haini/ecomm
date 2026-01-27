@@ -14,7 +14,7 @@ const OrdersPage = async () => {
 
   return (
     <div className="bg-gray-100">
-      <div className="px-4 md:px-10 py-10 max-w-6xl mx-auto">
+      <div className="px-4 md:px-10 max-w-6xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">My Orders</h1>
 
         {orders.length === 0 ? (
