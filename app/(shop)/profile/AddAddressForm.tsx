@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 const AddAddressForm = () => {
@@ -39,23 +40,30 @@ const AddAddressForm = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white p-6 rounded-2xl border shadow-sm space-y-4"
+      className="bg-white p-8 rounded-[2.5rem] border border-zinc-100 shadow-sm space-y-3"
     >
-      <h3 className="text-lg font-semibold">Add New Address</h3>
+      <div className="space-y-1">
+        <h3 className="text-xl font-bold tracking-tight text-zinc-900">
+          Add New Address
+        </h3>
+        <p className="text-sm text-zinc-500">Used for shipping and billing</p>
+      </div>
 
       {error && <p className="text-sm text-red-500">{error}</p>}
-
-      <input name="label" placeholder="Label (Home, Work)" className="input" />
-
-      <input
-        name="line1"
-        placeholder="Address line 1 *"
-        required
-        className="input"
-      />
-
-      <input name="line2" placeholder="Address line 2" className="input" />
-
+      <div className="space-y-4">
+        <input
+          name="label"
+          placeholder="Label (Home, Work)"
+          className="input"
+        />
+        <input
+          name="line1"
+          placeholder="Address line 1 *"
+          required
+          className="input"
+        />
+        <input name="line2" placeholder="Address line 2" className="input" />
+      </div>
       <div className="grid grid-cols-2 gap-4">
         <input name="city" placeholder="City *" required className="input" />
         <input name="state" placeholder="State" className="input" />
@@ -76,17 +84,22 @@ const AddAddressForm = () => {
         />
       </div>
 
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" name="isDefault" />
+      <label className="flex items-center gap-3 text-sm text-zinc-600 cursor-pointer">
+        <input
+          type="checkbox"
+          name="isDefault"
+          className="size-4 accent-black"
+        />
         Set as default address
       </label>
 
-      <button
+      <Button
         disabled={loading}
-        className="w-full bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition"
+        className="w-full rounded-xl hover:bg-zinc-800
+ "
       >
         {loading ? "Saving..." : "Add Address"}
-      </button>
+      </Button>
     </form>
   );
 };
