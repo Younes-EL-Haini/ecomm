@@ -7,7 +7,10 @@ const OrdersPage = async () => {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) return null;
 
-  const orders: SerializedOrder[] = await getMyOrders(session.user.email);
+  const orders = await getMyOrders(session.user.email);
+  const serializedOrders: SerializedOrder[] = JSON.parse(
+    JSON.stringify(orders),
+  );
 
   return (
     <div className="animate-in space-y-8">
@@ -50,7 +53,7 @@ const OrdersPage = async () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6">
-          {orders.map((order) => (
+          {serializedOrders.map((order) => (
             <OrderCard key={order.id} order={order} />
           ))}
         </div>
