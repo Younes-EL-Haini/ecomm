@@ -9,12 +9,21 @@ export type OrderWithRelations = Prisma.OrderGetPayload<{
   include: {
     items: {
       include: {
-        product: { include: { images: { take: 1 } } };
+        product: { include: { images: { take: 1 }, name: true  } };
         variant: true;
       };
     };
   };
 }>;
+
+export type SerializedOrder = Omit<OrderWithRelations, 'totalPrice' | 'items'> & {
+  totalPrice: number;
+  items: (Omit<OrderWithRelations['items'][number], 'totalPrice' | 'price'> & {
+    totalPrice: number;
+    price: number;
+    product: OrderWithRelations['items'][number]['product'];
+  })[];
+};
 
 /**
  * Fetch all orders for a specific user
@@ -37,12 +46,14 @@ export async function getMyOrders(email: string) {
   // Convert Decimals to Numbers before returning to the UI
   return orders.map(order => ({
     ...order,
-    totalPrice: order.totalPrice.toNumber(), // Convert Decimal to Number
+    totalPrice: order.totalPrice.toNumber(),
     items: order.items.map(item => ({
       ...item,
-      price: item.totalPrice.toNumber() // Do the same for item prices
+      // Fix: Ensure you use the correct field names from your schema
+      price: item.totalPrice.toNumber(), 
+      totalPrice: item.totalPrice.toNumber()
     }))
-  }));
+  })) as SerializedOrder[]; 
 }
 
 /**

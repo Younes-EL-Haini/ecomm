@@ -9,8 +9,13 @@ import { getStatusClasses } from "@/lib/utils/order-styles";
 import { Badge } from "../ui/badge";
 import Link from "next/link";
 import { Button } from "../ui/button";
+import { SerializedOrder } from "@/lib/actions/order";
 
-const OrderCard = ({ order }: { order: any }) => {
+interface OrderCardProps {
+  order: SerializedOrder; // No more 'any'!
+}
+
+const OrderCard = ({ order }: OrderCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -146,7 +151,7 @@ const OrderCard = ({ order }: { order: any }) => {
       >
         <div className="overflow-hidden">
           <div className="p-8 space-y-6">
-            {order.items?.map((item: any) => (
+            {order.items?.map((item) => (
               <div
                 key={item.id}
                 className="flex items-center justify-between group/item py-2"
