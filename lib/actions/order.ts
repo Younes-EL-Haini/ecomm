@@ -19,8 +19,9 @@ export type OrderWithRelations = Prisma.OrderGetPayload<{
 /**
  * Fetch all orders for a specific user
  */
-export async function getMyOrders(email: string): Promise<OrderWithRelations[]> {
-  return await prisma.order.findMany({
+
+export async function getMyOrders(email: string) {
+  const orders = await prisma.order.findMany({
     where: { user: { email } },
     orderBy: { createdAt: "desc" },
     include: {
@@ -32,6 +33,16 @@ export async function getMyOrders(email: string): Promise<OrderWithRelations[]> 
       },
     },
   });
+
+  // Convert Decimals to Numbers before returning to the UI
+  return orders.map(order => ({
+    ...order,
+    totalPrice: order.totalPrice.toNumber(), // Convert Decimal to Number
+    items: order.items.map(item => ({
+      ...item,
+      price: item.totalPrice.toNumber() // Do the same for item prices
+    }))
+  }));
 }
 
 /**
