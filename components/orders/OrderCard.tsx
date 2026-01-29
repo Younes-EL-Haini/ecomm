@@ -5,11 +5,8 @@ import Image from "next/image";
 import { ChevronDown, MapPin, Calendar, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatMoney, toNumber } from "@/lib/utils/pricing";
-import { getStatusClasses } from "@/lib/utils/order-styles";
 import { Badge } from "../ui/badge";
-import Link from "next/link";
-import { Button } from "../ui/button";
-import { SerializedOrder } from "@/lib/actions/order";
+import { SerializedOrder, getStatusClasses } from "@/lib/orders";
 import OrderDetails from "./OrderDetails";
 
 interface OrderCardProps {
@@ -72,12 +69,7 @@ const OrderCard = ({ order }: OrderCardProps) => {
                     <p className="text-lg font-black text-zinc-900 tracking-tight">
                       ORD-{order.id.slice(-5).toUpperCase()}
                     </p>
-                    <Badge
-                      className={cn(
-                        "px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tighter border-none",
-                        getStatusClasses(order.status),
-                      )}
-                    >
+                    <Badge className={getStatusClasses(order.status, "md")}>
                       {order.status}
                     </Badge>
                   </div>

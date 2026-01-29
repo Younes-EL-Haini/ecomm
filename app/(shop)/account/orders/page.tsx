@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import OrderCard from "@/components/orders/OrderCard";
-import { getMyOrders, SerializedOrder } from "@/lib/actions/order";
+import { getMyOrders, SerializedOrder } from "@/lib/orders";
 import authOptions from "@/app/auth/authOptions";
 
 const OrdersPage = async () => {

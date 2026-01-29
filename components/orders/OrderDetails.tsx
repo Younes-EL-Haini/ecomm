@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "../ui/button";
 import { formatMoney, toNumber } from "@/lib/utils/pricing";
 import { cn } from "@/lib/utils";
-import { SerializedOrder } from "@/lib/actions/order";
+import { SerializedOrder } from "@/lib/orders";
 
 interface OrderDetailsProps {
   order: SerializedOrder;
