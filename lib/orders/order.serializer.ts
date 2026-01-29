@@ -1,4 +1,4 @@
-import { OrderWithRelations, SerializedOrder } from "./order.types";
+import { AdminOrderDetail, AdminOrderDetailRaw, OrderWithRelations, SerializedOrder } from "./order.types";
 
 export const serializeOrder = (order: OrderWithRelations): SerializedOrder => ({
   ...order,
@@ -12,13 +12,14 @@ export const serializeOrder = (order: OrderWithRelations): SerializedOrder => ({
 });
 
 // Helper for Admin details since they often have different nesting
-export const serializeAdminDetail = (order: any) => {
+export const serializeAdminDetail = (order: AdminOrderDetailRaw | null): AdminOrderDetail | null => {
   if (!order) return null;
   return {
     ...order,
     totalPrice: Number(order.totalPrice),
     items: order.items.map((item: any) => ({
       ...item,
+      price: Number(item.price || 0), // Don't forget the unit price!
       totalPrice: Number(item.totalPrice),
       variant: item.variant ? {
         ...item.variant,

@@ -29,3 +29,29 @@ export type AdminOrderSummary = Prisma.OrderGetPayload<{
     _count: { select: { items: true } };
   };
 }>;
+
+// This captures the EXACT shape of the data including Admin-only fields
+export type AdminOrderDetailRaw = Prisma.OrderGetPayload<{
+  include: {
+    items: {
+      include: {
+        product: { include: { images: true } };
+        variant: true;
+      };
+    };
+    user: true;
+    shippingAddress: true;
+  };
+}>;
+
+// The final type after serialization (Decimals converted to Numbers)
+export type AdminOrderDetail = Omit<AdminOrderDetailRaw, "totalPrice" | "items"> & {
+  totalPrice: number;
+  items: (Omit<AdminOrderDetailRaw["items"][number], "totalPrice" | "price" | "variant"> & {
+    totalPrice: number;
+    price: number;
+    variant: (Omit<NonNullable<AdminOrderDetailRaw["items"][number]["variant"]>, "priceDelta"> & {
+      priceDelta: number;
+    }) | null;
+  })[];
+};

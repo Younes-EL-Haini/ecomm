@@ -12,13 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import OrderStatusClient from "./OrderStatusClient";
-import { getStatusClasses } from "@/lib/utils/order-styles";
 import {
   calculateVariantPrice,
   formatMoney,
   toNumber,
 } from "@/lib/utils/pricing";
-import { AdminOrderDetail } from "@/lib/actions/order";
+import { AdminOrderDetail, getStatusClasses } from "@/lib/orders";
 
 export default function AdminOrderTemplate({
   order,

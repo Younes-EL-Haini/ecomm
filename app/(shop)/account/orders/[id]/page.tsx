@@ -1,11 +1,9 @@
 import { Badge } from "@/components/ui/badge";
-import { getStatusClasses } from "@/lib/utils/order-styles";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react"; // Add this for a better back icon
 import { formatMoney, getOrderItemTotal, toNumber } from "@/lib/utils/pricing";
-import { getOrderById } from "@/lib/actions/order";
-import { cn } from "@/lib/utils";
+import { getOrderById, getStatusClasses } from "@/lib/orders";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -17,7 +15,10 @@ const OrderPage = async ({ params }: Props) => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <p className="text-zinc-500 font-medium">Order not found</p>
-        <Link href="/orders" className="mt-4 text-sm font-bold underline">
+        <Link
+          href="/account/orders"
+          className="mt-4 text-sm font-bold underline"
+        >
           Go back
         </Link>
       </div>
@@ -29,7 +30,7 @@ const OrderPage = async ({ params }: Props) => {
         {/* 1. Navigation & Header */}
         <div className="mb-12">
           <Link
-            href="/orders"
+            href="/account/orders"
             className="group flex items-center gap-1 text-zinc-500 hover:text-zinc-900 transition-colors mb-8 w-fit"
           >
             <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
@@ -55,12 +56,7 @@ const OrderPage = async ({ params }: Props) => {
               <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
                 Status
               </span>
-              <Badge
-                className={cn(
-                  "rounded-full px-3 py-0.5 text-[10px] font-bold uppercase tracking-tighter",
-                  getStatusClasses(order.status, "sm"),
-                )}
-              >
+              <Badge className={getStatusClasses(order.status, "md")}>
                 {order.status}
               </Badge>
             </div>

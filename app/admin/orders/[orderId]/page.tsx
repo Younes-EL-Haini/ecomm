@@ -1,6 +1,6 @@
 // app/admin/orders/[orderId]/page.tsx
 import AdminOrderTemplate from "@/components/admin/AdminOrderTemplate";
-import { getAdminOrderDetail } from "@/lib/actions/order";
+import { getAdminOrderDetail } from "@/lib/orders";
 import { notFound } from "next/navigation";
 
 export default async function OrderDetailPage({

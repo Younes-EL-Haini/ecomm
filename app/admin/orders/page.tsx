@@ -3,16 +3,15 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingBag, ChevronRight, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { getStatusClasses } from "@/lib/utils/order-styles";
 import { formatMoney, toNumber } from "@/lib/utils/pricing";
-import { getAdminOrders } from "@/lib/actions/order";
+import { getAdminOrders, getStatusClasses } from "@/lib/orders";
 
 export default async function AdminOrdersPage() {
   // Fetch all orders with customer info and item counts
   const orders = await getAdminOrders();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 m-3">
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -77,7 +76,7 @@ export default async function AdminOrdersPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <Badge className={getStatusClasses(order.status, "sm")}>
+                    <Badge className={getStatusClasses(order.status, "md")}>
                       {order.status}
                     </Badge>
                   </td>
