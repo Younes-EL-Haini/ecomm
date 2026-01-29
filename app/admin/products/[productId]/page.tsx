@@ -1,6 +1,6 @@
 import ProductForm from "@/components/admin/ProductForm";
 import { notFound } from "next/navigation";
-import { getCategories, getProductForEdit } from "@/lib/actions/product";
+import { getCategories, getProductForEdit } from "@/lib/products";
 
 export default async function EditProductPage({
   params,

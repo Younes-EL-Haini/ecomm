@@ -3,7 +3,7 @@
 import { useState } from "react";
 import ProductGallery from "./ProductGallery";
 import ProductInfo from "./ProductInfo";
-import { ProductFullDetails } from "@/lib/actions/product";
+import { ProductFullDetails } from "@/lib/products";
 
 const ProductClient = ({ product }: { product: ProductFullDetails }) => {
   // 1. Get the same default color that your hook will pick (the first one)

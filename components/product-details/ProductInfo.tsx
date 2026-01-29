@@ -2,7 +2,7 @@ import { useProductVariants } from "./useProductVariants";
 import VariantPicker from "./VariantPicker";
 import { cn } from "@/lib/utils";
 import { formatMoney, calculateVariantPrice } from "@/lib/utils/pricing";
-import { ProductFullDetails } from "@/lib/actions/product";
+import { ProductFullDetails } from "@/lib/products";
 import AddToCartActions from "../products/AddToCartActions";
 
 interface Props {

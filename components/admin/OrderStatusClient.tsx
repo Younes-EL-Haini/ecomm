@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { updateOrderStatus } from "@/lib/actions/product";
+import { updateOrderStatus } from "@/lib/orders";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { OrderStatus } from "@/lib/generated/prisma";

@@ -4,10 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Edit2, Package } from "lucide-react";
 import { DeleteProductButton } from "../DeleteProductButton";
 import { formatMoney, getProductPrice } from "@/lib/utils/pricing";
-import {
-  AdminProductWithRelations,
-  getAdminProducts,
-} from "@/lib/actions/product";
+import { AdminProductWithRelations, getAdminProducts } from "@/lib/products";
 
 export default async function AdminProductsPage() {
   const products = await getAdminProducts();

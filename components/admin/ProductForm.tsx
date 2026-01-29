@@ -7,7 +7,7 @@ import {
   createProduct,
   getProductForEdit,
   updateProduct,
-} from "@/lib/actions/product";
+} from "@/lib/products";
 import { Category } from "@/lib/generated/prisma";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";

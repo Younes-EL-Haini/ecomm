@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import ProductImageCard from "./ProductImage";
 import ProductContent from "./ProductContent";
-import { ProductWithRelations } from "@/lib/actions/product";
+import { ProductWithRelations } from "@/lib/products";
 import Link from "next/link";
 
 const ProductCard = ({ product }: { product: ProductWithRelations }) => {

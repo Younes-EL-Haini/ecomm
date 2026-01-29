@@ -2,7 +2,7 @@
 
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { archiveProduct, restoreProduct } from "@/lib/actions/product";
+import { archiveProduct, restoreProduct } from "@/lib/products";
 import { useState } from "react";
 import { toast } from "sonner";
 

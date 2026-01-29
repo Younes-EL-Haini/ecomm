@@ -1,5 +1,5 @@
 import ProductForm from "@/components/admin/ProductForm";
-import { getCategories } from "@/lib/actions/product";
+import { getCategories } from "@/lib/products";
 
 export default async function NewProductPage() {
   // 1. Fetch data needed for the form
