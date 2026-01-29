@@ -1,6 +1,5 @@
 import { getServerSession } from "next-auth";
 import authOptions from "@/app/auth/authOptions";
-import prisma from "@/lib/prisma";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import {
   formatMoney,
   getOrderItemTotal,
 } from "@/lib/utils/pricing";
-import { getMyCart } from "@/lib/actions/cart";
+import { getMyCart } from "@/lib/cart";
 
 export default async function CartPage() {
   const session = await getServerSession(authOptions);

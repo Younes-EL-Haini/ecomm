@@ -1,58 +1,6 @@
-// "use client";
-
-// import { deleteAddress, setDefaultAddress } from "@/lib/actions/address";
-// import { useTransition } from "react";
-// import { Trash2, CheckCircle2, Loader2 } from "lucide-react";
-// import { toast } from "sonner";
-
-// export default function AddressActions({
-//   id,
-//   isDefault,
-// }: {
-//   id: string;
-//   isDefault: boolean;
-// }) {
-//   const [isPending, startTransition] = useTransition();
-
-//   const handleDelete = () => {
-//     startTransition(async () => {
-//       try {
-//         await deleteAddress(id);
-//         toast.success("Deleted");
-//       } catch (error) {
-//         toast.error("Failed to delete");
-//       }
-//     });
-//   };
-
-//   return (
-//     <div className="flex gap-2">
-//       {isPending ? (
-//         <Loader2 className="animate-spin text-zinc-400" size={18} />
-//       ) : (
-//         <>
-//           {!isDefault && (
-//             <button
-//               onClick={() => startTransition(() => setDefaultAddress(id))}
-//             >
-//               <CheckCircle2
-//                 size={18}
-//                 className="text-zinc-400 hover:text-green-600"
-//               />
-//             </button>
-//           )}
-//           <button onClick={handleDelete}>
-//             <Trash2 size={18} className="text-zinc-400 hover:text-red-600" />
-//           </button>
-//         </>
-//       )}
-//     </div>
-//   );
-// }
-
 "use client";
 
-import { deleteAddress, setDefaultAddress } from "@/lib/actions/address";
+import { deleteAddress, setDefaultAddress } from "@/lib/users";
 import { useTransition } from "react";
 import { Trash2, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
