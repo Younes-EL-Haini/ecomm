@@ -72,7 +72,7 @@ export default function AdminOrderTemplate({
                       {item.product.title}
                     </h4>
                     <p className="text-sm text-slate-500">
-                      SKU: {item.variant.sku} | Color: {item.variant?.color}
+                      SKU: {item.variant?.sku} | Color: {item.variant?.color}
                     </p>
                   </div>
                   <div className="text-right">

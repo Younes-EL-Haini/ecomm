@@ -32,6 +32,8 @@ export async function POST(req: Request) {
   if (stripeEvent.type === "payment_intent.succeeded") {
     const paymentIntent = stripeEvent.data.object as Stripe.PaymentIntent;
 
+    const shipping = paymentIntent.shipping;
+
     const userId = paymentIntent.metadata?.userId;
     const cartItems: Array<{
       id: string;
@@ -42,10 +44,6 @@ export async function POST(req: Request) {
     if (!userId || cartItems.length === 0) {
       return new NextResponse("Missing metadata", { status: 400 });
     }
-
-    const shippingAddress = paymentIntent.metadata?.shippingAddress
-  ? JSON.parse(paymentIntent.metadata.shippingAddress)
-  : null;
 
 
     // 3️⃣ Check if order already exists (idempotency)
@@ -92,11 +90,11 @@ export async function POST(req: Request) {
       const address = await prisma.address.create({
   data: {
     userId,
-    fullName: shippingAddress.fullName,
-    line1: shippingAddress.line1,
-    city: shippingAddress.city,
-    postalCode: shippingAddress.postalCode,
-    country: shippingAddress.country,
+    line1: shipping?.address?.line1 || "N/A",
+    city: shipping?.address?.city || "N/A",
+    fullName: shipping?.name,
+    postalCode: shipping?.address?.postal_code || "ed",
+    country: shipping?.address?.country || "wd"
   },
 });
       // Create order
