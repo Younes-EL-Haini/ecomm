@@ -92,6 +92,7 @@ const ProductInfo = ({ product, onColorChange }: Props) => {
         productId={product.id}
         variantId={selectedVariant?.id || null}
         disabled={!variantInStock}
+        stock={selectedVariant?.stock}
       />
 
       <div className="border-t pt-6 text-sm text-muted-foreground leading-relaxed">

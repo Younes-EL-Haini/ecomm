@@ -13,6 +13,7 @@ interface Props {
   initialQuantity: number;
   productId: string; // Add this
   variantId?: string; // Add this
+  stock: number;
 }
 
 export default function CartItemControls({
@@ -20,6 +21,7 @@ export default function CartItemControls({
   initialQuantity,
   productId,
   variantId,
+  stock,
 }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -72,7 +74,7 @@ export default function CartItemControls({
           label: "Undo",
           onClick: () => undoDelete(itemData),
         },
-      }
+      },
     );
   };
 
@@ -114,7 +116,7 @@ export default function CartItemControls({
           size="icon"
           className="h-8 w-8 rounded-none border-l"
           onClick={() => updateQuantity(initialQuantity + 1)}
-          disabled={loading}
+          disabled={loading || initialQuantity >= stock}
         >
           <Plus className="h-4 w-4" />
         </Button>

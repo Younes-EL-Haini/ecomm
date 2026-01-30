@@ -110,6 +110,7 @@ export default async function CartPage() {
                         initialQuantity={item.quantity}
                         productId={item.productId}
                         variantId={item.variantId || ""}
+                        stock={item.variant?.stock ?? 0}
                       />
 
                       <p className="font-bold text-lg">
