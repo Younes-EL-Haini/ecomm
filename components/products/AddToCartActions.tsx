@@ -24,6 +24,19 @@ export default function AddToCartActions({
   const increment = useCartStore((state) => state.increment);
 
   const handleAction = async (isBuyNow = false) => {
+    if (isBuyNow) {
+      // 1. Just go to checkout with params, DON'T call the cart API
+      const params = new URLSearchParams({
+        productId,
+        variantId: variantId || "",
+        quantity: quantity.toString(),
+        direct: "true",
+      });
+      router.push(`/checkout?${params.toString()}`);
+      return;
+    }
+
+    // 2. Normal "Add to Cart" logic
     setIsAdding(true);
     try {
       const res = await fetch("/api/cart", {
@@ -34,24 +47,9 @@ export default function AddToCartActions({
 
       if (res.ok) {
         const data = await res.json();
-
-        // ONLY increment the badge if it's a brand new product in the cart
-        if (data.isNewRow) {
-          increment();
-        }
-
-        if (isBuyNow) {
-          router.push("/checkout");
-        } else {
-          toast.success("Added to cart", {
-            description: "Continue shopping or view your cart.",
-            action: {
-              label: "View Cart",
-              onClick: () => router.push("/cart"),
-            },
-          });
-          router.refresh();
-        }
+        if (data.isNewRow) increment();
+        toast.success("Added to cart");
+        router.refresh();
       }
     } catch (error) {
       toast.error("Failed to update cart");
