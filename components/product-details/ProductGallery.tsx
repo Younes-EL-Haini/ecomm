@@ -41,6 +41,7 @@ const ProductGallery = ({ images, title, selectedColor }: Props) => {
           fill
           priority
           className="object-contain"
+          unoptimized={true}
         />
       </div>
 
@@ -63,6 +64,7 @@ const ProductGallery = ({ images, title, selectedColor }: Props) => {
               fill
               sizes="80px"
               className="object-contain"
+              unoptimized={true}
             />
           </button>
         ))}

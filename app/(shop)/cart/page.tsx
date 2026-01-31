@@ -76,6 +76,7 @@ export default async function CartPage() {
                       alt={item.product.title}
                       fill
                       className="object-cover transition-transform duration-300 ease-out group-hover:scale-110"
+                      unoptimized={true}
                     />
 
                     {/* Hover overlay (desktop only) */}
