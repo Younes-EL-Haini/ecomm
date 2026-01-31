@@ -26,12 +26,19 @@ export async function POST(req: Request) {
       body = {};
     }
 
-    let checkoutItems: { variantId: string; quantity: number; price: number }[] = [];
+    let checkoutItems: { 
+      variantId: string; 
+      quantity: number; 
+      price: number; 
+      title: string;      // 👈 Added
+      image: string;      // 👈 Added
+      variantName: string // 👈 Added 
+      }[] = [];
     let userId = "";
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { cartItems: { include: { product: true, variant: true } } }
+      include: { cartItems: { include: { product: { include: { images: true } }, variant: true } } }
     });
 
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -40,11 +47,12 @@ export async function POST(req: Request) {
     if (isDirect) {
       // --- BUY IT NOW LOGIC ---
       const { variantId, quantity } = body;
+      
       if (!variantId) return NextResponse.json({ error: "Variant ID missing" }, { status: 400 });
 
       const variant = await prisma.productVariant.findUnique({
         where: { id: variantId },
-        include: { product: true },
+        include: { product: { include: { images: true } } },
       });
 
       if (!variant) return NextResponse.json({ error: "Variant not found" }, { status: 404 });
@@ -53,6 +61,9 @@ export async function POST(req: Request) {
         variantId: variant.id,
         quantity: Number(quantity) || 1,
         price: Number(variant.product.price) + Number(variant.priceDelta || 0),
+        title: variant.product.title,
+        image: variant.product.images[0]?.url || "",
+        variantName: `${variant.color} / ${variant.size}`
       });
     } else {
       // --- NORMAL CART LOGIC ---
@@ -66,6 +77,9 @@ export async function POST(req: Request) {
           variantId: item.variantId!,
           quantity: item.quantity,
           price: price,
+          title: item.product.title,
+          image: item.product.images[0]?.url || "", // Make sure images are included in your user query
+          variantName: `${item.variant?.color} / ${item.variant?.size}`
         };
       });
     }
@@ -85,7 +99,10 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
-      total: totalAmount,
+      orderSummary: {
+        items: checkoutItems, // 👈 No need to map again, it's already beautiful
+        subtotal: totalAmount
+      }
     });
   } catch (error: any) {
     console.error("STRIPE_API_ERROR:", error);
