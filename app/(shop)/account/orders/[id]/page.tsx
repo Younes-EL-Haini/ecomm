@@ -70,41 +70,56 @@ const OrderPage = async ({ params }: Props) => {
               Items ({order.items.length})
             </p>
 
-            {order.items.map((item) => (
-              <div
-                key={item.id}
-                className="bg-white rounded-2xl group flex gap-6 items-center py-4 px-2"
-              >
-                <div className="w-24 h-24 relative rounded-2xl overflow-hidden bg-zinc-50 border border-zinc-100 shrink-0 shadow-sm">
-                  <Image
-                    src={item.product.images?.[0]?.url || "/placeholder.png"}
-                    alt={item.product.title}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                </div>
+            {order.items.map((item) => {
+              // Find the image that matches the variant color first
+              const image =
+                item.product.images.find(
+                  (img) =>
+                    img.color?.toLowerCase() ===
+                    item.variant?.color?.toLowerCase(),
+                ) ||
+                item.product.images.find((img) => img.isMain) ||
+                item.product.images[0];
 
-                <div className="flex-1 flex justify-between items-center">
-                  <div>
-                    <Link
-                      href={`/products/${item.product.slug}`}
-                      className="text-base font-bold text-zinc-900 hover:text-blue-600 transition-colors"
-                    >
-                      {item.product.title}
-                    </Link>
-                    <div className="text-xs text-zinc-500 mt-1 font-medium space-x-2">
-                      <span>Size: {item.variant?.size}</span>
-                      <span className="text-zinc-200">|</span>
-                      <span>Qty: {item.quantity}</span>
-                    </div>
+              return (
+                <div
+                  key={item.id}
+                  className="bg-white rounded-2xl group flex gap-6 items-center py-4 px-2"
+                >
+                  <div className="w-24 h-24 relative rounded-2xl overflow-hidden bg-zinc-50 border border-zinc-100 shrink-0 shadow-sm">
+                    <Image
+                      src={image?.url || "/placeholder.png"}
+                      alt={item.product.title}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      unoptimized={true}
+                    />
                   </div>
 
-                  <p className="text-sm font-bold text-zinc-900">
-                    {formatMoney(getOrderItemTotal(item))}
-                  </p>
+                  <div className="flex-1 flex justify-between items-center">
+                    <div>
+                      <Link
+                        href={`/products/${item.product.slug}`}
+                        className="text-base font-bold text-zinc-900 hover:text-blue-600 transition-colors"
+                      >
+                        {item.product.title}
+                      </Link>
+                      <div className="text-xs text-zinc-500 mt-1 font-medium space-x-2">
+                        <span>Size: {item.variant?.size}</span>
+                        <span className="text-zinc-200">|</span>
+                        <span>Color: {item.variant?.color}</span>
+                        <span className="text-zinc-200">|</span>
+                        <span>Qty: {item.quantity}</span>
+                      </div>
+                    </div>
+
+                    <p className="text-sm font-bold text-zinc-900">
+                      {formatMoney(getOrderItemTotal(item))}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* 3. Summary & Info (Right Side) */}

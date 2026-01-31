@@ -16,6 +16,17 @@ interface OrderCardProps {
 const OrderCard = ({ order }: OrderCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const firstItem = order.items?.[0];
+  const productImg =
+    firstItem?.product.images?.find(
+      (img) =>
+        img.color?.toLowerCase() === firstItem.variant?.color?.toLowerCase(),
+    ) ||
+    firstItem?.product.images?.find((img) => img.isMain) ||
+    firstItem?.product.images?.[0];
+
+  const displayImage = productImg?.url || "/placeholder.png";
+
   return (
     <div
       className={cn(
@@ -44,14 +55,12 @@ const OrderCard = ({ order }: OrderCardProps) => {
 
                   <div className="relative size-16 overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm transition-transform duration-500 group-hover:scale-105">
                     <Image
-                      src={
-                        order.items[0]?.product.images[0]?.url ||
-                        "/placeholder.png"
-                      }
+                      src={displayImage || "/placeholder.png"}
                       alt="Order preview"
                       fill
                       sizes="64px"
                       className="object-cover"
+                      unoptimized={true}
                     />
 
                     {/* Subtle overlay if there are many items */}

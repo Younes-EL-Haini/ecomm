@@ -11,7 +11,7 @@ export async function getMyOrders(email: string): Promise<SerializedOrder[]> {
     include: {
       items: {
         include: {
-          product: { include: { images: { take: 1 } } },
+          product: { include: { images: true } },
           variant: true,
         },
       },
