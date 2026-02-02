@@ -35,8 +35,9 @@ export type AdminOrderDetailRaw = Prisma.OrderGetPayload<{
   include: {
     items: {
       include: {
-        product: { include: { images: true } };
+        product: { include: { images: true, price:true } };
         variant: true;
+        price: true;
       };
     };
     user: true;
@@ -50,7 +51,7 @@ export type AdminOrderDetail = Omit<AdminOrderDetailRaw, "totalPrice" | "items">
   items: (Omit<AdminOrderDetailRaw["items"][number], "totalPrice" | "price" | "variant"> & {
     totalPrice: number;
     price: number;
-    name: string,
+    name?: string;
     variant: (Omit<NonNullable<AdminOrderDetailRaw["items"][number]["variant"]>, "priceDelta"> & {
       priceDelta: number;
     }) | null;

@@ -1,10 +1,11 @@
-export default function OrderSummary({
-  items,
-  subtotal,
-}: {
-  items: any[];
+import { CheckoutUIItem } from "@/lib/cart/cart.types";
+
+type Props = {
+  items: CheckoutUIItem[];
   subtotal: number;
-}) {
+};
+
+export default function OrderSummary({ items, subtotal }: Props) {
   return (
     <div className="bg-white p-6 rounded-2xl border shadow-sm sticky top-10">
       <h2 className="text-lg font-bold mb-4">Order Summary</h2>

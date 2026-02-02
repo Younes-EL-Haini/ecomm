@@ -4,7 +4,7 @@ import { Prisma } from "../generated/prisma";
 export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
     images: { select: { url: true; position: true } };
-    variants: { select: { stock: true; color: true; } };
+    variants: { select: { stock: true; color: true; priceDelta?:true } };
   };
 }>;
 

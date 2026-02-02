@@ -28,13 +28,13 @@ const previewCart = [
     image: "https://placehold.co/100x100.png",
   },
 ];
-
+// need to fix
 export const OrderConfirmationEmail = ({
   orderId = "pi_3SwQZZEWsuG",
   customerName = "Youness",
   total = 139.98,
   cartItems = previewCart,
-}: any) => {
+}) => {
   const displayId = orderId ? orderId.slice(-8).toUpperCase() : "XXXXXX";
 
   return (
@@ -67,7 +67,7 @@ export const OrderConfirmationEmail = ({
               <Text className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-4">
                 Your Items
               </Text>
-              {cartItems?.map((item: any, index: number) => (
+              {cartItems?.map((item, index: number) => (
                 <Row key={index} className="mb-4">
                   <Column className="w-16">
                     <Img

@@ -146,7 +146,7 @@ try {
 
   if (user?.email) {
     // We map cartItems to ensure the email component gets exactly what it needs
-    const emailItems = cartItems.map((item: any) => {
+    const emailItems = cartItems.map((item) => {
       // Find the product details from the 'products' array we fetched earlier
       const productData = products.find(p => p.id === item.id);
       

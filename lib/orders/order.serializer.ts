@@ -17,7 +17,7 @@ export const serializeAdminDetail = (order: AdminOrderDetailRaw | null): AdminOr
   return {
     ...order,
     totalPrice: Number(order.totalPrice),
-    items: order.items.map((item: any) => ({
+    items: order.items.map((item) => ({
       ...item,
       price: Number(item.price || 0), // Don't forget the unit price!
       totalPrice: Number(item.totalPrice),

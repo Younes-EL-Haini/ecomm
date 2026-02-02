@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import authOptions from "@/app/auth/authOptions";
 import prisma from "@/lib/prisma";
 import Stripe from "stripe";
+import { CheckoutUIItem } from "@/lib/cart";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-12-15.clover",
@@ -71,17 +72,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
       }
 
-      checkoutItems = user.cartItems.map((item) => {
-        const price = Number(item.product.price) + Number(item.variant?.priceDelta || 0);
-        return {
-          variantId: item.variantId!,
-          quantity: item.quantity,
-          price: price,
-          title: item.product.title,
-          image: item.product.images[0]?.url || "", // Make sure images are included in your user query
-          variantName: `${item.variant?.color} / ${item.variant?.size}`
-        };
-      });
+      let checkoutItems: CheckoutUIItem[] = [];
     }
 
     const totalAmount = checkoutItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
@@ -100,7 +91,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
       orderSummary: {
-        items: checkoutItems, // 👈 No need to map again, it's already beautiful
+        items: checkoutItems,
         subtotal: totalAmount
       }
     });
