@@ -14,7 +14,7 @@ export default function OrderSummary({
           <div key={item.variantId} className="flex gap-4">
             <div className="h-16 w-16 rounded-lg bg-zinc-100 border overflow-hidden shrink-0">
               <img
-                src={item.image}
+                src={item.image || "/images/hero-product.jpg"}
                 alt={item.title}
                 className="h-full w-full object-cover"
               />

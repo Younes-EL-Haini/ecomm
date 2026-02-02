@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import prisma from "@/lib/prisma";
 import Decimal from "decimal.js";
+import { resend } from "@/lib/resend";
+import { OrderConfirmationEmail } from "@/components/emails/OrderConfirmation";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-06-20" as any,
@@ -134,6 +136,39 @@ export async function POST(req: Request) {
       console.error("Transaction Error:", err);
       return new NextResponse("Transaction Failed", { status: 500 });
     }
+    // ... inside your webhook after the transaction
+try {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, name: true }
+  });
+
+  console.log("DEBUG: Attempting to send email to user:", user?.email);
+
+  if (user?.email) {
+    const { data, error } = await resend.emails.send({
+      from: 'Store <onboarding@resend.dev>',
+      // FOR TESTING: Hardcode the email you use to log into Resend here
+      to: user.email, 
+      subject: 'Order Confirmation TEST',
+      react: OrderConfirmationEmail({
+        orderId: paymentIntent.id,
+        customerName: user.name || 'Customer',
+        total: paymentIntent.amount / 100
+      }),
+    });
+
+    if (error) {
+      console.error("Resend API Error:", error);
+    } else {
+      console.log("Resend Success Data:", data);
+    }
+  } else {
+    console.log("DEBUG: No user email found in DB for ID:", userId);
+  }
+} catch (error) {
+  console.error("Logic Error in Email Block:", error);
+}
   }
 
   return new NextResponse("Success", { status: 200 });
