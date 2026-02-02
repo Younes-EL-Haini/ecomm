@@ -5,7 +5,7 @@ import { ProductWithRelations } from "@/lib/products";
 import Link from "next/link";
 
 const ProductCard = ({ product }: { product: ProductWithRelations }) => {
-  const hasStock = product.variants.some((variant: any) => variant.stock > 0);
+  const hasStock = product.variants.some((variant) => variant.stock > 0);
 
   const uniqueColors = Array.from(
     new Set(product.variants.map((v) => v.color)),

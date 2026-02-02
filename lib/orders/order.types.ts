@@ -50,6 +50,7 @@ export type AdminOrderDetail = Omit<AdminOrderDetailRaw, "totalPrice" | "items">
   items: (Omit<AdminOrderDetailRaw["items"][number], "totalPrice" | "price" | "variant"> & {
     totalPrice: number;
     price: number;
+    name: string,
     variant: (Omit<NonNullable<AdminOrderDetailRaw["items"][number]["variant"]>, "priceDelta"> & {
       priceDelta: number;
     }) | null;

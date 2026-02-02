@@ -8,6 +8,7 @@ import CheckoutPaymentForm from "@/components/checkout/CheckoutPaymentForm";
 import { Loader2, Lock, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import OrderSummary from "@/components/checkout/OrderSummary";
+import { CheckoutSummary } from "@/lib/cart";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
@@ -22,10 +23,7 @@ export default function CheckoutPage() {
     postalCode: "",
     country: "",
   });
-  const [summary, setSummary] = useState<{
-    items: any[];
-    subtotal: number;
-  } | null>(null);
+  const [summary, setSummary] = useState<CheckoutSummary | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);

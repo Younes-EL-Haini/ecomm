@@ -7,8 +7,7 @@ import { ProductFullDetails } from "@/lib/products";
 
 const ProductClient = ({ product }: { product: ProductFullDetails }) => {
   // 1. Get the same default color that your hook will pick (the first one)
-  const initialColor =
-    product.variants.find((v: any) => v.color)?.color || null;
+  const initialColor = product.variants.find((v) => v.color)?.color || null;
 
   // 2. Set that as the starting state
   const [selectedColor, setSelectedColor] = useState<string | null>(

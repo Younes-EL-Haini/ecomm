@@ -58,7 +58,7 @@ export default function AdminOrderTemplate({
               <h2 className="font-bold text-lg">Items Summary</h2>
             </div>
             <div className="divide-y">
-              {order.items.map((item: any) => (
+              {order.items.map((item) => (
                 <div key={item.id} className="p-6 flex items-center gap-4">
                   <div className="h-16 w-16 bg-slate-100 rounded-lg overflow-hidden border">
                     <img
