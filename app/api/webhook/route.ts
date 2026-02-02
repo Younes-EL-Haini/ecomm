@@ -4,7 +4,8 @@ import Stripe from "stripe";
 import prisma from "@/lib/prisma";
 import Decimal from "decimal.js";
 import { resend } from "@/lib/resend";
-import { OrderConfirmationEmail } from "@/components/emails/OrderConfirmation";
+import OrderConfirmationEmail from "@/emails/OrderConfirmation";
+import { CartWithProducts } from "@/lib/cart";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-06-20" as any,
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
     const rawItems = JSON.parse(paymentIntent.metadata?.cartItems || "[]");
     
     // 2. Normalize items: Ensure every item has a productId even if it came from a direct variant buy
-    const cartItems = await Promise.all(rawItems.map(async (item: any) => {
+    const cartItems = await Promise.all(rawItems.map(async (item: CartWithProducts) => {
       if (item.variantId && !item.id) {
         // If we only have variantId (Direct Buy), find the productId
         const v = await prisma.productVariant.findUnique({
@@ -136,35 +137,45 @@ export async function POST(req: Request) {
       console.error("Transaction Error:", err);
       return new NextResponse("Transaction Failed", { status: 500 });
     }
-    // ... inside your webhook after the transaction
+    
 try {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { email: true, name: true }
   });
 
-  console.log("DEBUG: Attempting to send email to user:", user?.email);
-
   if (user?.email) {
+    // We map cartItems to ensure the email component gets exactly what it needs
+    const emailItems = cartItems.map((item: any) => {
+      // Find the product details from the 'products' array we fetched earlier
+      const productData = products.find(p => p.id === item.id);
+      
+      return {
+        name: item.name || "Product", // If name isn't in metadata, you might need to fetch it
+        q: item.q,
+        price: priceMap.get(item.id)?.toNumber() || 0,
+        // Ensure you have a valid image URL here
+        image: item.image || "https://placehold.co/100x100.png" 
+      };
+    });
+
     const { data, error } = await resend.emails.send({
-      from: 'Store <onboarding@resend.dev>',
-      // FOR TESTING: Hardcode the email you use to log into Resend here
+      from: 'Loko Shop <onboarding@resend.dev>',
       to: user.email, 
-      subject: 'Order Confirmation TEST',
+      subject: `Order Confirmation #${paymentIntent.id.slice(-8).toUpperCase()}`,
       react: OrderConfirmationEmail({
         orderId: paymentIntent.id,
         customerName: user.name || 'Customer',
-        total: paymentIntent.amount / 100
+        total: paymentIntent.amount / 100,
+        cartItems: emailItems, // <--- Passing the array here
       }),
     });
 
     if (error) {
       console.error("Resend API Error:", error);
     } else {
-      console.log("Resend Success Data:", data);
+      console.log("Resend Success: Email sent with items list.");
     }
-  } else {
-    console.log("DEBUG: No user email found in DB for ID:", userId);
   }
 } catch (error) {
   console.error("Logic Error in Email Block:", error);
