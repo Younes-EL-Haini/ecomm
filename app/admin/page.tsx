@@ -2,6 +2,8 @@ import { RevenueChart } from "@/components/admin/RevenueChart";
 import { getDashboardData } from "@/lib/admin/dashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingCart, DollarSign, Box } from "lucide-react";
+import { RecentOrders } from "@/components/admin/RecentOrders";
+import { Button } from "@/components/ui/button";
 
 export default async function AdminDashboard() {
   const data = await getDashboardData();
@@ -69,12 +71,34 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Revenue Chart */}
-      <div className="rounded-3xl bg-white p-6 shadow-lg border border-gray-100">
+      {/* <div className="rounded-3xl bg-white p-6 shadow-lg border border-gray-100">
         <h4 className="text-sm font-medium text-gray-500 mb-4">
           Revenue (Last 7 Days)
         </h4>
         <RevenueChart data={data.chartData} />
+      </div> */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Chart takes up 2 columns */}
+        <div className="lg:col-span-2">
+          <RevenueChart data={data.chartData} />
+        </div>
+
+        {/* Small "Info Card" for extra polish */}
+        <div className="bg-zinc-900 rounded-4xl p-8 text-white flex flex-col justify-between">
+          <div>
+            <h3 className="text-xl font-bold">Loko Shop Admin</h3>
+            <p className="text-zinc-400 text-sm mt-2">
+              You have 4 orders pending shipment today.
+            </p>
+          </div>
+          <Button className="bg-white text-black rounded-xl py-3 font-bold hover:bg-zinc-200 transition-all">
+            Manage Logistics
+          </Button>
+        </div>
       </div>
+
+      {/* Bottom Row - Full Width Table */}
+      <RecentOrders orders={data.recentOrders} />
     </div>
   );
 }

@@ -5,7 +5,7 @@ export async function getDashboardData() {
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
   // Fetch everything in parallel for maximum speed
-  const [orders, totalProducts, stats] = await Promise.all([
+  const [orders, totalProducts, stats, recentOrders, topProducts] = await Promise.all([
     prisma.order.count(),
     prisma.product.count(),
     prisma.order.findMany({
@@ -19,6 +19,20 @@ export async function getDashboardData() {
       },
       orderBy: { createdAt: 'asc' }
     }),
+    // New: Recent Orders
+  prisma.order.findMany({
+    take: 5,
+    orderBy: { createdAt: 'desc' },
+    include: { user: { select: { name: true, email: true } } }
+  }),
+
+  // New: Top Products (Simplified logic)
+  prisma.orderItem.groupBy({
+    by: ['productId'],
+    _sum: { quantity: true },
+    orderBy: { _sum: { quantity: 'desc' } },
+    take: 3,
+  })
   ]);
 
   const totalRevenue = stats.reduce((acc, order) => acc + Number(order.totalPrice), 0);
@@ -39,6 +53,8 @@ export async function getDashboardData() {
     totalOrders: orders,
     totalProducts,
     totalRevenue,
-    chartData
+    chartData,
+    recentOrders, 
+    topProducts
   };
 }
