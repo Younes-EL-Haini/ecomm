@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import authOptions from "@/app/auth/authOptions";
 import prisma from "@/lib/prisma";
 import Stripe from "stripe";
-import { CheckoutUIItem } from "@/lib/cart";
+import { CheckoutUIItem, CheckoutUIItemSchema } from "@/lib/cart";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-12-15.clover",
@@ -27,14 +27,7 @@ export async function POST(req: Request) {
       body = {};
     }
 
-    let checkoutItems: { 
-      variantId: string; 
-      quantity: number; 
-      price: number; 
-      title: string;      // 👈 Added
-      image: string;      // 👈 Added
-      variantName: string // 👈 Added 
-      }[] = [];
+    let checkoutItems: CheckoutUIItem[] = [];
     let userId = "";
 
     const user = await prisma.user.findUnique({
@@ -45,37 +38,83 @@ export async function POST(req: Request) {
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
     userId = user.id;
 
-    if (isDirect) {
-      // --- BUY IT NOW LOGIC ---
-      const { variantId, quantity } = body;
+    // if (isDirect) {
+    //   // --- BUY IT NOW LOGIC ---
+    //   const { variantId, quantity } = body;
       
-      if (!variantId) return NextResponse.json({ error: "Variant ID missing" }, { status: 400 });
+    //   if (!variantId) return NextResponse.json({ error: "Variant ID missing" }, { status: 400 });
 
-      const variant = await prisma.productVariant.findUnique({
-        where: { id: variantId },
-        include: { product: { include: { images: true } } },
-      });
+    //   const variant = await prisma.productVariant.findUnique({
+    //     where: { id: variantId },
+    //     include: { product: { include: { images: true } } },
+    //   });
 
-      if (!variant) return NextResponse.json({ error: "Variant not found" }, { status: 404 });
+    //   if (!variant) return NextResponse.json({ error: "Variant not found" }, { status: 404 });
 
-      checkoutItems.push({
-        variantId: variant.id,
-        quantity: Number(quantity) || 1,
-        price: Number(variant.product.price) + Number(variant.priceDelta || 0),
-        title: variant.product.title,
-        image: variant.product.images[0]?.url || "",
-        variantName: `${variant.color} / ${variant.size}`
-      });
-    } else {
-      // --- NORMAL CART LOGIC ---
-      if (user.cartItems.length === 0) {
-        return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
-      }
+    //   checkoutItems.push({
+    //     variantId: variant.id,
+    //     quantity: Number(quantity) || 1,
+    //     price: Number(variant.product.price) + Number(variant.priceDelta || 0),
+    //     title: variant.product.title,
+    //     image: variant.product.images[0]?.url || "",
+    //     variantName: `${variant.color} / ${variant.size}`
+    //   });
+    // } else {
+    //   // --- NORMAL CART LOGIC ---
+    //   if (user.cartItems.length === 0) {
+    //     return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
+    //   }
 
-      let checkoutItems: CheckoutUIItem[] = [];
-    }
+    // }
+    if (isDirect) {
+  // --- BUY IT NOW LOGIC ---
+  const { variantId, quantity } = body;
+
+  if (!variantId)
+    return NextResponse.json({ error: "Variant ID missing" }, { status: 400 });
+
+  const variant = await prisma.productVariant.findUnique({
+    where: { id: variantId },
+    include: { product: { include: { images: true } } },
+  });
+
+  if (!variant)
+    return NextResponse.json({ error: "Variant not found" }, { status: 404 });
+
+  checkoutItems.push({
+    variantId: variant.id,
+    quantity: Number(quantity) || 1,
+    price: Number(variant.product.price) + Number(variant.priceDelta || 0),
+    title: variant.product.title,
+    image: variant.product.images[0]?.url || null,
+    variantName: `${variant.color} / ${variant.size}`,
+  });
+} else {
+  // --- NORMAL CART LOGIC ---
+  if (user.cartItems.length === 0) {
+    return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
+  }
+
+  checkoutItems = user.cartItems.map((item) => ({
+    variantId: item.variantId!,
+    quantity: item.quantity,
+    price:
+      Number(item.product.price) +
+      Number(item.variant?.priceDelta || 0),
+    title: item.product.title,
+    image: item.product.images[0]?.url || null,
+    variantName: `${item.variant?.color} / ${item.variant?.size}`,
+  }));
+}
+
 
     const totalAmount = checkoutItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    if (checkoutItems.length === 0 || totalAmount <= 0) {
+  return NextResponse.json(
+    { error: "No items to checkout" },
+    { status: 400 }
+  );
+}
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(totalAmount * 100),
@@ -88,10 +127,12 @@ export async function POST(req: Request) {
       },
     });
 
+    const safeItems = CheckoutUIItemSchema.array().parse(checkoutItems);
+
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
       orderSummary: {
-        items: checkoutItems,
+        items: safeItems,
         subtotal: totalAmount
       }
     });

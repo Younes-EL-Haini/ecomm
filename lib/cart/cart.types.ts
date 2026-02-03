@@ -6,22 +6,3 @@ export type CartWithProducts = Prisma.CartItemGetPayload<{
     variant: true;
   };
 }>;
-
-export type CheckoutUIItem = {
-  variantId: string;
-  title: string;
-  image: string | null;
-  variantName: string;
-  price: number;
-  quantity: number;
-};
-
-export type CheckoutSummary = {
-  items: CheckoutUIItem[];
-  subtotal: number;
-};
-
-export type CheckoutUISummary = {
-  items: CheckoutUIItem[];
-  subtotal: number;
-};

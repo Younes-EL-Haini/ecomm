@@ -1,4 +1,4 @@
-import { CheckoutUIItem } from "@/lib/cart/cart.types";
+import { CheckoutUIItem } from "@/lib/cart";
 
 type Props = {
   items: CheckoutUIItem[];
