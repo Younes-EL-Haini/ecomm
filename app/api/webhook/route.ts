@@ -5,7 +5,8 @@ import prisma from "@/lib/prisma";
 import Decimal from "decimal.js";
 import { resend } from "@/lib/resend";
 import OrderConfirmationEmail from "@/emails/OrderConfirmation";
-import { CartWithProducts } from "@/lib/cart";
+import { CartWithProducts, CheckoutUIItemSchema } from "@/lib/cart";
+import { z } from "zod"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-06-20" as any,
@@ -37,9 +38,19 @@ export async function POST(req: Request) {
 
     // 1. Get items from metadata
     const rawItems = JSON.parse(paymentIntent.metadata?.cartItems || "[]");
+
+    const validatedItems: z.infer<typeof CheckoutUIItemSchema>[] = [];
+      for (const item of rawItems) {
+        const parseResult = CheckoutUIItemSchema.safeParse(item);
+        if (!parseResult.success) {
+          console.error("Invalid cart item:", parseResult.error.format());
+          return new NextResponse("Invalid cart item data", { status: 400 });
+        }
+        validatedItems.push(parseResult.data);
+      }
     
     // 2. Normalize items: Ensure every item has a productId even if it came from a direct variant buy
-    const cartItems = await Promise.all(rawItems.map(async (item: CartWithProducts) => {
+    const cartItems = await Promise.all(validatedItems.map(async (item) => {
       if (item.variantId && !item.id) {
         // If we only have variantId (Direct Buy), find the productId
         const v = await prisma.productVariant.findUnique({
@@ -94,6 +105,21 @@ export async function POST(req: Request) {
             country: shipping?.address?.country || "N/A"
           },
         });
+        
+        const orderItemsData = cartItems
+  .filter((item): item is typeof item & { id: string } => !!item.id) // Only items with productId
+  .map(item => {
+    const price = priceMap.get(item.id)?.toNumber() || 0;
+
+    return {
+      productId: item.id,       // Prisma requires this
+      variantId: item.variantId,
+      quantity: item.quantity,
+      unitPrice: new Decimal(price),
+      totalPrice: new Decimal(price * item.quantity),
+    };
+  });
+
 
         // Create Order
         await tx.order.create({
@@ -104,16 +130,7 @@ export async function POST(req: Request) {
             totalPrice: new Decimal(paymentIntent.amount / 100),
             shippingAddressId: address.id,
             items: {
-              create: cartItems.map(item => {
-                const price = priceMap.get(item.id)?.toNumber() || 0;
-                return {
-                  productId: item.id,
-                  variantId: item.variantId,
-                  quantity: item.q,
-                  unitPrice: new Decimal(price),
-                  totalPrice: new Decimal(price * item.q),
-                };
-              }),
+              create: orderItemsData
             },
           },
         });
@@ -123,7 +140,7 @@ export async function POST(req: Request) {
           if (item.variantId && validVariantIds.has(item.variantId)) {
             await tx.productVariant.update({
               where: { id: item.variantId },
-              data: { stock: { decrement: item.q } },
+              data: { stock: { decrement: item.quantity } },
             });
           }
         }
@@ -152,8 +169,8 @@ try {
       
       return {
         name: item.name || "Product", // If name isn't in metadata, you might need to fetch it
-        q: item.q,
-        price: priceMap.get(item.id)?.toNumber() || 0,
+        q: item.quantity,
+        price: priceMap.get(item.id ?? "")?.toNumber() || 0,
         // Ensure you have a valid image URL here
         image: item.image || "https://placehold.co/100x100.png" 
       };
