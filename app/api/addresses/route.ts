@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import prisma from "@/lib/prisma";
 import authOptions from "@/app/auth/authOptions";
+import { AddressSchema } from "@/lib/users";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -10,24 +11,30 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await req.json();
-  const {
-    label,
-    line1,
-    line2,
-    city,
-    state,
-    postalCode,
-    country,
-    isDefault,
-  } = body;
+const body = await req.json();
 
-  if (!line1 || !city || !postalCode || !country) {
-    return NextResponse.json(
-      { error: "Missing required fields" },
-      { status: 400 }
-    );
-  }
+const parsed = AddressSchema.safeParse(body);
+
+if (!parsed.success) {
+      // THIS LOG WILL TELL YOU IF ZOD IS THE PROBLEM
+      console.log("Zod Validation Failed:", parsed.error.format());
+      return NextResponse.json({ 
+        error: "Invalid data", 
+        issues: parsed.error.flatten().fieldErrors 
+      }, { status: 400 });
+    }
+
+const {
+  label,
+  fullName,
+  line1,
+  line2,
+  city,
+  state,
+  postalCode,
+  country,
+  isDefault,
+} = parsed.data;
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
@@ -48,6 +55,7 @@ export async function POST(req: Request) {
   const address = await prisma.address.create({
     data: {
       userId: user.id,
+      fullName,
       label,
       line1,
       line2,

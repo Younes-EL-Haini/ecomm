@@ -2,36 +2,58 @@
 
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { toast } from "sonner";
 
 const AddAddressForm = () => {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setErrors({});
 
     const formData = new FormData(e.currentTarget);
 
-    const res = await fetch("/api/addresses", {
-      method: "POST",
-      body: JSON.stringify({
-        label: formData.get("label"),
-        line1: formData.get("line1"),
-        line2: formData.get("line2"),
-        city: formData.get("city"),
-        state: formData.get("state"),
-        postalCode: formData.get("postalCode"),
-        country: formData.get("country"),
-        isDefault: formData.get("isDefault") === "on",
-      }),
-    });
+    try {
+      const res = await fetch("/api/addresses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          label: formData.get("label"),
+          fullName: formData.get("fullName"),
+          line1: formData.get("line1"),
+          line2: formData.get("line2"),
+          city: formData.get("city"),
+          state: formData.get("state"),
+          postalCode: formData.get("postalCode"),
+          country: formData.get("country"),
+          isDefault: formData.get("isDefault") === "on",
+        }),
+      });
 
-    if (!res.ok) {
-      setError("Failed to add address");
+      const result = await res.json();
+
+      if (!res.ok) {
+        if (result.issues) {
+          setErrors(result.issues);
+          toast.error("Please check the highlighted fields.");
+        } else {
+          toast.error(result.error || "Failed to add address");
+        }
+        setLoading(false);
+        return;
+      }
+
+      toast.success("Address added successfully!"); // 👈 Success Toast
+
+      // Delay reload slightly so user can see the success toast
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (error) {
+      toast.error("A network error occurred.");
       setLoading(false);
-      return;
     }
 
     window.location.reload(); // simple & clean for now
@@ -49,7 +71,6 @@ const AddAddressForm = () => {
         <p className="text-sm text-zinc-500">Used for shipping and billing</p>
       </div>
 
-      {error && <p className="text-sm text-red-500">{error}</p>}
       <div className="space-y-4">
         <input
           name="label"
@@ -57,16 +78,34 @@ const AddAddressForm = () => {
           className="input"
         />
         <input
+          name="fullName"
+          placeholder="Address full Name *"
+          required
+          className="input"
+        />
+        {errors.fullName && (
+          <p className="text-red-500 text-xs mt-1">{errors.fullName[0]}</p>
+        )}
+        <input
           name="line1"
           placeholder="Address line 1 *"
           required
           className="input"
         />
+        {errors.line1 && (
+          <p className="text-red-500 text-xs mt-1">{errors.line1[0]}</p>
+        )}
         <input name="line2" placeholder="Address line 2" className="input" />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <input name="city" placeholder="City *" required className="input" />
+        {errors.city && (
+          <p className="text-red-500 text-xs mt-1">{errors.city[0]}</p>
+        )}
         <input name="state" placeholder="State" className="input" />
+        {errors.state && (
+          <p className="text-red-500 text-xs mt-1">{errors.state[0]}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -76,12 +115,18 @@ const AddAddressForm = () => {
           required
           className="input"
         />
+        {errors.postalCode && (
+          <p className="text-red-500 text-xs mt-1">{errors.postalCode[0]}</p>
+        )}
         <input
           name="country"
           placeholder="Country *"
           required
           className="input"
         />
+        {errors.country && (
+          <p className="text-red-500 text-xs mt-1">{errors.country[0]}</p>
+        )}
       </div>
 
       <label className="flex items-center gap-3 text-sm text-zinc-600 cursor-pointer">
