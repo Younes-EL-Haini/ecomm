@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 export const dynamic = "force-dynamic";
 import { getDateRange } from "@/lib/admin/date-utils"; // Use the helper I gave you earlier
 import { DateRangeFilter } from "@/components/admin/DateRangeFilter";
+import { TopProducts } from "@/components/admin/TopProducts";
 
 export default async function AdminDashboard(props: any) {
   // Convert the URL string (today, last7, etc) into actual Date objects
@@ -16,13 +17,6 @@ export default async function AdminDashboard(props: any) {
 
   // Fetch the dynamic data
   const data = await getDashboardData(from, to);
-
-  console.log("--- DEBUG START ---");
-  console.log("URL Range String:", range);
-  console.log("Date From:", from.toISOString());
-  console.log("Date To:", to.toISOString());
-  console.log("Total Revenue:", data.totalRevenue);
-  console.log("--- DEBUG END ---");
 
   return (
     <div className="p-8 space-y-8 w-full bg-gray-50 min-h-screen">
@@ -108,6 +102,10 @@ export default async function AdminDashboard(props: any) {
           />
         </div>
         {/* Small "Info Card" for extra polish */}
+
+        <div className="lg:col-span-1">
+          <TopProducts products={data.topProducts} />
+        </div>
 
         <div className="bg-zinc-900 rounded-4xl p-8 text-white flex flex-col justify-between">
           <div>

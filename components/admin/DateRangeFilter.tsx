@@ -5,8 +5,8 @@ import { Calendar, ChevronDown } from "lucide-react";
 
 const RANGES = [
   { label: "Today", value: "today" },
-  { label: "Last 7 Days", value: "last 7" },
-  { label: "Last 30 Days", value: "last 30" },
+  { label: "Last 7 Days", value: "last7" },
+  { label: "Last 30 Days", value: "last30" },
   { label: "This Month", value: "thisMonth" },
 ];
 

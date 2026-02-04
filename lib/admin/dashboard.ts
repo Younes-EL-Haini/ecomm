@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 // Add parameters for the date range
 export async function getDashboardData(from: Date, to: Date) {
   // Fetch everything in parallel
-  const [ordersCount, totalProducts, stats, recentOrders, topProducts] = await Promise.all([
+  const [ordersCount, totalProducts, stats, recentOrders, topSoldData] = await Promise.all([
     // Orders count within the specific range
     prisma.order.count({
       where: { createdAt: { gte: from, lte: to } }
@@ -30,16 +30,41 @@ export async function getDashboardData(from: Date, to: Date) {
       orderBy: { createdAt: 'desc' },
       include: { user: { select: { name: true, email: true } } }
     }),
-
-    // Top Products based on items sold in that range
     prisma.orderItem.groupBy({
       by: ['productId'],
-      where: { order: { createdAt: { gte: from, lte: to } } }, // Filter by range
+      where: { order: { createdAt: { gte: from, lte: to } } },
       _sum: { quantity: true },
       orderBy: { _sum: { quantity: 'desc' } },
-      take: 3,
+      take: 5,
     })
   ]);
+  const topProductsResults = await Promise.all(
+  topSoldData.map(async (item) => {
+    const product = await prisma.product.findUnique({
+      where: { id: item.productId },
+      select: {
+        id: true,
+        title: true,
+        price: true,
+        images: true, 
+      }
+    });
+    
+    // If the product was deleted but stays in order history, handle the null
+    if (!product) return null;
+
+    return {
+      id: product.id,
+      title: product.title,
+      price: product.price,
+      images: product.images,
+      quantitySold: item._sum.quantity || 0,
+    };
+  })
+);
+
+// Filter out any nulls to ensure the array only contains valid objects
+const topProducts = topProductsResults.filter((p): p is NonNullable<typeof p> => p !== null);
 
   const totalRevenue = stats.reduce((acc, order) => acc + Number(order.totalPrice), 0);
 
