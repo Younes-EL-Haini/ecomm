@@ -1,9 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Prisma } from "@/lib/generated/prisma";
 
 interface Order {
   id: string;
   status: string;
-  totalPrice: any;
+  totalPrice: Prisma.Decimal;
   createdAt: Date;
   user: { name: string | null; email: string | null };
 }
