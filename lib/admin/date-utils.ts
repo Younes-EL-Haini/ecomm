@@ -10,10 +10,9 @@ export function getDateRange(range?: string) {
     case "last30":
       from.setDate(to.getDate() - 30);
       break;
-    case "thisMonth":
-      from.setDate(1);
-      from.setHours(0, 0, 0, 0);
-      break;
+    case "all-time":
+      // Returning null/undefined signals to the query to skip filtering
+      return { from: undefined, to: undefined };
     default: // last7 (Default)
       from.setDate(to.getDate() - 7);
   }

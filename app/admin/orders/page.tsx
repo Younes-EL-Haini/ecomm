@@ -1,14 +1,25 @@
-import { format } from "date-fns"; // Recommended for date formatting
+import { format } from "date-fns";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingBag, ChevronRight, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { formatMoney, toNumber } from "@/lib/utils/pricing";
 import { getAdminOrders, getStatusClasses } from "@/lib/orders";
+import { getDateRange } from "@/lib/admin/date-utils"; // Import your utility
+import { DateRangeFilter } from "@/components/admin/DateRangeFilter";
 
-export default async function AdminOrdersPage() {
-  // Fetch all orders with customer info and item counts
-  const orders = await getAdminOrders();
+export default async function AdminOrdersPage(props: {
+  searchParams: Promise<{ range?: string }>;
+}) {
+  // 1. Get the range from the URL (e.g., ?range=last30)
+  const searchParams = await props.searchParams;
+  const range = searchParams.range;
+
+  // 2. Get the actual dates using your utility
+  const { from, to } = getDateRange(range);
+
+  // 3. Fetch orders using those dates
+  const orders = await getAdminOrders({ from, to });
 
   return (
     <div className="space-y-6 m-3">
@@ -19,15 +30,30 @@ export default async function AdminOrdersPage() {
             Orders
           </h1>
           <p className="text-slate-500 text-sm">
-            Manage and track your customer purchases.
+            {range
+              ? `Showing results for ${range.replace("-", " ")}`
+              : "Manage and track your customer purchases."}
           </p>
         </div>
-        <div className="relative w-full md:w-72">
+        {/* <div className="relative w-full md:w-72">
           <Search
             className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
             size={16}
           />
           <Input placeholder="Search orders..." className="pl-10 bg-white" />
+        </div> */}
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <DateRangeFilter /> {/* 👈 Added here */}
+          <div className="relative w-full md:w-72">
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              size={16}
+            />
+            <Input
+              placeholder="Search orders..."
+              className="pl-10 bg-white rounded-2xl border-gray-100"
+            />
+          </div>
         </div>
       </div>
 
@@ -63,7 +89,7 @@ export default async function AdminOrdersPage() {
                     </p>
                   </td>
                   <td className="px-6 py-4 text-slate-600">
-                    {format(order.createdAt, "MMM dd, yyyy")}
+                    {format(new Date(order.createdAt), "MMM dd, yyyy")}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
@@ -102,9 +128,11 @@ export default async function AdminOrdersPage() {
             <div className="bg-slate-50 p-4 rounded-full mb-4">
               <ShoppingBag size={32} className="text-slate-300" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900">No orders yet</h3>
+            <h3 className="text-lg font-bold text-slate-900">
+              No orders found
+            </h3>
             <p className="text-slate-500 max-w-xs">
-              When customers buy products, they will appear here.
+              Try changing the date range or search criteria.
             </p>
           </div>
         )}

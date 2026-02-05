@@ -1,27 +1,33 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Calendar, ChevronDown } from "lucide-react";
 
 const RANGES = [
   { label: "Today", value: "today" },
   { label: "Last 7 Days", value: "last7" },
   { label: "Last 30 Days", value: "last30" },
-  { label: "This Month", value: "thisMonth" },
+  { label: "All time", value: "all-time" },
 ];
 
 export function DateRangeFilter() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const currentRange = searchParams.get("range") || "last 7";
+  const pathname = usePathname(); // Gets the current URL path
+
+  // Normalize current range for the select value
+  const currentRange = searchParams.get("range") || "last7";
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    router.push(`/admin?range=${e.target.value}`);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("range", e.target.value);
+
+    // Push to the same path but with new params
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   return (
     <div className="relative inline-flex items-center">
-      {/* Icon Wrapper */}
       <div className="absolute left-4 z-10 text-gray-400 pointer-events-none">
         <Calendar size={16} />
       </div>
@@ -38,7 +44,6 @@ export function DateRangeFilter() {
         ))}
       </select>
 
-      {/* Custom Arrow */}
       <div className="absolute right-4 z-10 text-gray-400 pointer-events-none">
         <ChevronDown size={14} />
       </div>

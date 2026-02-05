@@ -37,24 +37,25 @@ export default async function AdminDashboard(props: any) {
       {/* Key Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Total Orders */}
-        <Card className="rounded-3xl p-6 bg-linear-to-r from-indigo-50 to-white shadow-lg border border-gray-100">
-          <CardHeader className="flex items-center gap-3 pb-2">
-            <ShoppingCart className="w-6 h-6 text-indigo-500" />
+        <Link href={`/admin/orders?range=${range}`}>
+          <Card className="rounded-3xl p-6 bg-linear-to-r from-indigo-50 to-white shadow-lg border border-gray-100">
+            <CardHeader className="flex items-center gap-3 pb-2">
+              <ShoppingCart className="w-6 h-6 text-indigo-500" />
 
-            <CardTitle className="text-sm font-medium text-gray-500">
-              Total Orders
-            </CardTitle>
-          </CardHeader>
+              <CardTitle className="text-sm font-medium text-gray-500">
+                Total Orders
+              </CardTitle>
+            </CardHeader>
 
-          <CardContent>
-            <div className="text-3xl font-extrabold text-gray-900">
-              {data.totalOrders}
-            </div>
-            {/* Optional trend */}
-            <p className="text-sm text-gray-400 mt-1">+8% from last week</p>
-          </CardContent>
-        </Card>
-
+            <CardContent>
+              <div className="text-3xl font-extrabold text-gray-900">
+                {data.totalOrders}
+              </div>
+              {/* Optional trend */}
+              <p className="text-sm text-gray-400 mt-1">+8% from last week</p>
+            </CardContent>
+          </Card>
+        </Link>
         {/* Total Revenue */}
         <Card className="rounded-3xl p-6 bg-linear-to-r from-green-50 to-white shadow-lg border border-gray-100">
           <CardHeader className="flex items-center gap-3 pb-2">

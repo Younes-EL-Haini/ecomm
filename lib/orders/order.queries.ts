@@ -38,11 +38,19 @@ export async function getOrderById(id: string): Promise<OrderWithRelations | nul
   });
 }
 
-export async function getAdminOrders(): Promise<AdminOrderSummary[]> {
+export async function getAdminOrders(filters?: { from?: Date | undefined; to?: Date | undefined }) {
   return await prisma.order.findMany({
+    where: {
+      ...(filters?.from || filters?.to ? {
+        createdAt: {
+          ...(filters.from && { gte: filters.from }),
+          ...(filters.to && { lte: filters.to }),
+        }
+      } : {}),
+    },
     include: {
       user: true,
-      _count: { select: { items: true } },
+      _count: { select: { items: true } }
     },
     orderBy: { createdAt: "desc" },
   });
@@ -63,5 +71,5 @@ export async function getAdminOrderDetail(orderId: string) {
     },
   });
 
-  return serializeAdminDetail(order);
+  return order;
 }

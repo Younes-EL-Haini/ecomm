@@ -4,7 +4,7 @@ import { OrderStatus } from "@/lib/generated/prisma";
 // Define what statuses actually count as "Money in the Bank"
 const REVENUE_STATUSES: OrderStatus[] = ["PAID", "PROCESSING", "SHIPPED", "DELIVERED"];
 
-export async function getDashboardData(from: Date, to: Date) {
+export async function getDashboardData(from: Date | undefined, to: Date | undefined) {
   // Fetch everything in parallel for maximum speed
   const [
     ordersCount, 
