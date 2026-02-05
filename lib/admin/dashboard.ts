@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { OrderStatus } from "@/lib/generated/prisma";
+import { LowStockVariant } from "./admin.types";
 
 // Define what statuses actually count as "Money in the Bank"
 const REVENUE_STATUSES: OrderStatus[] = ["PAID", "PROCESSING", "SHIPPED", "DELIVERED"];
@@ -122,7 +123,7 @@ export async function getDashboardData(from: Date | undefined, to: Date | undefi
   };
 }
 
-export async function getLowStockProducts() {
+export async function getLowStockProducts(): Promise<LowStockVariant[]> {
   return await prisma.productVariant.findMany({
     where: {
       stock: {
