@@ -121,3 +121,25 @@ export async function getDashboardData(from: Date | undefined, to: Date | undefi
     pendingCount // 👈 Return this to your page
   };
 }
+
+export async function getLowStockProducts() {
+  return await prisma.productVariant.findMany({
+    where: {
+      stock: {
+        lt: 10, // "lt" means less than
+      },
+    },
+    include: {
+      product: {
+        select: {
+          title: true,
+          images: true,
+        },
+      },
+    },
+    orderBy: {
+      stock: 'asc', // Show the most urgent ones first
+    },
+    take: 5, // Just the top 5 most urgent
+  });
+}

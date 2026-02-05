@@ -1,5 +1,5 @@
 import { RevenueChart } from "@/components/admin/RevenueChart";
-import { getDashboardData } from "@/lib/admin/dashboard";
+import { getDashboardData, getLowStockProducts } from "@/lib/admin/dashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingCart, DollarSign, Box, ArrowUpRight } from "lucide-react";
 import { RecentOrders } from "@/components/admin/RecentOrders";
@@ -8,16 +8,18 @@ import Link from "next/link";
 import { getDateRange } from "@/lib/admin/date-utils";
 import { DateRangeFilter } from "@/components/admin/DateRangeFilter";
 import { TopProducts } from "@/components/admin/TopProducts";
+import { LowStockAlerts } from "@/components/admin/LowStockAlerts";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard(props: any) {
   const searchParams = await props.searchParams;
-  const range = await searchParams?.range;
+  const range = (await searchParams?.range) || "all-time";
   const { from, to } = getDateRange(range);
 
   // 1. data now includes 'pendingCount'
   const data = await getDashboardData(from, to);
+  const lowStockData = await getLowStockProducts();
 
   return (
     <div className="p-8 space-y-8 w-full bg-gray-50 min-h-screen">
@@ -108,6 +110,7 @@ export default async function AdminDashboard(props: any) {
 
         {/* Right: Stacked Cards (Top Products + Action Card) */}
         <div className="flex flex-col gap-6">
+          <LowStockAlerts products={lowStockData} />
           <TopProducts products={data.topProducts} />
 
           {/* Dynamic "Black Card" */}
