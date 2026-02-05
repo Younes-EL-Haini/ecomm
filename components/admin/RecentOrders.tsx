@@ -1,96 +1,45 @@
-// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// import { Prisma } from "@/lib/generated/prisma";
-
-// interface Order {
-//   id: string;
-//   status: string;
-//   totalPrice: Prisma.Decimal;
-//   createdAt: Date;
-//   user: { name: string | null; email: string | null };
-// }
-
-// export function RecentOrders({ orders }: { orders: Order[] }) {
-//   return (
-//     <Card className="rounded-4xl border-zinc-100 shadow-sm overflow-hidden">
-//       <CardHeader>
-//         <CardTitle className="text-lg font-bold">Recent Orders</CardTitle>
-//       </CardHeader>
-//       <CardContent>
-//         <div className="relative w-full overflow-auto">
-//           <table className="w-full caption-bottom text-sm">
-//             <thead>
-//               <tr className="border-b border-zinc-100 text-zinc-500 font-medium">
-//                 <th className="h-12 px-4 text-left">Customer</th>
-//                 <th className="h-12 px-4 text-left">Status</th>
-//                 <th className="h-12 px-4 text-left">Date</th>
-//                 <th className="h-12 px-4 text-right">Amount</th>
-//               </tr>
-//             </thead>
-//             <tbody className="[&_tr:last-child]:border-0">
-//               {orders.map((order) => (
-//                 <tr
-//                   key={order.id}
-//                   className="border-b border-zinc-50 transition-colors hover:bg-zinc-50/50"
-//                 >
-//                   <td className="p-4 align-middle">
-//                     <div className="font-medium">
-//                       {order.user.name || "Guest"}
-//                     </div>
-//                     <div className="text-xs text-zinc-400">
-//                       {order.user.email}
-//                     </div>
-//                   </td>
-//                   <td className="p-4 align-middle">
-//                     <span
-//                       className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-//                         order.status === "PAID"
-//                           ? "bg-green-50 text-green-600"
-//                           : order.status === "PENDING"
-//                             ? "bg-amber-50 text-amber-600"
-//                             : "bg-zinc-100 text-zinc-600"
-//                       }`}
-//                     >
-//                       {order.status}
-//                     </span>
-//                   </td>
-//                   <td className="p-4 align-middle text-zinc-500">
-//                     {new Date(order.createdAt).toLocaleDateString()}
-//                   </td>
-//                   <td className="p-4 align-middle text-right font-bold tabular-nums">
-//                     ${Number(order.totalPrice).toFixed(2)}
-//                   </td>
-//                 </tr>
-//               ))}
-//             </tbody>
-//           </table>
-//         </div>
-//       </CardContent>
-//     </Card>
-//   );
-// }
+import Link from "next/link";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { OrderStatus, Prisma } from "@/lib/generated/prisma";
-import { getStatusClasses } from "@/lib/utils/order-styles"; // Import your helper
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
+
+import { OrderStatus, Prisma } from "@/lib/generated/prisma";
+import { getStatusClasses } from "@/lib/utils/order-styles";
+
+import OrderQuickActions from "@/components/admin/OrderQuickActions";
+
+/* ----------------------------------------
+   Types
+---------------------------------------- */
 
 interface Order {
   id: string;
-  status: OrderStatus; // Using 'any' or your OrderStatus enum
+  status: OrderStatus;
   totalPrice: Prisma.Decimal;
   createdAt: Date;
-  user: { name: string | null; email: string | null };
+  user: {
+    name: string | null;
+    email: string | null;
+  };
 }
 
-export function RecentOrders({ orders }: { orders: Order[] }) {
+interface Props {
+  orders: Order[];
+}
+
+/* ----------------------------------------
+   Component
+---------------------------------------- */
+
+export function RecentOrders({ orders }: Props) {
   return (
-    <Card className="rounded-4xl border-zinc-100 shadow-sm overflow-hidden bg-white">
+    <Card className="rounded-4xl border-zinc-100 shadow-sm bg-white overflow-hidden">
+      {/* ---------- Header ---------- */}
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg font-bold text-zinc-900">
           Recent Orders
         </CardTitle>
-        {/* Link to the 'next major feature' - the full orders hub */}
+
         <Button
           variant="ghost"
           size="sm"
@@ -102,25 +51,37 @@ export function RecentOrders({ orders }: { orders: Order[] }) {
       </CardHeader>
 
       <CardContent>
-        <div className="relative w-full overflow-auto">
+        {/* ====================================
+            Desktop Table (md+)
+        ==================================== */}
+        <div className="hidden md:block relative w-full overflow-auto">
           <table className="w-full caption-bottom text-sm">
+            {/* Head */}
             <thead>
               <tr className="border-b border-zinc-100 text-zinc-500 font-medium">
                 <th className="h-12 px-4 text-left font-semibold">Order</th>
+
                 <th className="h-12 px-4 text-left font-semibold">Customer</th>
+
                 <th className="h-12 px-4 text-left font-semibold">Status</th>
+
                 <th className="h-12 px-4 text-left font-semibold">Date</th>
+
                 <th className="h-12 px-4 text-right font-semibold">Amount</th>
+
+                <th className="h-12 px-4 text-right font-semibold">Actions</th>
               </tr>
             </thead>
+
+            {/* Body */}
             <tbody className="[&_tr:last-child]:border-0">
               {orders.map((order) => (
                 <tr
                   key={order.id}
-                  className="border-b border-zinc-50 transition-colors hover:bg-zinc-50/50 group"
+                  className="border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors"
                 >
+                  {/* Order ID */}
                   <td className="p-4 align-middle">
-                    {/* Using your custom utility here! */}
                     <Link
                       href={`/admin/orders/${order.id}`}
                       className="font-bold text-indigo-600 hover:underline"
@@ -128,22 +89,26 @@ export function RecentOrders({ orders }: { orders: Order[] }) {
                       #{order.id.slice(-6).toUpperCase()}
                     </Link>
                   </td>
+
+                  {/* Customer */}
                   <td className="p-4 align-middle">
                     <div className="font-semibold text-zinc-900">
                       {order.user.name || "Guest User"}
                     </div>
+
                     <div className="text-xs text-zinc-400">
                       {order.user.email}
                     </div>
                   </td>
 
+                  {/* Status */}
                   <td className="p-4 align-middle">
-                    {/* Using your custom utility here! */}
                     <span className={getStatusClasses(order.status, "sm")}>
                       {order.status}
                     </span>
                   </td>
 
+                  {/* Date */}
                   <td className="p-4 align-middle text-zinc-500 font-medium">
                     {new Intl.DateTimeFormat("en-US", {
                       month: "short",
@@ -152,16 +117,76 @@ export function RecentOrders({ orders }: { orders: Order[] }) {
                     }).format(new Date(order.createdAt))}
                   </td>
 
+                  {/* Amount */}
                   <td className="p-4 align-middle text-right font-bold tabular-nums text-zinc-900">
                     {new Intl.NumberFormat("en-US", {
                       style: "currency",
                       currency: "USD",
                     }).format(Number(order.totalPrice))}
                   </td>
+
+                  {/* Actions */}
+                  <td className="p-4 text-right align-middle">
+                    <OrderQuickActions
+                      orderId={order.id}
+                      currentStatus={order.status}
+                    />
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* ====================================
+            Mobile Cards (sm)
+        ==================================== */}
+        <div className="md:hidden space-y-4">
+          {orders.map((order) => (
+            <div
+              key={order.id}
+              className="border rounded-xl p-4 bg-white shadow-sm"
+            >
+              {/* Top Row */}
+              <div className="flex justify-between items-start">
+                <div>
+                  <Link
+                    href={`/admin/orders/${order.id}`}
+                    className="font-bold text-indigo-600"
+                  >
+                    #{order.id.slice(-6).toUpperCase()}
+                  </Link>
+
+                  <p className="text-sm text-zinc-700 mt-1">
+                    {order.user.name || "Guest User"}
+                  </p>
+
+                  <p className="text-xs text-zinc-400">{order.user.email}</p>
+                </div>
+
+                <OrderQuickActions
+                  orderId={order.id}
+                  currentStatus={order.status}
+                />
+              </div>
+
+              {/* Bottom Row */}
+              <div className="mt-4 flex items-center justify-between">
+                <span className={getStatusClasses(order.status, "sm")}>
+                  {order.status}
+                </span>
+
+                <span className="font-bold text-zinc-900">
+                  ${Number(order.totalPrice).toFixed(2)}
+                </span>
+              </div>
+
+              {/* Date */}
+              <div className="mt-2 text-xs text-zinc-500">
+                {new Date(order.createdAt).toLocaleDateString()}
+              </div>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>
