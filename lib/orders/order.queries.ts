@@ -38,7 +38,7 @@ export async function getOrderById(id: string): Promise<OrderWithRelations | nul
   });
 }
 
-export async function getAdminOrders(filters?: { from?: Date | undefined; to?: Date | undefined }) {
+export async function getAdminOrders(filters?: { from?: Date | undefined; to?: Date | undefined; search?: string; }) {
   return await prisma.order.findMany({
     where: {
       ...(filters?.from || filters?.to ? {
@@ -46,6 +46,13 @@ export async function getAdminOrders(filters?: { from?: Date | undefined; to?: D
           ...(filters.from && { gte: filters.from }),
           ...(filters.to && { lte: filters.to }),
         }
+      } : {}),
+      ...(filters?.search ? {
+        OR: [
+          { id: { contains: filters.search, mode: 'insensitive' } },
+          { user: { name: { contains: filters.search, mode: 'insensitive' } } },
+          { user: { email: { contains: filters.search, mode: 'insensitive' } } },
+        ]
       } : {}),
     },
     include: {

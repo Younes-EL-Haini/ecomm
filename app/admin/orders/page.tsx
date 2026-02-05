@@ -7,19 +7,21 @@ import { formatMoney, toNumber } from "@/lib/utils/pricing";
 import { getAdminOrders, getStatusClasses } from "@/lib/orders";
 import { getDateRange } from "@/lib/admin/date-utils"; // Import your utility
 import { DateRangeFilter } from "@/components/admin/DateRangeFilter";
+import { SearchFilter } from "@/components/admin/SearchFilter";
 
 export default async function AdminOrdersPage(props: {
-  searchParams: Promise<{ range?: string }>;
+  searchParams: Promise<{ range?: string; search?: string }>;
 }) {
   // 1. Get the range from the URL (e.g., ?range=last30)
   const searchParams = await props.searchParams;
-  const range = searchParams.range;
+  const range = searchParams.range || "all-time";
+  const search = searchParams.search;
 
   // 2. Get the actual dates using your utility
   const { from, to } = getDateRange(range);
 
   // 3. Fetch orders using those dates
-  const orders = await getAdminOrders({ from, to });
+  const orders = await getAdminOrders({ from, to, search });
 
   return (
     <div className="space-y-6 m-3">
@@ -35,25 +37,9 @@ export default async function AdminOrdersPage(props: {
               : "Manage and track your customer purchases."}
           </p>
         </div>
-        {/* <div className="relative w-full md:w-72">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-            size={16}
-          />
-          <Input placeholder="Search orders..." className="pl-10 bg-white" />
-        </div> */}
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <DateRangeFilter /> {/* 👈 Added here */}
-          <div className="relative w-full md:w-72">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-              size={16}
-            />
-            <Input
-              placeholder="Search orders..."
-              className="pl-10 bg-white rounded-2xl border-gray-100"
-            />
-          </div>
+          <SearchFilter />
         </div>
       </div>
 
