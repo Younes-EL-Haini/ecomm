@@ -3,8 +3,8 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-import { OrderStatus, Prisma } from "@/lib/generated/prisma";
-import { getStatusClasses } from "@/lib/utils/order-styles";
+import { OrderStatus } from "@/lib/generated/prisma";
+import { getStatusClasses } from "@/lib/orders";
 
 import OrderQuickActions from "@/components/admin/OrderQuickActions";
 
@@ -15,8 +15,8 @@ import OrderQuickActions from "@/components/admin/OrderQuickActions";
 interface Order {
   id: string;
   status: OrderStatus;
-  totalPrice: Prisma.Decimal;
-  createdAt: Date;
+  totalPrice: number;
+  createdAt: string | Date;
   user: {
     name: string | null;
     email: string | null;
@@ -103,7 +103,7 @@ export function RecentOrders({ orders }: Props) {
 
                   {/* Status */}
                   <td className="p-4 align-middle">
-                    <span className={getStatusClasses(order.status, "sm")}>
+                    <span className={getStatusClasses(order.status, "md")}>
                       {order.status}
                     </span>
                   </td>

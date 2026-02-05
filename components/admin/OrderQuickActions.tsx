@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, Check, RefreshCcw } from "lucide-react";
 import Link from "next/link";
-
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { updateOrderStatus } from "@/lib/orders";
-import { OrderStatus } from "@/lib/generated/prisma";
 
+import { STATUS_OPTIONS, updateOrderStatus } from "@/lib/orders";
+import { OrderStatus } from "@/lib/generated/prisma";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,64 +15,36 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 
-interface Props {
+export default function OrderQuickActions({
+  orderId,
+  currentStatus,
+}: {
   orderId: string;
   currentStatus: OrderStatus;
-}
-
-/**
- * Define allowed transitions
- * (Business logic layer)
- */
-const STATUS_ACTIONS: Record<
-  OrderStatus,
-  { label: string; value: OrderStatus }[]
-> = {
-  PENDING: [
-    { label: "Mark as Paid", value: "PAID" },
-    { label: "Cancel Order", value: "CANCELLED" },
-  ],
-
-  PAID: [
-    { label: "Start Processing", value: "PROCESSING" },
-    { label: "Refund", value: "REFUNDED" },
-  ],
-
-  PROCESSING: [{ label: "Mark as Shipped", value: "SHIPPED" }],
-
-  SHIPPED: [{ label: "Mark as Delivered", value: "DELIVERED" }],
-
-  DELIVERED: [],
-
-  CANCELLED: [],
-
-  REFUNDED: [],
-};
-
-export default function OrderQuickActions({ orderId, currentStatus }: Props) {
+}) {
   const [loading, setLoading] = useState(false);
-
-  const actions = STATUS_ACTIONS[currentStatus] || [];
+  const router = useRouter();
 
   const handleUpdate = async (status: OrderStatus) => {
-    setLoading(true);
+    if (status === currentStatus) return;
 
+    setLoading(true);
     const res = await updateOrderStatus(orderId, status);
 
-    setLoading(false);
-
     if (res.success) {
-      toast.success(`Order marked as ${status}`);
+      toast.success(`Order status updated to ${status}`);
+      router.refresh(); // This makes the table badge change immediately
     } else {
       toast.error("Update failed");
     }
+    setLoading(false);
   };
 
   return (
     <DropdownMenu>
-      {/* Trigger Button */}
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
@@ -80,44 +52,48 @@ export default function OrderQuickActions({ orderId, currentStatus }: Props) {
           className="h-8 w-8"
           disabled={loading}
         >
-          <MoreVertical className="h-4 w-4" />
+          {loading ? (
+            <RefreshCcw className="h-4 w-4 animate-spin" />
+          ) : (
+            <MoreVertical className="h-4 w-4" />
+          )}
         </Button>
       </DropdownMenuTrigger>
 
-      {/* Menu */}
-      <DropdownMenuContent align="end" className="w-48">
-        {/* View */}
+      <DropdownMenuContent align="end" className="w-52">
+        <DropdownMenuLabel className="text-xs text-zinc-400">
+          Actions
+        </DropdownMenuLabel>
         <DropdownMenuItem asChild>
-          <Link href={`/admin/orders/${orderId}`}>View Order</Link>
+          <Link href={`/admin/orders/${orderId}`}>View Details</Link>
         </DropdownMenuItem>
 
-        {actions.length > 0 && <DropdownMenuSeparator />}
+        <DropdownMenuSeparator />
 
-        {/* Dynamic Actions */}
-        {actions.map((action) => (
+        <DropdownMenuLabel className="text-xs text-zinc-400">
+          Change Status
+        </DropdownMenuLabel>
+        {STATUS_OPTIONS.map((status) => (
           <DropdownMenuItem
-            key={action.value}
+            key={status.value}
+            onClick={() => handleUpdate(status.value)}
             disabled={loading}
-            onClick={() => handleUpdate(action.value)}
+            className="flex items-center justify-between rounded-lg cursor-pointer transition-colors"
           >
-            {action.label}
+            <span
+              className={
+                currentStatus === status.value
+                  ? "font-bold text-indigo-600"
+                  : "text-zinc-600"
+              }
+            >
+              {status.label}
+            </span>
+            {currentStatus === status.value && (
+              <Check className="h-3.5 w-3.5 text-indigo-600 stroke-[3px]" />
+            )}
           </DropdownMenuItem>
         ))}
-
-        {/* Danger Zone */}
-        {currentStatus !== "CANCELLED" && (
-          <>
-            <DropdownMenuSeparator />
-
-            <DropdownMenuItem
-              className="text-red-600 focus:text-red-600"
-              disabled={loading}
-              onClick={() => handleUpdate("CANCELLED")}
-            >
-              Cancel Order
-            </DropdownMenuItem>
-          </>
-        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

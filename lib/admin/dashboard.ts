@@ -1,20 +1,32 @@
 import prisma from "@/lib/prisma";
+import { OrderStatus } from "@/lib/generated/prisma";
 
-// Add parameters for the date range
+// Define what statuses actually count as "Money in the Bank"
+const REVENUE_STATUSES: OrderStatus[] = ["PAID", "PROCESSING", "SHIPPED", "DELIVERED"];
+
 export async function getDashboardData(from: Date, to: Date) {
-  // Fetch everything in parallel
-  const [ordersCount, totalProducts, stats, recentOrders, topSoldData] = await Promise.all([
-    // Orders count within the specific range
+  // Fetch everything in parallel for maximum speed
+  const [
+    ordersCount, 
+    totalProducts, 
+    revenueStats, 
+    recentOrders, 
+    topSoldData,
+    pendingCount // 👈 New addition for your "Tasks" card
+  ] = await Promise.all([
+    
+    // 1. Total Orders in range
     prisma.order.count({
       where: { createdAt: { gte: from, lte: to } }
     }),
     
+    // 2. Total Catalog Size
     prisma.product.count(),
 
-    // Revenue stats for the chart within the range
+    // 3. Revenue stats (FILTERED to exclude cancelled/refunded)
     prisma.order.findMany({
       where: {
-        status: "PAID",
+        status: { in: REVENUE_STATUSES },
         createdAt: { gte: from, lte: to },
       },
       select: {
@@ -24,52 +36,71 @@ export async function getDashboardData(from: Date, to: Date) {
       orderBy: { createdAt: 'asc' }
     }),
 
-    // Recent Orders (Usually kept as the last 5 overall, regardless of range)
+    // 4. Recent Orders
     prisma.order.findMany({
       take: 5,
       orderBy: { createdAt: 'desc' },
       include: { user: { select: { name: true, email: true } } }
     }),
+
+    // 5. Top Sold grouping
     prisma.orderItem.groupBy({
       by: ['productId'],
-      where: { order: { createdAt: { gte: from, lte: to } } },
+      where: { 
+        order: { 
+          createdAt: { gte: from, lte: to },
+          status: { in: REVENUE_STATUSES } // Only count items from successful orders
+        } 
+      },
       _sum: { quantity: true },
       orderBy: { _sum: { quantity: 'desc' } },
       take: 5,
+    }),
+
+    // 6. Pending Shipment Count (PAID but not yet sent)
+    prisma.order.count({
+      where: { status: "PAID" } 
     })
   ]);
+
+  // Fetch product details for Top Products
   const topProductsResults = await Promise.all(
-  topSoldData.map(async (item) => {
-    const product = await prisma.product.findUnique({
-      where: { id: item.productId },
-      select: {
-        id: true,
-        title: true,
-        price: true,
-        images: true, 
-      }
-    });
-    
-    // If the product was deleted but stays in order history, handle the null
-    if (!product) return null;
+    topSoldData.map(async (item) => {
+      const product = await prisma.product.findUnique({
+        where: { id: item.productId },
+        select: {
+          id: true,
+          title: true,
+          price: true,
+          images: true, 
+        }
+      });
+      
+      if (!product) return null;
 
-    return {
-      id: product.id,
-      title: product.title,
-      price: product.price,
-      images: product.images,
-      quantitySold: item._sum.quantity || 0,
-    };
-  })
-);
+      return {
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        images: product.images,
+        quantitySold: item._sum.quantity || 0,
+      };
+    })
+  );
 
-// Filter out any nulls to ensure the array only contains valid objects
-const topProducts = topProductsResults.filter((p): p is NonNullable<typeof p> => p !== null);
+  const topProducts = topProductsResults.filter((p): p is NonNullable<typeof p> => p !== null);
 
-  const totalRevenue = stats.reduce((acc, order) => acc + Number(order.totalPrice), 0);
+  const formattedRecentOrders = recentOrders.map(order => ({
+    ...order,
+    totalPrice: Number(order.totalPrice), // 👈 Convert Decimal to Number here
+    createdAt: order.createdAt.toISOString(), // Optional: ensure dates are strings
+  }));
+
+  // Calculate Total Revenue using the filtered stats
+  const totalRevenue = revenueStats.reduce((acc, order) => acc + Number(order.totalPrice), 0);
 
   // Grouping logic for the chart
-  const salesMap = stats.reduce((acc, order) => {
+  const salesMap = revenueStats.reduce((acc, order) => {
     const date = order.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     acc[date] = (acc[date] || 0) + Number(order.totalPrice);
     return acc;
@@ -85,7 +116,8 @@ const topProducts = topProductsResults.filter((p): p is NonNullable<typeof p> =>
     totalProducts,
     totalRevenue,
     chartData,
-    recentOrders, 
-    topProducts
+    recentOrders: formattedRecentOrders, 
+    topProducts,
+    pendingCount // 👈 Return this to your page
   };
 }

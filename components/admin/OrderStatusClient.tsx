@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { updateOrderStatus } from "@/lib/orders";
+import { STATUS_OPTIONS, updateOrderStatus } from "@/lib/orders";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { OrderStatus } from "@/lib/generated/prisma";
@@ -31,7 +31,7 @@ export default function OrderStatusClient({
 
   return (
     <div className="space-y-4">
-      <select
+      {/* <select
         value={status}
         onChange={(e) => setStatus(e.target.value as OrderStatus)}
         className="w-full h-10 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm font-medium focus:ring-1 focus:ring-black outline-none"
@@ -43,6 +43,17 @@ export default function OrderStatusClient({
         <option value="DELIVERED">Delivered</option>
         <option value="CANCELLED">Cancelled</option>
         <option value="REFUNDED">Refunded</option>
+      </select> */}
+      <select
+        value={status}
+        onChange={(e) => setStatus(e.target.value as OrderStatus)}
+        className="w-full h-10 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm font-medium focus:ring-1 focus:ring-black outline-none"
+      >
+        {STATUS_OPTIONS.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
       </select>
 
       <Button
