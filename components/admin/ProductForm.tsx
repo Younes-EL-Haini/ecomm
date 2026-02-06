@@ -3,11 +3,7 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  createProduct,
-  getProductForEdit,
-  updateProduct,
-} from "@/lib/products";
+import { createProduct, updateProduct } from "@/lib/products";
 import { Category } from "@/lib/generated/prisma";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -19,30 +15,26 @@ import {
   X,
   Plus,
   ArrowLeft,
+  Eye,
 } from "lucide-react";
 import { CldUploadWidget } from "next-cloudinary";
-import { useState } from "react";
-import { formatMoney, toNumber } from "@/lib/utils/pricing";
+import { useState, useRef, useEffect } from "react"; // Added useRef and useEffect
+import { toNumber } from "@/lib/utils/pricing";
 
 interface VariantFormState {
   tempId: string;
-  id?: string; // Optional because new rows don't have one
+  id?: string;
   name: string;
   sku: string | null;
   stock: number;
   priceDelta: number;
   color: string | null;
   size: string | null;
-  // Make these optional so the "New Row" doesn't crash
-  createdAt?: Date | string;
-  productId?: string;
-  type?: string;
-  value?: string;
 }
 
 interface ProductFormProps {
   categories: Category[];
-  initialData?: Awaited<ReturnType<typeof getProductForEdit>>;
+  initialData?: any;
 }
 
 export default function ProductForm({
@@ -52,13 +44,23 @@ export default function ProductForm({
   const router = useRouter();
   const isEditing = !!initialData;
 
+  // 1. STATE MANAGEMENT
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
 
-  // Initialize with existing variants or one empty row for a new product
+  // --- THE FIX: USE REFS FOR UPLOAD ---
+  // This ensures the upload function ALWAYS sees the current input values
+  const colorRef = useRef<string | null>(null);
+  const sizeRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    colorRef.current = selectedColor;
+    sizeRef.current = selectedSize;
+  }, [selectedColor, selectedSize]);
+
   const [variants, setVariants] = useState<VariantFormState[]>(
     initialData?.variants?.length
-      ? initialData.variants.map((v) => ({ ...v, tempId: v.id }))
+      ? initialData.variants.map((v: any) => ({ ...v, tempId: v.id }))
       : [
           {
             tempId: "1",
@@ -72,23 +74,58 @@ export default function ProductForm({
         ],
   );
 
-  const addVariant = () => {
-    const newVariant = {
-      tempId: Math.random().toString(36).substr(2, 9),
-      name: "",
-      sku: "",
-      stock: 0,
-      priceDelta: 0,
-      color: selectedColor || "", // Pre-fill with active color filter
-      size: "",
-    };
-    setVariants([...variants, newVariant]);
+  const [images, setImages] = useState<
+    { url: string; color?: string; size?: string }[]
+  >(
+    initialData?.images.map((img: any) => ({
+      url: img.url,
+      color: img.color ?? "",
+      size: img.size ?? "",
+    })) || [],
+  );
+
+  // 2. FILTER LOGIC
+  const isFilterActive = selectedColor !== null;
+
+  const visibleImages = !isFilterActive
+    ? images
+    : images.filter((img) => {
+        const imgColor = (img.color || "").toString().trim().toLowerCase();
+        const selColor = (selectedColor || "").toString().trim().toLowerCase();
+        return imgColor === selColor;
+      });
+
+  // 3. HANDLERS
+  const onUpload = (result: any) => {
+    // Grab the values from the Ref so they are 100% up to date
+    const currentColor = colorRef.current || "";
+    const currentSize = sizeRef.current || "";
+
+    if (!currentColor) {
+      toast.info("Image added to Full Gallery (No color selected)");
+    } else {
+      toast.success(`Image added to ${currentColor} gallery`);
+    }
+
+    setImages((prev) => [
+      ...prev,
+      {
+        url: result.info.secure_url,
+        color: currentColor,
+        size: currentSize,
+      },
+    ]);
   };
 
   const updateVariant = (index: number, field: string, value: any) => {
     const updated = [...variants];
     updated[index] = { ...updated[index], [field]: value };
-    // Auto-generate name for the UI
+
+    // Auto-update selection if we are currently editing the selected variant
+    if (field === "color" && selectedColor === variants[index].color) {
+      setSelectedColor(value);
+    }
+
     const color = updated[index].color;
     const size = updated[index].size;
     updated[index].name =
@@ -96,180 +133,178 @@ export default function ProductForm({
     setVariants(updated);
   };
 
-  const removeVariant = (index: number) => {
-    if (variants.length <= 1) return; // Keep at least one
-    setVariants(variants.filter((_, i) => i !== index));
-  };
-
-  const [images, setImages] = useState<{ url: string; color?: string }[]>(
-    initialData?.images.map((img) => ({
-      url: img.url,
-      color: img.color ?? undefined,
-    })) || [],
-  );
-
-  const onUpload = (result: any) => {
-    setImages((prev) => [
-      ...prev,
+  const addVariant = () => {
+    setVariants([
+      ...variants,
       {
-        url: result.info.secure_url,
-        color: selectedColor ?? undefined,
+        tempId: Math.random().toString(36).substr(2, 9),
+        name: "",
+        sku: "",
+        stock: 0,
+        priceDelta: 0,
+        color: "",
+        size: "",
       },
     ]);
   };
 
-  const visibleImages = selectedColor
-    ? images.filter((img) => img.color === selectedColor)
-    : images;
+  const removeVariant = (index: number) => {
+    if (variants.length <= 1) return;
+    setVariants(variants.filter((_, i) => i !== index));
+  };
 
   const removeImage = (url: string) => {
     setImages((prev) => prev.filter((image) => image.url !== url));
   };
 
   async function handleSubmit(formData: FormData) {
-    const action = (
-      isEditing ? updateProduct.bind(null, initialData!.id) : createProduct
-    ) as (data: FormData) => Promise<{ success: boolean; error?: string }>;
-
+    const action = isEditing
+      ? updateProduct.bind(null, initialData!.id)
+      : createProduct;
     toast.promise(action(formData), {
       loading: isEditing ? "Saving changes..." : "Creating product...",
-      success: (result) => {
-        if (!result?.success)
-          throw new Error(result?.error || "Something went wrong");
+      success: (result: any) => {
+        if (!result?.success) throw new Error(result?.error || "Error");
         router.push("/admin/products");
         router.refresh();
-        return isEditing ? "Product updated!" : "Product created!";
+        return "Success!";
       },
-      error: (err) => err.message || "Failed to save product",
+      error: (err) => err.message || "Failed to save",
     });
   }
 
   return (
     <form action={handleSubmit} className="relative min-h-screen pb-20">
-      {/* --- HEADER --- */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-        <div>
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="flex items-center gap-2 text-sm text-slate-500 hover:text-black transition-colors mb-4"
-          >
-            <ArrowLeft size={16} /> Back to Products
-          </button>
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">
-            {isEditing ? "Edit Product" : "New Product"}
-          </h1>
+      {/* PERSISTENCE INPUTS */}
+      {images.map((img, idx) => (
+        <div key={`data-${idx}`}>
+          <input type="hidden" name="image_url" value={img.url} />
+          <input type="hidden" name="image_color" value={img.color || ""} />
+          <input type="hidden" name="image_size" value={img.size || ""} />
         </div>
+      ))}
+
+      {/* HEADER */}
+      <div className="px-4 pt-8 mb-8">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="flex items-center gap-2 text-sm text-slate-500 mb-4 hover:text-black"
+        >
+          <ArrowLeft size={16} /> Back to Products
+        </button>
+        <h1 className="text-4xl font-extrabold text-slate-900">
+          {isEditing ? "Edit Product" : "New Product"}
+        </h1>
       </div>
 
-      {/* --- MAIN GRID --- */}
-      {/* items-start is crucial to prevent the sidebar from stretching to full height */}
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_350px] gap-8 items-start">
-        {/* --- LEFT COLUMN: MAIN CONTENT --- */}
-        <div className="space-y-8 min-w-0">
-          {/* GENERAL INFO */}
-          <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
-            <div className="flex items-center gap-2 pb-4 border-b">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_350px] gap-8 px-4">
+        <div className="space-y-8">
+          {/* PRODUCT DETAILS */}
+          <section className="p-6 bg-white border rounded-2xl border-slate-200">
+            <div className="flex items-center gap-2 pb-4 mb-4 border-b">
               <LayoutGrid size={20} className="text-indigo-500" />
-              <h2 className="font-bold text-slate-800 text-lg">
-                Product Details
-              </h2>
+              <h2 className="text-lg font-bold">Product Details</h2>
             </div>
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">
-                  Title
-                </label>
+                <label className="text-sm font-semibold">Title</label>
                 <Input
                   name="title"
                   defaultValue={initialData?.title}
-                  className="h-12 text-base border-slate-200 focus:ring-2 focus:ring-indigo-500/20"
                   required
+                  className="h-12"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">
-                  Description
-                </label>
+                <label className="text-sm font-semibold">Description</label>
                 <Textarea
                   name="description"
                   defaultValue={initialData?.description}
-                  className="min-h-[200px] border-slate-200 focus:ring-2 focus:ring-indigo-500/20 resize-none"
                   required
+                  className="min-h-[150px]"
                 />
               </div>
             </div>
           </section>
 
-          {/* VARIANTS */}
-          <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-6 flex justify-between items-center border-b">
+          {/* INVENTORY & VARIANTS */}
+          <section className="overflow-hidden bg-white border rounded-2xl border-slate-200">
+            <div className="flex items-center justify-between p-6 border-b bg-slate-50/50">
               <div className="flex items-center gap-2">
                 <Package size={20} className="text-emerald-500" />
-                <h2 className="font-bold text-slate-800 text-lg">
-                  Inventory & Variants
-                </h2>
+                <h2 className="text-lg font-bold">Inventory</h2>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addVariant}
-                className="rounded-lg border-slate-200 hover:bg-slate-50"
-              >
-                <Plus size={16} className="mr-1" /> Add Row
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedColor(null);
+                    setSelectedSize(null);
+                  }}
+                >
+                  <Eye size={14} className="mr-1" /> View All
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addVariant}
+                >
+                  <Plus size={14} className="mr-1" /> Add Row
+                </Button>
+              </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-widest border-b">
-                  <tr>
-                    <th className="px-6 py-4 text-left">
-                      Variant Details (Color/Size)
-                    </th>
-                    <th className="px-6 py-4 text-left">SKU</th>
-                    <th className="px-6 py-4 text-center">Stock</th>
-                    <th className="px-6 py-4 text-right">Price Delta</th>
-                    <th className="px-4 py-4 w-10"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {variants.map((variant, index) => (
+            <table className="w-full text-sm">
+              <thead className="text-[10px] uppercase tracking-widest bg-slate-50 text-slate-500 border-b">
+                <tr>
+                  <th className="px-6 py-4 text-left">
+                    Variant (Color / Size)
+                  </th>
+                  <th className="px-6 py-4 text-left">SKU</th>
+                  <th className="px-6 py-4 text-center">Stock</th>
+                  <th className="px-6 py-4 text-right">Price Delta</th>
+                  <th className="w-10 px-4"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {variants.map((variant, index) => {
+                  const isActive =
+                    selectedColor === variant.color && isFilterActive;
+                  return (
                     <tr
                       key={variant.tempId}
                       onClick={() => {
-                        setSelectedColor(variant.color ?? null);
-                        setSelectedSize(variant.size ?? null);
+                        setSelectedColor(variant.color || "");
+                        setSelectedSize(variant.size || "");
                       }}
-                      className={`group transition-colors ${
-                        selectedColor === variant.color &&
-                        selectedSize === variant.size
-                          ? "bg-indigo-50/50"
-                          : "hover:bg-slate-50/80"
-                      }`}
+                      className={`cursor-pointer transition-colors ${isActive ? "bg-indigo-50" : "hover:bg-slate-50"}`}
                     >
                       <td className="px-6 py-4">
-                        <div className="flex gap-2">
+                        <div className="flex items-center gap-2">
                           <input
                             placeholder="Color"
-                            className="w-24 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none font-semibold transition-colors"
+                            className="font-semibold bg-transparent outline-none w-14"
                             value={variant.color || ""}
-                            onChange={(e) =>
-                              updateVariant(index, "color", e.target.value)
-                            }
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              updateVariant(index, "color", v);
+                              setSelectedColor(v); // Force state update for the gallery filter
+                            }}
                           />
                           <span className="text-slate-300">/</span>
                           <input
                             placeholder="Size"
-                            className="w-20 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none font-semibold transition-colors"
+                            className="font-semibold bg-transparent outline-none w-14"
                             value={variant.size || ""}
                             onChange={(e) =>
                               updateVariant(index, "size", e.target.value)
                             }
                           />
                         </div>
-                        {/* Hidden inputs to send data to Server Action */}
                         <input
                           type="hidden"
                           name="v_color"
@@ -281,24 +316,20 @@ export default function ProductForm({
                           value={variant.size || ""}
                         />
                       </td>
-
                       <td className="px-6 py-4">
                         <input
                           name="v_sku"
-                          placeholder="SKU-AUTO"
-                          className="w-32 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none font-mono text-xs text-slate-500"
                           value={variant.sku || ""}
                           onChange={(e) =>
                             updateVariant(index, "sku", e.target.value)
                           }
+                          className="text-xs bg-transparent outline-none font-mono w-20"
                         />
                       </td>
-
                       <td className="px-6 py-4 text-center">
                         <input
                           type="number"
                           name="v_stock"
-                          className="w-16 bg-slate-100 rounded px-2 py-1 text-center font-bold text-xs"
                           value={variant.stock}
                           onChange={(e) =>
                             updateVariant(
@@ -307,80 +338,86 @@ export default function ProductForm({
                               parseInt(e.target.value) || 0,
                             )
                           }
+                          className="w-16 px-2 py-1 text-center border rounded"
                         />
                       </td>
-
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <span className="text-slate-400 text-xs">$</span>
-                          <input
-                            type="number"
-                            step="0.01"
-                            name="v_priceDelta"
-                            className="w-20 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none text-right font-medium text-indigo-600"
-                            value={variant.priceDelta}
-                            onChange={(e) =>
-                              updateVariant(
-                                index,
-                                "priceDelta",
-                                parseFloat(e.target.value) || 0,
-                              )
-                            }
-                          />
-                        </div>
+                      <td className="px-6 py-4 text-right font-medium text-indigo-600">
+                        $
+                        <input
+                          type="number"
+                          step="0.01"
+                          name="v_priceDelta"
+                          value={variant.priceDelta}
+                          onChange={(e) =>
+                            updateVariant(
+                              index,
+                              "priceDelta",
+                              parseFloat(e.target.value) || 0,
+                            )
+                          }
+                          className="w-12 text-right bg-transparent outline-none"
+                        />
                       </td>
-
-                      <td className="px-4 py-4">
+                      <td className="px-4">
                         <button
                           type="button"
-                          onClick={() => removeVariant(index)}
-                          className="text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeVariant(index);
+                          }}
+                          className="text-slate-300 hover:text-rose-500"
                         >
                           <X size={16} />
                         </button>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  );
+                })}
+              </tbody>
+            </table>
           </section>
 
-          {/* MEDIA - FIXING THE WHITE SPACE ISSUE HERE */}
-          <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <div className="flex items-center gap-2 mb-6">
-              <ImageIcon size={20} className="text-amber-500" />
-              <h2 className="font-bold text-slate-800 text-lg">Images</h2>
-              {selectedColor && (
-                <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
-                  Filtering by {selectedColor}
-                </span>
+          {/* MEDIA SECTION */}
+          <section className="p-6 bg-white border rounded-2xl border-slate-200">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <ImageIcon size={20} className="text-amber-500" />
+                <h2 className="text-lg font-bold">
+                  {!isFilterActive
+                    ? "Full Gallery"
+                    : `${selectedColor} Gallery`}
+                </h2>
+              </div>
+              {isFilterActive && (
+                <div className="flex items-center gap-2 bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+                  {selectedColor}
+                  <button type="button" onClick={() => setSelectedColor(null)}>
+                    <X size={12} />
+                  </button>
+                </div>
               )}
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
               {visibleImages.map((img) => (
-                <div key={img.url} className="group relative aspect-square ...">
+                <div
+                  key={img.url}
+                  className="relative border group aspect-square bg-slate-100 rounded-xl overflow-hidden"
+                >
                   <img
                     src={img.url}
-                    className="w-full h-full object-cover rounded-xl"
+                    className="object-cover w-full h-full"
+                    alt="Product"
                   />
-
-                  {/* 1. The URL */}
-                  <input type="hidden" name="image_url" value={img.url} />
-
-                  {/* 2. The Color associated with this specific image */}
-                  {/* Even if selectedColor is null, we send an empty string to keep the arrays aligned */}
-                  <input
-                    type="hidden"
-                    name="image_color"
-                    value={img.color || ""}
-                  />
-
+                  <div className="absolute inset-x-0 bottom-0 p-1 bg-black/40">
+                    <p className="text-[8px] text-white text-center truncate">
+                      {img.color || "General"}
+                    </p>
+                  </div>
                   <button
                     type="button"
                     onClick={() => removeImage(img.url)}
-                    className="..."
+                    className="absolute p-1 transition bg-white rounded-full shadow-sm top-2 right-2 text-rose-500 opacity-0 group-hover:opacity-100"
                   >
                     <X size={14} />
                   </button>
@@ -395,40 +432,33 @@ export default function ProductForm({
                   <button
                     type="button"
                     onClick={() => open()}
-                    className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-xl hover:bg-slate-50 transition"
+                    className="flex flex-col items-center justify-center transition border-2 border-dashed aspect-square border-slate-200 rounded-xl hover:bg-slate-50 hover:border-indigo-300 group"
                   >
-                    <Plus className="text-slate-400 mb-1" size={24} />
-                    <span className="text-xs font-bold text-slate-400">
+                    <Plus
+                      className="mb-1 text-slate-400 group-hover:text-indigo-500"
+                      size={24}
+                    />
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">
                       Upload
                     </span>
                   </button>
                 )}
               </CldUploadWidget>
-
-              {/* EMPTY STATE within section */}
-              {visibleImages.length === 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <p className="text-sm italic">
-                    No images for this color selection.
-                  </p>
-                </div>
-              )}
             </div>
           </section>
         </div>
 
-        {/* --- RIGHT COLUMN: SIDEBAR (STICKY) --- */}
-        <aside className="lg:sticky lg:top-8 space-y-6">
-          {/* PRICING */}
-          <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-            <h3 className="font-bold text-slate-800">Pricing & Category</h3>
+        {/* SIDEBAR */}
+        <aside className="space-y-6">
+          <section className="p-6 bg-white border shadow-sm rounded-2xl border-slate-200 space-y-4">
+            <h3 className="font-bold">Pricing & Category</h3>
             <div className="space-y-4">
               <div className="space-y-1">
-                <span className="text-xs font-bold text-slate-500 uppercase">
+                <span className="text-[10px] font-bold text-slate-500 uppercase">
                   Base Price
                 </span>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <span className="absolute text-slate-400 left-3 top-1/2 -translate-y-1/2">
                     $
                   </span>
                   <Input
@@ -442,13 +472,13 @@ export default function ProductForm({
                 </div>
               </div>
               <div className="space-y-1">
-                <span className="text-xs font-bold text-slate-500 uppercase">
+                <span className="text-[10px] font-bold text-slate-500 uppercase">
                   Category
                 </span>
                 <select
                   name="categoryId"
                   defaultValue={initialData?.categoryId}
-                  className="w-full h-10 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm focus:ring-1 focus:ring-black outline-none"
+                  className="w-full h-10 px-3 text-sm border outline-none rounded-md bg-slate-50"
                   required
                 >
                   {categories.map((cat) => (
@@ -461,69 +491,62 @@ export default function ProductForm({
             </div>
           </section>
 
-          {/* STATUS */}
-          <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-3">
-            <h3 className="font-bold text-slate-800 mb-2">Visibility</h3>
+          <section className="p-6 space-y-3 bg-white border shadow-sm rounded-2xl border-slate-200">
+            <h3 className="mb-2 font-bold">Visibility</h3>
             {[
               { id: "isPublished", label: "Published" },
-              { id: "featured", label: "Featured Product" },
+              { id: "featured", label: "Featured" },
             ].map((item) => (
               <label
                 key={item.id}
-                className="flex items-center justify-between p-3 border rounded-xl hover:bg-slate-50 cursor-pointer transition"
+                className="flex items-center justify-between p-3 border cursor-pointer rounded-xl hover:bg-slate-50"
               >
                 <span className="text-sm font-medium">{item.label}</span>
                 <input
                   type="checkbox"
                   name={item.id}
-                  defaultChecked={(initialData as any)?.[item.id]}
+                  defaultChecked={initialData?.[item.id]}
                   className="w-5 h-5 accent-black"
                 />
               </label>
             ))}
           </section>
 
-          {/* SEO - Moved to bottom of sidebar */}
-          <section className="bg-slate-900 text-white rounded-2xl p-6 space-y-4 shadow-xl">
+          <section className="p-6 text-white bg-slate-900 rounded-2xl space-y-4">
             <div className="flex items-center gap-2">
               <Globe size={18} className="text-blue-400" />
-              <h3 className="font-bold">SEO Listing</h3>
+              <h3 className="font-bold">SEO</h3>
             </div>
             <div className="space-y-1">
               <label className="text-[10px] uppercase font-bold text-slate-400">
-                URL Slug
+                Slug
               </label>
-              <div className="flex bg-slate-800 rounded-lg overflow-hidden ring-1 ring-slate-700">
-                <span className="px-3 py-2 text-slate-500 text-xs border-r border-slate-700">
-                  /products/
-                </span>
-                <input
-                  name="slug"
-                  defaultValue={initialData?.slug}
-                  className="flex-1 bg-transparent px-3 py-2 text-sm text-blue-300 outline-none"
-                />
-              </div>
+              <input
+                name="slug"
+                defaultValue={initialData?.slug}
+                className="w-full px-3 py-2 text-sm text-blue-300 outline-none bg-slate-800 rounded-lg ring-1 ring-slate-700"
+              />
             </div>
           </section>
         </aside>
       </div>
 
-      {/* --- FLOATING ACTION FOOTER --- */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/60 backdrop-blur-xl border-t border-slate-200 z-100">
+      {/* FOOTER BAR */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-white/80 backdrop-blur-md border-t border-slate-200">
         <div className="max-w-[1400px] mx-auto flex items-center justify-between">
-          <p className="hidden sm:block text-sm text-slate-500 font-medium italic">
-            {isEditing ? `Editing: ${initialData.title}` : "Unsaved Product"}
+          <p className="text-sm italic text-slate-500">
+            {isEditing ? `Editing: ${initialData.title}` : "New Product"}
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex gap-4">
             <Button variant="ghost" type="button" onClick={() => router.back()}>
               Discard
             </Button>
             <Button
               type="submit"
               size="lg"
-              className="px-12 bg-black hover:bg-slate-800 text-white rounded-full transition-transform active:scale-95 shadow-xl"
+              className="px-12 text-white bg-black rounded-full"
             >
-              {isEditing ? "Save Changes" : "Create Product"}
+              Save Product
             </Button>
           </div>
         </div>
