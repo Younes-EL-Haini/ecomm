@@ -24,6 +24,22 @@ import { CldUploadWidget } from "next-cloudinary";
 import { useState } from "react";
 import { formatMoney, toNumber } from "@/lib/utils/pricing";
 
+interface VariantFormState {
+  tempId: string;
+  id?: string; // Optional because new rows don't have one
+  name: string;
+  sku: string | null;
+  stock: number;
+  priceDelta: number;
+  color: string | null;
+  size: string | null;
+  // Make these optional so the "New Row" doesn't crash
+  createdAt?: Date | string;
+  productId?: string;
+  type?: string;
+  value?: string;
+}
+
 interface ProductFormProps {
   categories: Category[];
   initialData?: Awaited<ReturnType<typeof getProductForEdit>>;
@@ -38,6 +54,52 @@ export default function ProductForm({
 
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+
+  // Initialize with existing variants or one empty row for a new product
+  const [variants, setVariants] = useState<VariantFormState[]>(
+    initialData?.variants?.length
+      ? initialData.variants.map((v) => ({ ...v, tempId: v.id }))
+      : [
+          {
+            tempId: "1",
+            name: "",
+            sku: "",
+            stock: 0,
+            priceDelta: 0,
+            color: "",
+            size: "",
+          },
+        ],
+  );
+
+  const addVariant = () => {
+    const newVariant = {
+      tempId: Math.random().toString(36).substr(2, 9),
+      name: "",
+      sku: "",
+      stock: 0,
+      priceDelta: 0,
+      color: selectedColor || "", // Pre-fill with active color filter
+      size: "",
+    };
+    setVariants([...variants, newVariant]);
+  };
+
+  const updateVariant = (index: number, field: string, value: any) => {
+    const updated = [...variants];
+    updated[index] = { ...updated[index], [field]: value };
+    // Auto-generate name for the UI
+    const color = updated[index].color;
+    const size = updated[index].size;
+    updated[index].name =
+      size && color ? `${size} / ${color}` : size || color || "Default";
+    setVariants(updated);
+  };
+
+  const removeVariant = (index: number) => {
+    if (variants.length <= 1) return; // Keep at least one
+    setVariants(variants.filter((_, i) => i !== index));
+  };
 
   const [images, setImages] = useState<{ url: string; color?: string }[]>(
     initialData?.images.map((img) => ({
@@ -104,7 +166,7 @@ export default function ProductForm({
       {/* items-start is crucial to prevent the sidebar from stretching to full height */}
       <div className="grid grid-cols-1 md:grid-cols-[1fr_350px] gap-8 items-start">
         {/* --- LEFT COLUMN: MAIN CONTENT --- */}
-        <div className="space-y-8">
+        <div className="space-y-8 min-w-0">
           {/* GENERAL INFO */}
           <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
             <div className="flex items-center gap-2 pb-4 border-b">
@@ -152,58 +214,130 @@ export default function ProductForm({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="rounded-lg"
+                onClick={addVariant}
+                className="rounded-lg border-slate-200 hover:bg-slate-50"
               >
-                + Add Row
+                <Plus size={16} className="mr-1" /> Add Row
               </Button>
             </div>
+
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-widest border-b">
                   <tr>
-                    <th className="px-6 py-4">Variant</th>
-                    <th className="px-6 py-4">SKU</th>
+                    <th className="px-6 py-4 text-left">
+                      Variant Details (Color/Size)
+                    </th>
+                    <th className="px-6 py-4 text-left">SKU</th>
                     <th className="px-6 py-4 text-center">Stock</th>
                     <th className="px-6 py-4 text-right">Price Delta</th>
+                    <th className="px-4 py-4 w-10"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {initialData?.variants?.map((variant) => (
+                  {variants.map((variant, index) => (
                     <tr
-                      key={variant.id}
+                      key={variant.tempId}
                       onClick={() => {
                         setSelectedColor(variant.color ?? null);
                         setSelectedSize(variant.size ?? null);
                       }}
-                      className={`cursor-pointer transition-colors ${
+                      className={`group transition-colors ${
                         selectedColor === variant.color &&
                         selectedSize === variant.size
                           ? "bg-indigo-50/50"
-                          : "hover:bg-slate-50"
+                          : "hover:bg-slate-50/80"
                       }`}
                     >
-                      <td className="px-6 py-4 font-semibold">
-                        {variant.name}
+                      <td className="px-6 py-4">
+                        <div className="flex gap-2">
+                          <input
+                            placeholder="Color"
+                            className="w-24 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none font-semibold transition-colors"
+                            value={variant.color || ""}
+                            onChange={(e) =>
+                              updateVariant(index, "color", e.target.value)
+                            }
+                          />
+                          <span className="text-slate-300">/</span>
+                          <input
+                            placeholder="Size"
+                            className="w-20 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none font-semibold transition-colors"
+                            value={variant.size || ""}
+                            onChange={(e) =>
+                              updateVariant(index, "size", e.target.value)
+                            }
+                          />
+                        </div>
+                        {/* Hidden inputs to send data to Server Action */}
+                        <input
+                          type="hidden"
+                          name="v_color"
+                          value={variant.color || ""}
+                        />
+                        <input
+                          type="hidden"
+                          name="v_size"
+                          value={variant.size || ""}
+                        />
                       </td>
-                      <td className="px-6 py-4 text-slate-400 font-mono text-xs">
-                        {variant.sku || "—"}
+
+                      <td className="px-6 py-4">
+                        <input
+                          name="v_sku"
+                          placeholder="SKU-AUTO"
+                          className="w-32 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none font-mono text-xs text-slate-500"
+                          value={variant.sku || ""}
+                          onChange={(e) =>
+                            updateVariant(index, "sku", e.target.value)
+                          }
+                        />
                       </td>
+
                       <td className="px-6 py-4 text-center">
-                        <span
-                          className={`px-2 py-1 rounded text-xs font-bold ${variant.stock > 0 ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}
-                        >
-                          {variant.stock}
-                        </span>
+                        <input
+                          type="number"
+                          name="v_stock"
+                          className="w-16 bg-slate-100 rounded px-2 py-1 text-center font-bold text-xs"
+                          value={variant.stock}
+                          onChange={(e) =>
+                            updateVariant(
+                              index,
+                              "stock",
+                              parseInt(e.target.value) || 0,
+                            )
+                          }
+                        />
                       </td>
-                      <td className="px-6 py-4 text-right font-medium text-slate-600">
-                        {variant.priceDelta &&
-                        toNumber(variant.priceDelta) !== 0 ? (
-                          <span className="text-indigo-600">
-                            +{formatMoney(toNumber(variant.priceDelta))}
-                          </span>
-                        ) : (
-                          <span className="text-slate-300">—</span>
-                        )}
+
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <span className="text-slate-400 text-xs">$</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            name="v_priceDelta"
+                            className="w-20 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none text-right font-medium text-indigo-600"
+                            value={variant.priceDelta}
+                            onChange={(e) =>
+                              updateVariant(
+                                index,
+                                "priceDelta",
+                                parseFloat(e.target.value) || 0,
+                              )
+                            }
+                          />
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-4">
+                        <button
+                          type="button"
+                          onClick={() => removeVariant(index)}
+                          className="text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
+                        >
+                          <X size={16} />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -226,19 +360,30 @@ export default function ProductForm({
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {visibleImages.map((img) => (
-                <div
-                  key={img.url}
-                  className="group relative aspect-square rounded-xl overflow-hidden bg-slate-100 border"
-                >
-                  <img src={img.url} className="w-full h-full object-cover" />
+                <div key={img.url} className="group relative aspect-square ...">
+                  <img
+                    src={img.url}
+                    className="w-full h-full object-cover rounded-xl"
+                  />
+
+                  {/* 1. The URL */}
+                  <input type="hidden" name="image_url" value={img.url} />
+
+                  {/* 2. The Color associated with this specific image */}
+                  {/* Even if selectedColor is null, we send an empty string to keep the arrays aligned */}
+                  <input
+                    type="hidden"
+                    name="image_color"
+                    value={img.color || ""}
+                  />
+
                   <button
                     type="button"
                     onClick={() => removeImage(img.url)}
-                    className="absolute top-2 right-2 bg-white text-rose-500 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition shadow-lg"
+                    className="..."
                   >
                     <X size={14} />
                   </button>
-                  <input type="hidden" name="images" value={img.url} />
                 </div>
               ))}
 

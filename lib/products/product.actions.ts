@@ -109,8 +109,42 @@ export async function restoreProduct(id: string) {
   }
 }
 
+// export async function updateProduct(id: string, formData: FormData) {
+//   try {
+//     const title = formData.get("title") as string;
+//     const price = formData.get("price") as string;
+//     const categoryId = formData.get("categoryId") as string;
+//     const description = formData.get("description") as string;
+//     const slug = formData.get("slug") as string;
+//     const isPublished = formData.get("isPublished") === "on";
+//     const featured = formData.get("featured") === "on";
+
+//     await prisma.product.update({
+//       where: { id },
+//       data: {
+//         title,
+//         price: parseFloat(price),
+//         categoryId,
+//         description,
+//         slug,
+//         isPublished,
+//         featured,
+//       },
+//     });
+
+//     revalidatePath("/admin/products");
+//     revalidatePath("/");
+
+//     return { success: true };
+//   } catch (error) {
+//     console.error(error);
+//     return { success: false, error: "Failed to update product" };
+//   }
+// }
+
 export async function updateProduct(id: string, formData: FormData) {
   try {
+    // 1. Extract values
     const title = formData.get("title") as string;
     const price = formData.get("price") as string;
     const categoryId = formData.get("categoryId") as string;
@@ -118,26 +152,78 @@ export async function updateProduct(id: string, formData: FormData) {
     const slug = formData.get("slug") as string;
     const isPublished = formData.get("isPublished") === "on";
     const featured = formData.get("featured") === "on";
+    const vColors = formData.getAll("v_color") as string[];
+  const vSizes = formData.getAll("v_size") as string[];
+  const vSkus = formData.getAll("v_sku") as string[];
+  const vStocks = formData.getAll("v_stock") as string[];
+  const vDeltas = formData.getAll("v_priceDelta") as string[];
 
-    await prisma.product.update({
-      where: { id },
-      data: {
-        title,
-        price: parseFloat(price),
-        categoryId,
-        description,
-        slug,
-        isPublished,
-        featured,
-      },
+    // 2. Get paired arrays for images
+    const imageUrls = formData.getAll("image_url") as string[];
+    const imageColors = formData.getAll("image_color") as string[];
+
+    await prisma.$transaction(async (tx) => {
+      // 3. Update Product details
+      await tx.product.update({
+        where: { id },
+        data: {
+          title,
+          price: parseFloat(price),
+          categoryId,
+          description,
+          slug,
+          isPublished,
+          featured,
+        },
+      });
+
+      await tx.productImage.deleteMany({ 
+        where: { productId: id } 
+      });
+      
+      // Re-create them using the index to pair URL with Color
+      if (imageUrls.length > 0) {
+        await tx.productImage.createMany({
+          data: imageUrls.map((url, index) => ({
+            url,
+            productId: id,
+            position: index,
+            // Pair URL at index with Color at index
+            color: imageColors[index] !== "" ? imageColors[index] : null,
+          })),
+        });
+      }
+
+      await tx.productVariant.deleteMany({ where: { productId: id } });
+    
+    await tx.productVariant.createMany({
+      data: vColors.map((color, i) => {
+        const size = vSizes[i];
+        const name = (size && color) ? `${size} / ${color}` : (size || color || "Default");
+        
+        return {
+          productId: id,
+          name,
+          color: color || null,
+          size: size || null,
+          sku: vSkus[i] || null,
+          stock: parseInt(vStocks[i]) || 0,
+          priceDelta: parseFloat(vDeltas[i]) || 0,
+          type: (size && color) ? "COMBINED" : size ? "SIZE" : color ? "COLOR" : "BASE",
+          value: name
+        };
+      })
+    });
+  
     });
 
     revalidatePath("/admin/products");
+    revalidatePath(`/admin/products/${id}`);
     revalidatePath("/");
 
     return { success: true };
   } catch (error) {
-    console.error(error);
+    console.error("Update Error:", error);
     return { success: false, error: "Failed to update product" };
   }
 }
