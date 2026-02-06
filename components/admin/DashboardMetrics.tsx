@@ -17,7 +17,7 @@ export function DashboardMetrics({
       color: "text-indigo-500",
       bg: "from-indigo-50",
       link: `/admin/orders?range=${range}`,
-      trend: "+8% from last week",
+      trend: data.orderTrend,
     },
     {
       label: "Total Revenue",
@@ -25,7 +25,7 @@ export function DashboardMetrics({
       icon: DollarSign,
       color: "text-emerald-500",
       bg: "from-emerald-50",
-      trend: "+12% from last week",
+      trend: data.revenueTrend,
     },
     {
       label: "Active Products",
@@ -33,7 +33,6 @@ export function DashboardMetrics({
       icon: Box,
       color: "text-amber-500",
       bg: "from-amber-50",
-      trend: "Stable",
     },
   ];
 
@@ -42,7 +41,7 @@ export function DashboardMetrics({
       {metrics.map((m) => {
         const Content = (
           <Card
-            className={`rounded-4xl p-2 bg-linear-to-br ${m.bg} to-white shadow-sm border-none hover:shadow-md transition-shadow cursor-default`}
+            className={`rounded-4xl bg-linear-to-br ${m.bg} to-white shadow-sm border-none hover:shadow-md transition-shadow`}
           >
             <CardHeader className="flex flex-row items-center gap-4 pb-2">
               <div className={`p-3 rounded-2xl bg-white shadow-xs ${m.color}`}>
@@ -56,9 +55,16 @@ export function DashboardMetrics({
               <div className="text-3xl font-black text-slate-900">
                 {m.value}
               </div>
-              <p className="text-[11px] font-medium text-slate-400 mt-1">
-                {m.trend}
-              </p>
+              {m.trend !== undefined && (
+                <p
+                  className={`text-sm mt-1 font-medium ${m.trend >= 0 ? "text-emerald-500" : "text-rose-500"}`}
+                >
+                  {m.trend >= 0 ? "↑" : "↓"} {Math.abs(m.trend)}%
+                  <span className="text-slate-400 font-normal ml-1">
+                    vs previous period
+                  </span>
+                </p>
+              )}
             </CardContent>
           </Card>
         );
