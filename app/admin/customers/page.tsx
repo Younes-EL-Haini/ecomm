@@ -5,6 +5,7 @@ import CustomerTable from "@/_components/CustomerTable";
 import prisma from "@/lib/prisma";
 import { FormattedCustomer } from "@/lib/admin/admin.types";
 import { SearchFilter } from "@/components/admin/SearchFilter";
+import { getAdminCustomers } from "@/lib/orders";
 
 export const metadata: Metadata = {
   title: "Customers | Admin Dashboard",
@@ -17,28 +18,7 @@ export default async function CustomersPage({
 }) {
   const resolvedParams = await searchParams;
   const searchTerm = resolvedParams.search;
-  const customers = await prisma.user.findMany({
-    where: {
-      // Logic: If there is a search term, look in name, email, or ID
-      ...(searchTerm
-        ? {
-            OR: [
-              { name: { contains: searchTerm, mode: "insensitive" } },
-              { email: { contains: searchTerm, mode: "insensitive" } },
-              { id: { contains: searchTerm, mode: "insensitive" } },
-            ],
-          }
-        : {}),
-    },
-    include: {
-      orders: {
-        select: {
-          totalPrice: true,
-        },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  const customers = await getAdminCustomers(searchTerm);
 
   // Transform data for the table
   const formattedCustomers: FormattedCustomer[] = customers.map((user) => ({

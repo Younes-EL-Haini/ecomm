@@ -63,6 +63,30 @@ export async function getAdminOrders(filters?: { from?: Date | undefined; to?: D
   });
 }
 
+export async function getAdminCustomers(searchTerm?: string) {
+  return await prisma.user.findMany({
+    where: {
+      ...(searchTerm
+        ? {
+            OR: [
+              { name: { contains: searchTerm, mode: "insensitive" } },
+              { email: { contains: searchTerm, mode: "insensitive" } },
+              { id: { contains: searchTerm, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    },
+    include: {
+      orders: {
+        select: {
+          totalPrice: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export async function getAdminOrderDetail(orderId: string) {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
