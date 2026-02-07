@@ -39,3 +39,18 @@ export interface SerializedOrder extends Omit<Order, "totalPrice" | "createdAt" 
   createdAt: Order["createdAt"];
   updatedAt: Order["createdAt"];
 }
+
+export interface FormattedCustomer {
+  id: string;
+  name: string;
+  image: string | null;
+  email: string | null;
+  joinedDate: string;
+  totalOrders: number;
+  totalSpent: number;
+  status: "Verified" | "Unverified";
+}
+
+export interface CustomerTableProps {
+  data: FormattedCustomer[];
+}

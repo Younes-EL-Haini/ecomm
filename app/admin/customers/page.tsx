@@ -2,8 +2,9 @@ import { Metadata } from "next";
 import { Users, UserPlus, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import CustomerTable, { FormattedCustomer } from "@/_components/CustomerTable";
+import CustomerTable from "@/_components/CustomerTable";
 import prisma from "@/lib/prisma";
+import { FormattedCustomer } from "@/lib/admin/admin.types";
 
 export const metadata: Metadata = {
   title: "Customers | Admin Dashboard",

@@ -17,21 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 import Link from "next/link";
-
-export interface FormattedCustomer {
-  id: string;
-  name: string;
-  image: string | null;
-  email: string | null;
-  joinedDate: string;
-  totalOrders: number;
-  totalSpent: number;
-  status: "Verified" | "Unverified";
-}
-
-interface CustomerTableProps {
-  data: FormattedCustomer[];
-}
+import { CustomerTableProps } from "@/lib/admin/admin.types";
 
 export default function CustomerTable({ data }: CustomerTableProps) {
   return (
