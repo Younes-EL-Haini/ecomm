@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
+import Link from "next/link";
 
 export interface FormattedCustomer {
   id: string;
@@ -125,8 +126,13 @@ export default function CustomerTable({ data }: CustomerTableProps) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem className="cursor-pointer">
+                    {/* <DropdownMenuItem className="cursor-pointer">
                       View Profile
+                    </DropdownMenuItem> */}
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                      <Link href={`/admin/customers/${customer.id}`}>
+                        View Profile
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem className="cursor-pointer">
                       View Order History
