@@ -1,19 +1,35 @@
 import { Metadata } from "next";
 import { Users, UserPlus, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import CustomerTable from "@/_components/CustomerTable";
 import prisma from "@/lib/prisma";
 import { FormattedCustomer } from "@/lib/admin/admin.types";
+import { SearchFilter } from "@/components/admin/SearchFilter";
 
 export const metadata: Metadata = {
   title: "Customers | Admin Dashboard",
 };
 
-export default async function CustomersPage() {
-  // Fetch customers with their order aggregates
+export default async function CustomersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string }>;
+}) {
+  const resolvedParams = await searchParams;
+  const searchTerm = resolvedParams.search;
   const customers = await prisma.user.findMany({
-    // where: { role: "CUSTOMER" },
+    where: {
+      // Logic: If there is a search term, look in name, email, or ID
+      ...(searchTerm
+        ? {
+            OR: [
+              { name: { contains: searchTerm, mode: "insensitive" } },
+              { email: { contains: searchTerm, mode: "insensitive" } },
+              { id: { contains: searchTerm, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    },
     include: {
       orders: {
         select: {
@@ -83,13 +99,8 @@ export default async function CustomersPage() {
 
       {/* SEARCH & TABLE SECTION */}
       <section className="bg-white border rounded-2xl shadow-sm overflow-hidden">
-        <div className="p-4 border-b bg-slate-50/50 flex flex-col md:flex-row gap-4 justify-between">
-          <div className="relative w-full md:w-96">
-            <Input
-              placeholder="Search by name or email..."
-              className="pl-4 h-10 bg-white"
-            />
-          </div>
+        <div className="p-4 border-b bg-slate-50/50">
+          <SearchFilter />
         </div>
 
         <CustomerTable data={formattedCustomers} />
