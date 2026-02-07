@@ -1,12 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { Mail, Calendar, ShieldCheck, User } from "lucide-react";
+import { Mail, Calendar, ShieldCheck, User, ChevronLeft } from "lucide-react";
 import { CustomerHeaderData } from "@/lib/admin/admin.types";
+import Link from "next/link";
 
 export function CustomerHeader({ customer }: { customer: CustomerHeaderData }) {
   return (
     <div className="p-8 bg-white border border-slate-200 rounded-3xl shadow-sm">
+      <Link
+        href="/admin/customers"
+        className="text-sm text-slate-500 hover:text-black flex items-center gap-2 mb-4 transition-colors"
+      >
+        <ChevronLeft size={16} /> Back to Customers
+      </Link>
       <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
         {/* Avatar Section */}
         <div className="relative h-24 w-24 rounded-3xl border-4 border-slate-50 overflow-hidden bg-slate-100 shadow-inner shrink-0">
