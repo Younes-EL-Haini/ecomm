@@ -5,6 +5,7 @@ export const serializeProduct = (product: ProductWithRelations) => {
   return {
     ...product,
     price: Number(product.price),
+    category: product.category,
     variants: product.variants?.map((v) => ({
       ...v,
       priceDelta: Number(v.priceDelta),

@@ -12,7 +12,7 @@ const ProductImageCard = ({ image, stock }: ProductImageCardProps) => {
         src={image?.url || "/images/hero-product.jpg"}
         alt={image?.alt || "Product Image"}
         fill
-        className="object-contain p-3 transition-transform duration-500 ease-in-out group-hover:scale-110"
+        className="object-cover p-3 transition-transform duration-500 ease-in-out group-hover:scale-110"
       />
     </div>
   );

@@ -43,6 +43,7 @@ const ProductCard = ({ product }: { product: ProductWithRelations }) => {
           description={product.description}
           price={product.price}
           slug={product.slug}
+          categoryName={product.category.name}
         />
       </Card>
     </Link>

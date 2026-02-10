@@ -5,11 +5,12 @@ export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
     images: { select: { url: true; position: true } };
     variants: { select: { stock: true; color: true; priceDelta?:true } };
+    category: true;
   };
 }>;
 
 export type ProductFullDetails = Prisma.ProductGetPayload<{
-  include: { images: true; reviews: true; variants: true };
+  include: { images: true; reviews: true; variants: true, category: true };
 }> & {
   avgRating?: string | number;
   ratingCount?: number;
