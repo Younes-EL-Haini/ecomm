@@ -180,6 +180,7 @@ model Address {
   id         String   @id @default(cuid())
   userId     String
   fullName   String?
+  phone      String?
   label      String?
   line1      String
   line2      String?

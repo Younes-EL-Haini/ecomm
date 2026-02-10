@@ -1,76 +1,293 @@
+// "use client";
+// import { useState, useMemo } from "react";
+// import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+// import { MapPin, Search } from "lucide-react";
+// import { Input } from "@/components/ui/input";
+// import { Label } from "@/components/ui/label";
+// import "leaflet/dist/leaflet.css";
+// import L from "leaflet";
+
+// // Fix for default Leaflet icon not showing in Next.js
+// const icon = L.icon({
+//   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+//   iconSize: [25, 41],
+//   iconAnchor: [12, 41],
+// });
+
+// export default function CheckoutAddressForm({ address, setAddress }: any) {
+//   const [pos, setPos] = useState<[number, number]>([40.7128, -74.006]); // Default: NYC
+
+//   // Function to get address from Lat/Lng (Reverse Geocoding)
+//   const fetchAddress = async (lat: number, lng: number) => {
+//     const res = await fetch(
+//       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+//     );
+//     const data = await res.json();
+//     const addr = data.address;
+
+//     setAddress({
+//       ...address,
+//       line1: `${addr.road || ""} ${addr.house_number || ""}`.trim(),
+//       city: addr.city || addr.town || addr.village || "",
+//       postalCode: addr.postcode || "",
+//       country: addr.country || "",
+//     });
+//   };
+
+//   // Component to handle map clicks/drags
+//   function LocationMarker() {
+//     useMapEvents({
+//       click(e) {
+//         setPos([e.latlng.lat, e.latlng.lng]);
+//         fetchAddress(e.latlng.lat, e.latlng.lng);
+//       },
+//     });
+//     return <Marker position={pos} icon={icon} />;
+//   }
+
+//   return (
+//     <div className="bg-white p-8 border rounded-2xl shadow-sm space-y-6">
+//       <div className="flex items-center gap-3 border-b pb-4">
+//         <div className="bg-zinc-100 p-2 rounded-lg">
+//           <MapPin className="h-5 w-5 text-zinc-900" />
+//         </div>
+//         <h2 className="text-xl font-bold">Shipping Details</h2>
+//       </div>
+
+//       {/* THE MAP SECTION */}
+//       <div className="space-y-2">
+//         <Label className="text-zinc-600">Pick Location on Map</Label>
+//         <div className="h-64 w-full rounded-xl overflow-hidden border border-zinc-200 z-0">
+//           <MapContainer
+//             center={pos}
+//             zoom={13}
+//             scrollWheelZoom={false}
+//             style={{ height: "100%", width: "100%" }}
+//           >
+//             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+//             <LocationMarker />
+//           </MapContainer>
+//         </div>
+//         <p className="text-[10px] text-zinc-400">
+//           Click the map to precisely set your delivery point.
+//         </p>
+//       </div>
+
+//       <div className="grid grid-cols-1 gap-6">
+//         <div className="space-y-2">
+//           <Label className="text-zinc-600">Full Name</Label>
+//           <Input
+//             value={address.fullName}
+//             onChange={(e) =>
+//               setAddress({ ...address, fullName: e.target.value })
+//             }
+//             placeholder="Recipient Name"
+//             className="h-11 rounded-lg"
+//           />
+//         </div>
+
+//         {/* These fields now auto-fill from the map, but remain editable */}
+//         <div className="space-y-2">
+//           <Label className="text-zinc-600">Auto-filled Address</Label>
+//           <Input
+//             value={address.line1}
+//             readOnly
+//             className="h-11 bg-zinc-50 cursor-not-allowed"
+//           />
+//         </div>
+
+//         <div className="grid grid-cols-2 gap-4">
+//           <div className="space-y-2">
+//             <Label className="text-zinc-600">City</Label>
+//             <Input value={address.city} readOnly className="h-11 bg-zinc-50" />
+//           </div>
+//           <div className="space-y-2">
+//             <Label className="text-zinc-600">Postal Code</Label>
+//             <Input
+//               value={address.postalCode}
+//               readOnly
+//               className="h-11 bg-zinc-50"
+//             />
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
 "use client";
+import { useState, useEffect } from "react";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  useMapEvents,
+  useMap,
+} from "react-leaflet";
+import { MapPin, Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+const icon = L.icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
 
 export default function CheckoutAddressForm({ address, setAddress }: any) {
-  const update = (e: any) =>
-    setAddress({ ...address, [e.target.name]: e.target.value });
+  const [pos, setPos] = useState<[number, number]>([34.0181, -5.0078]); // Default: Fes, Morocco
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Helper: Move map view
+  function ChangeView({ center }: { center: [number, number] }) {
+    const map = useMap();
+    useEffect(() => {
+      map.flyTo(center, 16); // High zoom for accuracy
+    }, [center]);
+    return null;
+  }
+
+  // Fetch address details from coordinates
+  const fetchAddress = async (lat: number, lng: number) => {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+    );
+    const data = await res.json();
+    const addr = data.address;
+    setAddress({
+      ...address,
+      line1: `${addr.road || ""} ${addr.house_number || ""}`.trim(),
+      city: addr.city || addr.town || addr.village || "",
+      postalCode: addr.postcode || "",
+      country: addr.country || "",
+    });
+  };
+
+  // Search function: Find coordinates from text
+  const handleSearch = async () => {
+    if (!searchQuery) return;
+    setIsSearching(true);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1`,
+      );
+      const data = await res.json();
+      if (data && data.length > 0) {
+        const newPos: [number, number] = [
+          parseFloat(data[0].lat),
+          parseFloat(data[0].lon),
+        ];
+        setPos(newPos);
+        fetchAddress(newPos[0], newPos[1]);
+      }
+    } catch (error) {
+      console.error("Search failed", error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  function LocationMarker() {
+    useMapEvents({
+      click(e) {
+        setPos([e.latlng.lat, e.latlng.lng]);
+        fetchAddress(e.latlng.lat, e.latlng.lng);
+      },
+    });
+    return <Marker position={pos} icon={icon} />;
+  }
 
   return (
     <div className="bg-white p-8 border rounded-2xl shadow-sm space-y-6">
       <div className="flex items-center gap-3 border-b pb-4">
-        <div className="bg-zinc-100 p-2 rounded-lg">
-          <MapPin className="h-5 w-5 text-zinc-900" />
-        </div>
+        <MapPin className="h-5 w-5 text-zinc-900" />
         <h2 className="text-xl font-bold">Shipping Details</h2>
+      </div>
+
+      {/* SEARCH BAR SECTION */}
+      <div className="space-y-2">
+        <Label className="text-zinc-600">Search Address</Label>
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Input
+              placeholder="Type your street, city, or area..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              className="h-11 pr-10"
+            />
+            {isSearching && (
+              <Loader2 className="absolute right-3 top-3 h-5 w-5 animate-spin text-zinc-400" />
+            )}
+          </div>
+          <Button
+            onClick={handleSearch}
+            variant="secondary"
+            className="h-11 px-4"
+          >
+            <Search className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* MAP SECTION */}
+      <div className="h-64 w-full rounded-xl overflow-hidden border border-zinc-200 z-0 relative">
+        <MapContainer
+          center={pos}
+          zoom={13}
+          style={{ height: "100%", width: "100%" }}
+        >
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <ChangeView center={pos} />
+          <LocationMarker />
+        </MapContainer>
       </div>
 
       <div className="grid grid-cols-1 gap-6">
         <div className="space-y-2">
           <Label className="text-zinc-600">Full Name</Label>
           <Input
-            name="fullName"
-            placeholder="John Doe"
-            className="h-11 rounded-lg border-zinc-200"
             value={address.fullName}
-            onChange={update}
+            onChange={(e) =>
+              setAddress({ ...address, fullName: e.target.value })
+            }
+            placeholder="Recipient Name"
+            className="h-11"
           />
         </div>
 
         <div className="space-y-2">
-          <Label className="text-zinc-600">Street Address</Label>
+          <Label className="text-zinc-600">Phone Number</Label>
           <Input
-            name="line1"
-            placeholder="123 Luxury Lane"
-            className="h-11 rounded-lg border-zinc-200"
-            value={address.line1}
-            onChange={update}
+            type="tel"
+            value={address.phone}
+            onChange={(e) => setAddress({ ...address, phone: e.target.value })}
+            placeholder="+212 600-000000"
+            className="h-11"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2 col-span-2">
+            <Label className="text-zinc-600">Street Address</Label>
+            <Input value={address.line1} readOnly className="h-11 bg-zinc-50" />
+          </div>
           <div className="space-y-2">
             <Label className="text-zinc-600">City</Label>
-            <Input
-              name="city"
-              placeholder="New York"
-              className="h-11 rounded-lg border-zinc-200"
-              value={address.city}
-              onChange={update}
-            />
+            <Input value={address.city} readOnly className="h-11 bg-zinc-50" />
           </div>
           <div className="space-y-2">
-            <Label className="text-zinc-600">Postal Code</Label>
+            <Label className="text-zinc-600">Country</Label>
             <Input
-              name="postalCode"
-              placeholder="10001"
-              className="h-11 rounded-lg border-zinc-200"
-              value={address.postalCode}
-              onChange={update}
+              value={address.country}
+              readOnly
+              className="h-11 bg-zinc-50"
             />
           </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label className="text-zinc-600">Country</Label>
-          <Input
-            name="country"
-            placeholder="United States"
-            className="h-11 rounded-lg border-zinc-200"
-            value={address.country}
-            onChange={update}
-          />
         </div>
       </div>
     </div>

@@ -38,34 +38,6 @@ export async function POST(req: Request) {
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
     userId = user.id;
 
-    // if (isDirect) {
-    //   // --- BUY IT NOW LOGIC ---
-    //   const { variantId, quantity } = body;
-      
-    //   if (!variantId) return NextResponse.json({ error: "Variant ID missing" }, { status: 400 });
-
-    //   const variant = await prisma.productVariant.findUnique({
-    //     where: { id: variantId },
-    //     include: { product: { include: { images: true } } },
-    //   });
-
-    //   if (!variant) return NextResponse.json({ error: "Variant not found" }, { status: 404 });
-
-    //   checkoutItems.push({
-    //     variantId: variant.id,
-    //     quantity: Number(quantity) || 1,
-    //     price: Number(variant.product.price) + Number(variant.priceDelta || 0),
-    //     title: variant.product.title,
-    //     image: variant.product.images[0]?.url || "",
-    //     variantName: `${variant.color} / ${variant.size}`
-    //   });
-    // } else {
-    //   // --- NORMAL CART LOGIC ---
-    //   if (user.cartItems.length === 0) {
-    //     return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
-    //   }
-
-    // }
     if (isDirect) {
   // --- BUY IT NOW LOGIC ---
   const { variantId, quantity } = body;
@@ -115,17 +87,24 @@ export async function POST(req: Request) {
     { status: 400 }
   );
 }
-
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(totalAmount * 100),
-      currency: "usd",
-      automatic_payment_methods: { enabled: true },
-      metadata: {
-        userId: userId,
-        isDirect: isDirect ? "true" : "false",
-        cartItems: JSON.stringify(checkoutItems.map(i => ({ variantId: i.variantId, q: i.quantity })))
-      },
-    });
+  amount: Math.round(totalAmount * 100),
+  currency: "usd",
+  automatic_payment_methods: { enabled: true },
+  metadata: {
+    userId: userId,
+    isDirect: isDirect ? "true" : "false",
+    // MODIFIED THIS LINE BELOW:
+    cartItems: JSON.stringify(checkoutItems.map(i => ({
+      variantId: i.variantId,
+      quantity: i.quantity,   
+      title: i.title,     
+      image: i.image,     
+      variantName: i.variantName,
+      price: i.price          
+    })))
+  },
+});
 
     const safeItems = CheckoutUIItemSchema.array().parse(checkoutItems);
 

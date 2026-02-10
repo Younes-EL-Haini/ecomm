@@ -3,12 +3,18 @@
 import { useState, useEffect } from "react";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import CheckoutAddressForm from "@/components/checkout/CheckoutAddressForm";
 import CheckoutPaymentForm from "@/components/checkout/CheckoutPaymentForm";
 import { Loader2, Lock, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import { CheckoutSummary } from "@/lib/cart";
+
+import dynamic from "next/dynamic";
+
+const CheckoutAddressForm = dynamic(
+  () => import("@/components/checkout/CheckoutAddressForm"),
+  { ssr: false }, // This is mandatory for Leaflet!
+);
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
@@ -18,6 +24,7 @@ export default function CheckoutPage() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [address, setAddress] = useState({
     fullName: "",
+    phone: "",
     line1: "",
     city: "",
     postalCode: "",

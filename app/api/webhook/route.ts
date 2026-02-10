@@ -27,6 +27,7 @@ export async function POST(req: Request) {
       process.env.STRIPE_WEBHOOK_SECRET!
     );
   } catch (err: any) {
+    console.error("❌ Webhook Signature Verification Failed:", err.message); // Add this!
     return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
   }
 
@@ -101,6 +102,7 @@ export async function POST(req: Request) {
             line1: shipping?.address?.line1 || "N/A",
             city: shipping?.address?.city || "N/A",
             fullName: shipping?.name || "Customer",
+            phone: paymentIntent.metadata?.phone || "N/A",
             postalCode: shipping?.address?.postal_code || "N/A",
             country: shipping?.address?.country || "N/A"
           },
