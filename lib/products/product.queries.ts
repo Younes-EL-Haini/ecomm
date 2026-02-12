@@ -8,6 +8,7 @@ export async function getProducts(): Promise<ProductWithRelations[]> {
     where: { isPublished: true, isArchived: false },
     orderBy: { createdAt: "asc" },
     include: {
+      category: true,
       images: { orderBy: { position: "asc" }, take: 1 },
       variants: { select: { stock: true, color: true } },
     },
