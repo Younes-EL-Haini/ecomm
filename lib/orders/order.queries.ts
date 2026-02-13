@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { serializeOrder, serializeAdminDetail } from "./order.serializer";
-import { SerializedOrder, AdminOrderSummary, OrderWithRelations } from "./order.types";
+import { SerializedOrder, AdminOrderSummary, OrderWithRelations, AdminOrderDetail } from "./order.types";
 
 export async function getMyOrders(email: string): Promise<SerializedOrder[]> {
   const orders = await prisma.order.findMany({
@@ -87,6 +87,7 @@ export async function getAdminCustomers(searchTerm?: string) {
   });
 }
 
+
 export async function getAdminOrderDetail(orderId: string) {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
@@ -102,5 +103,19 @@ export async function getAdminOrderDetail(orderId: string) {
     },
   });
 
-  return order;
+  if (!order) return null;
+
+  return {
+    ...order,
+    totalPrice: order.totalPrice.toNumber(),
+    items: order.items.map((item) => ({
+      ...item,
+      price: item.product.price.toNumber(),
+      totalPrice: (item.product.price.toNumber() * item.quantity), 
+      variant: item.variant ? {
+        ...item.variant,
+        priceDelta: item.variant.priceDelta ? item.variant.priceDelta.toNumber() : 0,
+      } : null,
+    })),
+  } as AdminOrderDetail; 
 }
