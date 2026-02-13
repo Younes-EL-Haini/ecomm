@@ -35,7 +35,7 @@ export function LowStockAlerts({ products }: LowStockAlertsProps) {
             className="flex items-center justify-between group"
           >
             <div className="flex items-center gap-3">
-              <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-gray-50 border">
+              <div className="relative w-16 h-20 rounded-xl overflow-hidden bg-gray-50 border">
                 <Image
                   src={variant.product.images[0]?.url || "/placeholder.png"}
                   alt={variant.product.title || "image"}

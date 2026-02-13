@@ -38,7 +38,7 @@ export default async function AdminProductsPage() {
             <div key={product.id}>
               {/* --- DESKTOP VIEW --- */}
               <div className="hidden md:flex flex-row items-center gap-4 p-4 bg-white border rounded-xl hover:border-slate-400 hover:shadow-md transition-all duration-200">
-                <div className="relative h-16 w-16 bg-slate-100 rounded-lg overflow-hidden border shrink-0">
+                <div className="relative h-20 w-16 bg-slate-100 rounded-lg overflow-hidden border shrink-0">
                   {isValidProtocol ? (
                     <Image
                       src={mainImage}
@@ -113,7 +113,7 @@ export default async function AdminProductsPage() {
 
               {/* --- MOBILE VIEW --- */}
               <div className="md:hidden flex gap-4 p-3 bg-white border rounded-xl shadow-sm items-center">
-                <div className="relative h-20 w-20 rounded-lg overflow-hidden border bg-slate-50 shrink-0">
+                <div className="relative h-20 w-16 rounded-lg overflow-hidden border bg-slate-50 shrink-0">
                   {isValidProtocol ? (
                     <Image
                       src={mainImage}
@@ -121,6 +121,7 @@ export default async function AdminProductsPage() {
                       fill
                       sizes="80px"
                       className="object-cover"
+                      unoptimized={true}
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full w-full text-slate-400">

@@ -40,14 +40,14 @@ const OrderDetails = ({ order, isOpen }: OrderDetailsProps) => {
                 className="flex items-center justify-between group/item py-2"
               >
                 <div className="flex items-center gap-5">
-                  <div className="size-20 rounded-2xl border border-zinc-100 bg-white overflow-hidden shadow-sm">
-                    <img
+                  <div className="w-16 h-20 shrink-0 rounded-xl border border-zinc-100 bg-white overflow-hidden shadow-sm relative">
+                    <Image
                       src={image?.url || "/placeholder.png"}
                       alt={item.product.name || "Product"}
-                      // fill
+                      fill
                       sizes="80px"
-                      className="object-cover size-full group-hover/item:scale-110 transition-transform duration-700"
-                      // unoptimized={true}
+                      className="object-cover group-hover/item:scale-110 transition-transform duration-700"
+                      unoptimized={true}
                     />
                   </div>
                   <div className="space-y-1">
@@ -63,7 +63,7 @@ const OrderDetails = ({ order, isOpen }: OrderDetailsProps) => {
                   </div>
                 </div>
 
-                <div className="hidden md:block">
+                <div>
                   <Button
                     asChild
                     variant="outline"

@@ -18,6 +18,7 @@ import {
   toNumber,
 } from "@/lib/utils/pricing";
 import { AdminOrderDetail, getStatusClasses } from "@/lib/orders";
+import Image from "next/image";
 
 export default function AdminOrderTemplate({
   order,
@@ -60,11 +61,13 @@ export default function AdminOrderTemplate({
             <div className="divide-y">
               {order.items.map((item) => (
                 <div key={item.id} className="p-6 flex items-center gap-4">
-                  <div className="h-16 w-16 bg-slate-100 rounded-lg overflow-hidden border">
-                    <img
+                  <div className="relative h-20 w-16 bg-slate-100 rounded-lg overflow-hidden border">
+                    <Image
                       src={item.product.images?.[0]?.url}
-                      alt={item.name}
-                      className="object-cover h-full w-full"
+                      alt={item.name || "image"}
+                      fill
+                      className="object-cover"
+                      unoptimized={true}
                     />
                   </div>
                   <div className="flex-1 min-w-0">

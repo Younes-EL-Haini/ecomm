@@ -54,11 +54,11 @@ export function MediaGallery({
         {visibleImages.map((img) => (
           <div
             key={img.url}
-            className="relative border group aspect-square bg-slate-100 rounded-xl overflow-hidden"
+            className="relative border group aspect-4/5 bg-slate-100 rounded-xl overflow-hidden shadow-sm"
           >
             <img
               src={img.url}
-              className="object-cover w-full h-full"
+              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
               alt="Product"
             />
             <div className="absolute inset-x-0 bottom-0 p-1 bg-black/40">
