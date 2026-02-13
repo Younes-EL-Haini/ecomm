@@ -1,5 +1,21 @@
 import Hero from "@/components/hero/Hero";
 import ProductGrid from "@/components/products/ProductGrid";
+import { SITE_CONFIG } from "@/lib/constants";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  // We don't need 'title.template' here because it's in the layout!
+  // Setting 'title' as a simple string here uses the 'default' from layout.
+  title: SITE_CONFIG.name,
+  description: SITE_CONFIG.description,
+
+  openGraph: {
+    title: SITE_CONFIG.name,
+    description: SITE_CONFIG.description,
+    url: "/", // Points to the root
+    // images and siteName are inherited from layout!
+  },
+};
 
 const MainPage = () => {
   return (

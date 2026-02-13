@@ -10,6 +10,17 @@ import {
   getOrderItemTotal,
 } from "@/lib/utils/pricing";
 import { getMyCart } from "@/lib/cart";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Your Shopping Bag",
+  description: "Review your items and proceed to checkout.",
+  // Senior Move: Prevent search engines from indexing the cart page
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function CartPage() {
   const session = await getServerSession(authOptions);

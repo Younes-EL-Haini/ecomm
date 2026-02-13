@@ -1,4 +1,19 @@
-// app/payment-success/page.tsx
+import { Metadata } from "next";
+
+export async function generateMetadata({
+  searchParams,
+}: Props): Promise<Metadata> {
+  const params = await searchParams;
+  const orderId = params.payment_intent
+    ? ` #${params.payment_intent.slice(-6).toUpperCase()}`
+    : "";
+
+  return {
+    title: `Order Confirmed${orderId}`,
+    description: "Thank you for your purchase.",
+    robots: { index: false, follow: false },
+  };
+}
 import authOptions from "@/app/auth/authOptions";
 import { Button } from "@/components/ui/button";
 import prisma from "@/lib/prisma";
