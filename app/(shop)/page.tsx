@@ -1,7 +1,9 @@
 import Hero from "@/components/hero/Hero";
 import ProductGrid from "@/components/products/ProductGrid";
+import { ProductGridSkeleton } from "@/components/products/ProductGridSkeleton";
 import { SITE_CONFIG } from "@/lib/constants";
 import { Metadata } from "next";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   // We don't need 'title.template' here because it's in the layout!
@@ -22,7 +24,9 @@ const MainPage = () => {
     <div className="flex flex-col bg-gray-100">
       <Hero />
       <section className="px-4 md:px-10 mt-10">
-        <ProductGrid />
+        <Suspense fallback={<ProductGridSkeleton />}>
+          <ProductGrid />
+        </Suspense>
       </section>
     </div>
   );

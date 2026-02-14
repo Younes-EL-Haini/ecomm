@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import HeroSkeleton from "./HeroSkeleton";
+import { useSession } from "next-auth/react";
 
 const slides = [
   {
@@ -23,6 +25,8 @@ const slides = [
 ];
 
 export default function ProfessionalHero() {
+  const { status } = useSession();
+
   const [index, setIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
 
@@ -34,8 +38,9 @@ export default function ProfessionalHero() {
     return () => clearInterval(timer);
   }, []);
 
-  if (!mounted)
-    return <div className="h-[60vh] w-full bg-slate-100 animate-pulse" />;
+  if (status === "loading" || !mounted) {
+    return <HeroSkeleton />;
+  }
 
   return (
     <div className="w-full max-w-[1400px] mx-auto px-4 py-6">

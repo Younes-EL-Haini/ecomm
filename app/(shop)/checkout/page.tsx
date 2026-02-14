@@ -10,6 +10,7 @@ import OrderSummary from "@/components/checkout/OrderSummary";
 import { CheckoutSummary } from "@/lib/cart";
 
 import dynamic from "next/dynamic";
+import CheckoutSkeleton from "@/components/checkout/CheckoutSkeleton";
 
 const CheckoutAddressForm = dynamic(
   () => import("@/components/checkout/CheckoutAddressForm"),
@@ -60,15 +61,9 @@ export default function CheckoutPage() {
       });
   }, []);
 
-  if (!clientSecret || !summary)
-    return (
-      <div className="h-[60vh] flex flex-col items-center justify-center gap-4">
-        <Loader2 className="h-10 w-10 animate-spin text-zinc-500" />
-        <p className="text-zinc-500 font-medium">
-          Preparing your order summary...
-        </p>
-      </div>
-    );
+  if (!clientSecret || !summary) {
+    return <CheckoutSkeleton />;
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-12 gap-12">
