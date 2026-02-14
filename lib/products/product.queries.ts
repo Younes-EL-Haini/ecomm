@@ -6,24 +6,30 @@ import { AdminProductWithRelations, ProductFullDetails, ProductWithRelations } f
 export async function getProducts(options?: {
   limit?: number;
   featuredOnly?: boolean;
-}): Promise<ProductWithRelations[]> {
+  hideOutOfStock?: boolean;
+  categorySlug?: string;
+  sort?: string;
+}) {
   return await prisma.product.findMany({
-    where: { 
-      isPublished: true, 
+    where: {
+      isPublished: true,
       isArchived: false,
-      // If featuredOnly is true, only get featured items
+      // 1. Featured Filter
       // ...(options?.featuredOnly ? { featured: true } : {}),
-      variants: {
-        some: {
-          stock: {
-            gt: 0 // "gt" means Greater Than
-          }
-        }
-      }
+      
+      // 2. Category Filter
+      ...(options?.categorySlug ? { category: { slug: options.categorySlug } } : {}),
+      
+      // 3. Stock Filter (Toggleable)
+      ...(options?.hideOutOfStock ? {
+        variants: { some: { stock: { gt: 0 } } }
+      } : {}),
     },
-    // If limit is provided, take only that many
-    take: options?.limit, 
-    orderBy: { createdAt: "desc" }, // Usually better to show newest first
+    take: options?.limit,
+    // 4. Sorting logic
+    orderBy: options?.sort === "price_asc" 
+      ? { price: "asc" } 
+      : { createdAt: "desc" },
     include: {
       category: true,
       images: { orderBy: { position: "asc" }, take: 1 },
