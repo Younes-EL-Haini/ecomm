@@ -6,8 +6,11 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { label: "Dashboard", href: "/" },
-  { label: "Products", href: "/products" },
+  { label: "Home", href: "/" },
+  { label: "Shop All", href: "/products" },
+  // Senior Move: Specific high-traffic categories
+  { label: "New Arrivals", href: "/products?category=new" },
+  { label: "Contact", href: "/contact" },
 ];
 
 const NavLinks = ({
