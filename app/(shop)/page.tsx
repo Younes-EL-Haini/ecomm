@@ -25,7 +25,11 @@ const MainPage = () => {
       <Hero />
       <section className="px-4 md:px-10 mt-10">
         <Suspense fallback={<ProductGridSkeleton />}>
-          <ProductGrid />
+          <ProductGrid
+            title="Featured Collection"
+            limit={8}
+            featuredOnly={true}
+          />
         </Suspense>
       </section>
     </div>

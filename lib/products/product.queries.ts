@@ -3,14 +3,31 @@ import prisma from "@/lib/prisma";
 import { serializeProduct } from "./product.serializer";
 import { AdminProductWithRelations, ProductFullDetails, ProductWithRelations } from "./product.types";
 
-export async function getProducts(): Promise<ProductWithRelations[]> {
+export async function getProducts(options?: {
+  limit?: number;
+  featuredOnly?: boolean;
+}): Promise<ProductWithRelations[]> {
   return await prisma.product.findMany({
-    where: { isPublished: true, isArchived: false },
-    orderBy: { createdAt: "asc" },
+    where: { 
+      isPublished: true, 
+      isArchived: false,
+      // If featuredOnly is true, only get featured items
+      // ...(options?.featuredOnly ? { featured: true } : {}),
+      variants: {
+        some: {
+          stock: {
+            gt: 0 // "gt" means Greater Than
+          }
+        }
+      }
+    },
+    // If limit is provided, take only that many
+    take: options?.limit, 
+    orderBy: { createdAt: "desc" }, // Usually better to show newest first
     include: {
       category: true,
       images: { orderBy: { position: "asc" }, take: 1 },
-      variants: { select: { stock: true, color: true, priceDelta:true } },
+      variants: { select: { stock: true, color: true, priceDelta: true } },
     },
   });
 }
