@@ -10,7 +10,7 @@ export async function getProducts(): Promise<ProductWithRelations[]> {
     include: {
       category: true,
       images: { orderBy: { position: "asc" }, take: 1 },
-      variants: { select: { stock: true, color: true } },
+      variants: { select: { stock: true, color: true, priceDelta:true } },
     },
   });
 }
