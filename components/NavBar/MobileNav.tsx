@@ -12,6 +12,8 @@ import {
   Package,
   Heart,
   ChevronRight,
+  MapPin,
+  LayoutGrid,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -77,58 +79,58 @@ const MobileNav = () => {
             </p>
             <NavItem href="/" icon={Home} label="Home" />
             <NavItem href="/products" icon={ShoppingBag} label="All Products" />
+            <NavItem href="/categories" icon={LayoutGrid} label="Categories" />
             <NavItem href="/wishlist" icon={Heart} label="Wishlist" />
           </div>
 
           {/* ACCOUNT SECTION (MODERN LOOK) */}
           <div className="p-6 border-t bg-zinc-50/50 space-y-4">
             {status === "authenticated" ? (
-              <div className="space-y-4">
-                {/* User Info Display */}
-                <div className="flex items-center gap-3 px-2 mb-4">
-                  <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
+              <div className="space-y-3">
+                {/* Compact User Header */}
+                <div className="flex items-center gap-3 px-2 py-2 bg-white rounded-2xl border border-zinc-100 shadow-sm">
+                  <Avatar className="h-10 w-10">
                     <AvatarImage src={session.user?.image || ""} />
-                    <AvatarFallback>{session.user?.name?.[0]}</AvatarFallback>
+                    <AvatarFallback className="bg-zinc-900 text-white text-xs">
+                      {session.user?.name?.[0]}
+                    </AvatarFallback>
                   </Avatar>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-bold text-zinc-900 leading-none">
+                  <div className="flex flex-col overflow-hidden">
+                    <span className="text-xs font-black uppercase truncate">
                       {session.user?.name}
                     </span>
-                    <span className="text-xs text-zinc-500 mt-1">
-                      {session.user?.email}
-                    </span>
+                    <button
+                      onClick={() => signOut()}
+                      className="text-[10px] text-red-500 font-bold uppercase tracking-tight flex items-center gap-1 hover:underline"
+                    >
+                      <LogOut className="h-3 w-3" /> Sign Out
+                    </button>
                   </div>
                 </div>
 
-                {/* Account Actions - HERE IS WHERE PROFILE/ORDERS GO */}
-                <div className="grid grid-cols-2 gap-2">
-                  <Link
-                    href="/account/profile"
-                    className="flex flex-col items-center justify-center p-3 bg-white border border-zinc-100 rounded-2xl hover:bg-zinc-100 transition-colors"
-                  >
-                    <User className="h-5 w-5 text-zinc-600 mb-1" />
-                    <span className="text-[10px] font-bold uppercase">
-                      Profile
-                    </span>
-                  </Link>
-                  <Link
-                    href="/account/orders"
-                    className="flex flex-col items-center justify-center p-3 bg-white border border-zinc-100 rounded-2xl hover:bg-zinc-100 transition-colors"
-                  >
-                    <Package className="h-5 w-5 text-zinc-600 mb-1" />
-                    <span className="text-[10px] font-bold uppercase">
-                      Orders
-                    </span>
-                  </Link>
+                {/* Condensed Action Row */}
+                <div className="flex items-center justify-between gap-2">
+                  {[
+                    { href: "/account/profile", icon: User, label: "Profile" },
+                    { href: "/account/orders", icon: Package, label: "Orders" },
+                    {
+                      href: "/account/addresses",
+                      icon: MapPin,
+                      label: "Address",
+                    },
+                  ].map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className="flex flex-1 items-center justify-center gap-2 py-3 bg-zinc-100/50 rounded-xl hover:bg-zinc-100 transition-colors"
+                    >
+                      <item.icon className="h-4 w-4 text-zinc-600" />
+                      <span className="text-[10px] font-bold uppercase tracking-tighter">
+                        {item.label}
+                      </span>
+                    </Link>
+                  ))}
                 </div>
-
-                <button
-                  onClick={() => signOut()}
-                  className="flex items-center justify-center gap-2 w-full p-4 text-sm font-bold text-red-600 bg-red-50 rounded-2xl hover:bg-red-100 transition-colors"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Sign Out
-                </button>
               </div>
             ) : (
               <button
@@ -137,7 +139,7 @@ const MobileNav = () => {
               >
                 Sign In
               </button>
-            )}
+            )}{" "}
           </div>
         </SheetContent>
       </Sheet>

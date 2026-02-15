@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { LogOut, Package, ShoppingCart, User } from "lucide-react";
+import { LogOut, Package, ShoppingCart, User, MapPin } from "lucide-react";
 import { useCartStore } from "@/cartStore";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -134,6 +134,19 @@ const AuthStatus = () => {
               >
                 <Package className="h-4 w-4 text-zinc-500" />
                 <span className="text-sm font-medium">Orders</span>
+              </Link>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              asChild
+              className="cursor-pointer rounded-lg px-2 py-2.5 focus:bg-zinc-50"
+            >
+              <Link
+                href="/account/addresses"
+                className="flex items-center gap-3 w-full"
+              >
+                <MapPin className="h-4 w-4 text-zinc-500" />
+                <span className="text-sm font-medium">Addresses</span>
               </Link>
             </DropdownMenuItem>
 

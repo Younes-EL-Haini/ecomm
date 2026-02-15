@@ -18,16 +18,9 @@ export default function AccountLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-gray-100 min-h-screen">
-      <div className="max-w-7xl mx-auto px-3">
-        <div className="flex flex-col lg:flex-row gap-12">
-          {/* ✅ Client component for navigation */}
-          <AccountSidebar />
-
-          {/* PAGE CONTENT */}
-          <main className="mt-10 flex-1 min-w-0">{children}</main>
-        </div>
-      </div>
+    <div className="flex flex-col lg:flex-row gap-0 lg:gap-12">
+      <AccountSidebar />
+      <main className="flex-1 min-w-0 px-4 py-6 lg:py-10">{children}</main>
     </div>
   );
 }

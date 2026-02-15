@@ -24,10 +24,7 @@ const NavLinks = ({
   return (
     <ul className={cn("flex items-center px-3", className)}>
       {links.map((link) => {
-        const isActive =
-          link.href === "/"
-            ? pathname === "/"
-            : link.label === "Categories" && pathname.includes("/category");
+        const isActive = pathname === link.href;
         return (
           <li key={link.href} className="relative">
             <Link
