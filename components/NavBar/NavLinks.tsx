@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 const links = [
   { label: "Home", href: "/" },
   { label: "Shop All", href: "/products" },
-  { label: "New Arrivals", href: "/category/new" },
+  { label: "Categories", href: "/category" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -27,8 +27,7 @@ const NavLinks = ({
         const isActive =
           link.href === "/"
             ? pathname === "/"
-            : pathname.startsWith(link.href) ||
-              (link.label === "New Arrivals" && pathname.includes("/category"));
+            : link.label === "Categories" && pathname.includes("/category");
         return (
           <li key={link.href} className="relative">
             <Link
