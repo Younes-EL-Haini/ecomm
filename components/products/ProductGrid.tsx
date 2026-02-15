@@ -5,14 +5,16 @@ interface ProductGridProps {
   limit?: number;
   featuredOnly?: boolean;
   title?: string; // Optional title for sections
+  categorySlug?: string;
 }
 
 const ProductGrid = async ({
   limit,
   featuredOnly,
   title,
+  categorySlug,
 }: ProductGridProps) => {
-  const products = await getProducts({ limit, featuredOnly });
+  const products = await getProducts({ limit, featuredOnly, categorySlug });
 
   if (products.length === 0) return null;
 

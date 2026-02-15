@@ -74,6 +74,17 @@ export async function getHomeCategories() {
   });
 }
 
+export async function getCategoryBySlug(slug: string) {
+  return await prisma.category.findUnique({
+    where: { slug },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+    }
+  });
+}
+
 export async function getProductForEdit(productId: string) {
   const product = await prisma.product.findUnique({
     where: { id: productId },
