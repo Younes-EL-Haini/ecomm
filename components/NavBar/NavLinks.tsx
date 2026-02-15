@@ -8,8 +8,7 @@ import { cn } from "@/lib/utils";
 const links = [
   { label: "Home", href: "/" },
   { label: "Shop All", href: "/products" },
-  // Senior Move: Specific high-traffic categories
-  { label: "New Arrivals", href: "/products?category=new" },
+  { label: "New Arrivals", href: "/category/new" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -25,7 +24,11 @@ const NavLinks = ({
   return (
     <ul className={cn("flex items-center px-3", className)}>
       {links.map((link) => {
-        const isActive = pathname === link.href;
+        const isActive =
+          link.href === "/"
+            ? pathname === "/"
+            : pathname.startsWith(link.href) ||
+              (link.label === "New Arrivals" && pathname.includes("/category"));
         return (
           <li key={link.href} className="relative">
             <Link

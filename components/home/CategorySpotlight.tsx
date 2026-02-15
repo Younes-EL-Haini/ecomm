@@ -13,7 +13,7 @@ export default async function CategorySpotlight() {
         {categories.map((cat) => (
           <Link
             key={cat.id}
-            href={`/products?category=${cat.slug}`}
+            href={`/category/${cat.slug}`}
             // We keep your heights, but add flex-col to manage the space
             className="group flex flex-col relative overflow-hidden rounded-[3rem] bg-zinc-100 border border-zinc-100 shadow-sm h-[450px] md:h-[550px] lg:h-[650px]"
           >

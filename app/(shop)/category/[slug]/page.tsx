@@ -6,10 +6,11 @@ import { notFound } from "next/navigation";
 export default async function CategoryPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
   // We fetch the category name just for the Page Title
-  const category = await getCategoryBySlug(params.slug);
+  const param = await params;
+  const category = await getCategoryBySlug(param.slug);
 
   if (!category) notFound();
 
@@ -26,7 +27,7 @@ export default async function CategoryPage({
       </div>
 
       {/* The Grid filtered by the URL slug */}
-      <ProductGrid categorySlug={params.slug} />
+      <ProductGrid categorySlug={param.slug} />
     </main>
   );
 }
