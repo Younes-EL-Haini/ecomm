@@ -157,9 +157,21 @@ const Footer = () => {
 
           {/* Payment Icons Placeholder */}
           <div className="flex items-center gap-4 grayscale opacity-50">
-            <img src="/icons/visa.svg" alt="Visa" className="h-4" />
-            <img src="/icons/mastercard.svg" alt="Mastercard" className="h-6" />
-            <img src="/icons/stripe.svg" alt="Stripe" className="h-5" />
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg"
+              alt="Visa"
+              className="h-3 w-auto"
+            />
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg"
+              alt="Mastercard"
+              className="h-5 w-auto"
+            />
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg"
+              alt="Stripe"
+              className="h-4 w-auto"
+            />
           </div>
         </div>
       </div>
