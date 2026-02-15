@@ -62,6 +62,18 @@ export async function getCategories() {
   return await prisma.category.findMany({ orderBy: { name: "asc" } });
 }
 
+export async function getHomeCategories() {
+  return await prisma.category.findMany({
+    where: {
+      // Only show if an image exists and it has published products
+      NOT: { imageUrl: null },
+      products: {
+        some: { isPublished: true }
+      }
+    },
+  });
+}
+
 export async function getProductForEdit(productId: string) {
   const product = await prisma.product.findUnique({
     where: { id: productId },

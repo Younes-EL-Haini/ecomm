@@ -1,4 +1,5 @@
 import Hero from "@/components/hero/Hero";
+import CategorySpotlight from "@/components/home/CategorySpotlight";
 import Features from "@/components/home/Features";
 import ProductGrid from "@/components/products/ProductGrid";
 import { ProductGridSkeleton } from "@/components/products/ProductGridSkeleton";
@@ -25,6 +26,7 @@ const MainPage = () => {
     <div className="flex flex-col bg-gray-100">
       <Hero />
       <Features />
+      <CategorySpotlight />
       <section className="px-4 md:px-10 mt-10">
         <Suspense fallback={<ProductGridSkeleton />}>
           <ProductGrid
