@@ -1,4 +1,5 @@
 import { Box } from "lucide-react";
+import Link from "next/link";
 
 interface TopProductsProps {
   products: {
@@ -27,9 +28,11 @@ export function TopProducts({ products }: TopProductsProps) {
 
             <div className="flex-1 min-w-0">
               {/* NOW USING THE ACTUAL TITLE */}
-              <p className="text-sm font-semibold text-gray-900 truncate">
-                {product.title}
-              </p>
+              <Link href={`/admin/products/${product.id}`}>
+                <p className="text-sm font-semibold text-gray-900 truncate hover:underline">
+                  {product.title}
+                </p>
+              </Link>
               <div className="flex items-center gap-2 mt-1">
                 <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div
