@@ -17,8 +17,6 @@ export default function AccountSidebar() {
 
   return (
     <>
-      {/* // <div className="bg-gray-100 min-h-screen"> */}
-      {/* <div className="max-w-7xl mx-auto px-3"> */}
       {/* MOBILE NAV */}
       <div className="lg:hidden sticky top-16 z-40 bg-white border-b rounded-2xl">
         <nav className="flex gap-2 overflow-x-auto px-2 py-2 scrollbar-hide">
@@ -71,8 +69,6 @@ export default function AccountSidebar() {
           </div>
         </aside>
       </div>
-      {/* </div>
-    </div> */}
     </>
   );
 }
