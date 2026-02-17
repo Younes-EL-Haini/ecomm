@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import authOptions from "../../../auth/authOptions";
 import AddAddressForm from "../profile/AddAddressForm"; // Adjust path as needed
 import AddressActions from "./AddressActions";
+import { Address } from "@prisma/client";
 
 const AddressesPage = async () => {
   const session = await getServerSession(authOptions);
@@ -19,7 +20,7 @@ const AddressesPage = async () => {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
       {/* ADDRESS LIST */}
       <div className="space-y-4">
-        {user?.addresses.map((address) => (
+        {user?.addresses.map((address: Address) => (
           <div
             key={address.id}
             className="group relative p-6 rounded-4xl bg-zinc-50/50 border border-zinc-100 hover:border-zinc-300 hover:bg-white hover:shadow-xl hover:shadow-zinc-200/50 transition-all duration-500"
