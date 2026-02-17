@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { ProductVariant } from "@/lib/generated/prisma";
+import { ProductVariant } from "@prisma/client";
 
 export const useProductVariants = (variants: ProductVariant[] = [], onColorChange?: (color: string | null) => void) => {
   const sizes = useMemo(() => 

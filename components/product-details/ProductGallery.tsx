@@ -1,6 +1,6 @@
 "use client";
 
-import { ProductImage } from "@/lib/generated/prisma";
+import { ProductImage } from "@prisma/client";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";

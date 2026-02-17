@@ -5,7 +5,7 @@ import { useState } from "react";
 import { STATUS_OPTIONS, updateOrderStatus } from "@/lib/orders";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { OrderStatus } from "@/lib/generated/prisma";
+import { OrderStatus } from "@prisma/client";
 
 export default function OrderStatusClient({
   orderId,

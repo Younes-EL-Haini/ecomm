@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-import { OrderStatus } from "@/lib/generated/prisma";
+import { OrderStatus } from "@prisma/client";
 import { getStatusClasses } from "@/lib/orders";
 
 import OrderQuickActions from "@/components/admin/OrderQuickActions";

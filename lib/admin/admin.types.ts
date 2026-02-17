@@ -1,6 +1,6 @@
 // types/admin.ts
 
-import { Order } from "../generated/prisma";
+import { Order } from "@prisma/client";
 
 export interface LowStockVariant {
   id: string;

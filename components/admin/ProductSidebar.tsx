@@ -2,7 +2,7 @@
 
 import { Globe } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Category } from "@/lib/generated/prisma";
+import { Category } from "@prisma/client";
 import { toNumber } from "@/lib/utils/pricing";
 
 interface ProductSidebarProps {

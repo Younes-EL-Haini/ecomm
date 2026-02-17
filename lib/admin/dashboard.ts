@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { OrderStatus } from "@/lib/generated/prisma";
+import { OrderStatus } from "@prisma/client";
 import { LowStockVariant } from "./admin.types";
 
 const REVENUE_STATUSES: OrderStatus[] = ["PAID", "PROCESSING", "SHIPPED", "DELIVERED"];

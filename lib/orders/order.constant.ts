@@ -1,4 +1,4 @@
-import { OrderStatus } from "../generated/prisma";
+import { OrderStatus } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
 // 1. Unified Configuration: Style + Label

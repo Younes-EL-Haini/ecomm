@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { updateOrderStatus } from "@/lib/orders";
-import { OrderStatus } from "@/lib/generated/prisma";
+import { OrderStatus } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { STATUS_OPTIONS } from "@/lib/orders";
 import {
