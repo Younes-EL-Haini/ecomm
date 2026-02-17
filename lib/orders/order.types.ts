@@ -5,7 +5,7 @@ export type OrderWithRelations = Prisma.OrderGetPayload<{
   include: {
     items: {
       include: {
-        product: { include: { images: { take: 1 }, name: true } };
+        product: { include: { images: true } },
         variant: true;
       };
     };
