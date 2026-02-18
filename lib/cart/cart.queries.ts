@@ -9,7 +9,7 @@ export async function getMyCart(email: string): Promise<CartWithProducts[]> {
       cartItems: {
         orderBy: { createdAt: "asc" },
         include: {
-          product: { include: { images: true } },
+          product: { include: { images: true, title: true } },
           variant: true,
         },
       },
