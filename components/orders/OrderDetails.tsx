@@ -43,7 +43,7 @@ const OrderDetails = ({ order, isOpen }: OrderDetailsProps) => {
                   <div className="w-16 h-20 shrink-0 rounded-xl border border-zinc-100 bg-white overflow-hidden shadow-sm relative">
                     <Image
                       src={image?.url || "/placeholder.png"}
-                      alt={item.product.name || "Product"}
+                      alt={item.product.title || "Product"}
                       fill
                       sizes="80px"
                       className="object-cover group-hover/item:scale-110 transition-transform duration-700"
@@ -52,7 +52,7 @@ const OrderDetails = ({ order, isOpen }: OrderDetailsProps) => {
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm font-black text-zinc-900">
-                      {item.product.name}
+                      {item.product.title}
                     </p>
                     <p className="text-[10px] font-bold text-zinc-400 uppercase">
                       Size: {item.variant?.name || "O/S"} • Qty: {item.quantity}
