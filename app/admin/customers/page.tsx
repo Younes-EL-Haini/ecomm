@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import { Users, UserPlus, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CustomerTable from "@/_components/CustomerTable";
-import prisma from "@/lib/prisma";
 import { FormattedCustomer } from "@/lib/admin/admin.types";
 import { SearchFilter } from "@/components/admin/SearchFilter";
 import { getAdminCustomers } from "@/lib/orders";

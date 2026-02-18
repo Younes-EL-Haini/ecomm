@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import prisma from "@/lib/prisma";
 import OrderTable from "@/components/admin/OrderTable";
 import { CustomerHeader } from "@/components/admin/CustomerHeader";
