@@ -16,5 +16,5 @@ export async function getMyCart(email: string): Promise<CartWithProducts[]> {
     },
   });
 
-  return user?.cartItems || [];
+  return (user?.cartItems as CartWithProducts[]) || [];
 }
