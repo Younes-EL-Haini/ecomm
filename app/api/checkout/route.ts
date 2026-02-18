@@ -5,11 +5,12 @@ import prisma from "@/lib/prisma";
 import Stripe from "stripe";
 import { CheckoutUIItem, CheckoutUIItemSchema } from "@/lib/cart";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-12-15.clover",
-});
 
 export async function POST(req: Request) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: "2025-12-15.clover" as any,
+  });
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {

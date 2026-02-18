@@ -3,18 +3,18 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import prisma from "@/lib/prisma";
 import Decimal from "decimal.js";
-import { resend } from "@/lib/resend";
+import { getResendClient, resend } from "@/lib/resend";
 import OrderConfirmationEmail from "@/emails/OrderConfirmation";
 import { CartWithProducts, CheckoutUIItemSchema } from "@/lib/cart";
 import { z } from "zod"
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-06-20" as any,
-});
-
 class OutOfStockError extends Error {}
 
 export async function POST(req: Request) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: "2024-06-20" as any,
+  });
+
   const body = await req.text();
   const signature = (await headers()).get("Stripe-Signature") as string;
 
@@ -163,7 +163,9 @@ try {
     select: { email: true, name: true }
   });
 
-  if (user?.email) {
+  const resendClient = getResendClient();
+
+  if (user?.email && resendClient) {
     // We map cartItems to ensure the email component gets exactly what it needs
     const emailItems = cartItems.map((item) => {
       // Find the product details from the 'products' array we fetched earlier
@@ -178,7 +180,7 @@ try {
       };
     });
 
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await resendClient.emails.send({
       from: 'Loko Shop <onboarding@resend.dev>',
       to: user.email, 
       subject: `Order Confirmation #${paymentIntent.id.slice(-8).toUpperCase()}`,
