@@ -17,7 +17,6 @@ export const metadata: Metadata = {
     title: SITE_CONFIG.name,
     description: SITE_CONFIG.description,
     url: "/", // Points to the root
-    // images and siteName are inherited from layout!
   },
 };
 
