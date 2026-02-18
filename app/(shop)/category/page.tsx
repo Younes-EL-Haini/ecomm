@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getCategories } from "@/lib/products";
 import Link from "next/link";
 
