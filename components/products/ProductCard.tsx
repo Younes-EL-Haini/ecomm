@@ -12,7 +12,7 @@ const ProductCard = ({ product }: { product: ProductWithRelations }) => {
   ).filter(Boolean); // Removes null/undefined if any
 
   return (
-    <Link href={`/products/${product.slug}`} className="group">
+    <Link href={`/products/${product.slug}`} prefetch={false} className="group">
       <Card className="group flex h-full flex-col overflow-hidden rounded-4xl transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 p-0 border-none bg-white">
         {/* IMAGE */}
         <ProductImageCard image={product.images[0]} stock={hasStock} />
