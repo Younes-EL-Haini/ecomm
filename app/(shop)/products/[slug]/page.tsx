@@ -1,19 +1,21 @@
 export const dynamic = "force-dynamic";
 
 import { Suspense } from "react";
-import ProductClient from "@/components/product-details/ProductClient";
-import ProductSkeleton from "@/components/product-details/ProductSkeleton";
-import { SITE_CONFIG } from "@/lib/constants";
-import { getProductBySlug } from "@/lib/products";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getProductBySlug } from "@/lib/products";
+import { SITE_CONFIG } from "@/lib/constants";
+import ProductClient from "@/components/product-details/ProductClient";
+import ProductSkeleton from "@/components/product-details/ProductSkeleton";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
+// 1. Optimized Metadata: Don't let this block the skeleton!
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+
   const product = await getProductBySlug(slug);
 
   if (!product) return { title: "Product Not Found" };
@@ -23,37 +25,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: product.description?.slice(0, 160),
     openGraph: {
       title: product.title,
-      description: product.description || undefined,
-      url: `/products/${slug}`,
-      images: [
-        {
-          url: product.images[0]?.url || SITE_CONFIG.ogImage,
-          width: 800,
-          height: 1000,
-        },
-      ],
+      images: [{ url: product.images[0]?.url || SITE_CONFIG.ogImage }],
     },
   };
 }
 
+// 2. The Data Wrapper (This is what triggers the skeleton)
 async function ProductData({ slug }: { slug: string }) {
   const product = await getProductBySlug(slug);
-
-  if (!product) {
-    notFound();
-  }
+  if (!product) notFound();
 
   return <ProductClient product={product} />;
 }
 
-const ProductPage = async ({ params }: Props) => {
+// 3. The Main Page
+export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
 
   return (
-    <Suspense fallback={<ProductSkeleton />}>
-      <ProductData slug={slug} />
-    </Suspense>
+    <div className="min-h-screen">
+      <Suspense fallback={<ProductSkeleton />}>
+        <ProductData slug={slug} />
+      </Suspense>
+    </div>
   );
-};
-
-export default ProductPage;
+}
