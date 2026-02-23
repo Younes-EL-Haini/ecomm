@@ -1,30 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import ProductGallery from "./ProductGallery";
 import ProductInfo from "./ProductInfo";
 import { ProductFullDetails } from "@/lib/products";
 import ProductSkeleton from "./ProductSkeleton";
 
 const ProductClient = ({ product }: { product: ProductFullDetails }) => {
+  // 1. ALL HOOKS AT THE TOP
   const [isClientLoading, setIsClientLoading] = useState(true);
 
-  useEffect(() => {
-    // Simulate a brief moment for the client to mount and images to prep
-    const timer = setTimeout(() => setIsClientLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+  // Use useMemo to calculate initial color so it doesn't recalculate on every render
+  const initialColor = useMemo(
+    () => product.variants.find((v) => v.color)?.color || null,
+    [product.variants],
+  );
 
-  if (isClientLoading) {
-    return <ProductSkeleton />;
-  }
-  // 1. Get the same default color that your hook will pick (the first one)
-  const initialColor = product.variants.find((v) => v.color)?.color || null;
-
-  // 2. Set that as the starting state
   const [selectedColor, setSelectedColor] = useState<string | null>(
     initialColor,
   );
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsClientLoading(false), 500); // 1000ms is long, 500ms is snappier
+    return () => clearTimeout(timer);
+  }, []);
+
+  // 2. NOW YOU CAN DO CONDITIONAL RETURNS
+  if (isClientLoading) {
+    return <ProductSkeleton />;
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -34,7 +38,6 @@ const ProductClient = ({ product }: { product: ProductFullDetails }) => {
           title={product.title}
           selectedColor={selectedColor}
         />
-
         <div className="lg:sticky lg:top-24">
           <ProductInfo product={product} onColorChange={setSelectedColor} />
         </div>
