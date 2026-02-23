@@ -13,24 +13,24 @@ type Props = {
 };
 
 // 1. MODIFIED METADATA (NON-BLOCKING)
-// export async function generateMetadata({ params }: Props): Promise<Metadata> {
-//   const { slug } = await params;
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
 
-//   // We use a separate promise here
-//   const productPromise = getProductBySlug(slug);
-//   const product = await productPromise;
+  // We use a separate promise here
+  const productPromise = getProductBySlug(slug);
+  const product = await productPromise;
 
-//   if (!product) return { title: "Product Not Found" };
+  if (!product) return { title: "Product Not Found" };
 
-//   return {
-//     title: product.title,
-//     description: product.description?.slice(0, 160),
-//     openGraph: {
-//       title: product.title,
-//       images: [{ url: product.images[0]?.url || SITE_CONFIG.ogImage }],
-//     },
-//   };
-// }
+  return {
+    title: product.title,
+    description: product.description?.slice(0, 160),
+    openGraph: {
+      title: product.title,
+      images: [{ url: product.images[0]?.url || SITE_CONFIG.ogImage }],
+    },
+  };
+}
 
 // 2. DATA WRAPPER with a forced artificial delay for testing
 async function ProductData({ slug }: { slug: string }) {
