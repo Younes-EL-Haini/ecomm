@@ -5,6 +5,8 @@ import { SITE_CONFIG } from "@/lib/constants";
 import { getProductBySlug } from "@/lib/products";
 import { Metadata } from "next";
 import { notFound } from "next/navigation"; // Senior move: use the official 404 handler
+import ProductLoading from "./loading";
+import { Suspense } from "react";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -37,13 +39,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 const ProductPage = async ({ params }: Props) => {
   const { slug } = await params;
+
+  return (
+    // We pass the slug into a child component that handles the fetching
+    <Suspense fallback={<ProductLoading />}>
+      <ProductContent slug={slug} />
+    </Suspense>
+  );
+};
+
+// 3. The Data Fetcher - THIS IS WHAT TRIGGERS THE SKELETON
+async function ProductContent({ slug }: { slug: string }) {
   const product = await getProductBySlug(slug);
 
   if (!product) {
-    notFound(); // This triggers your global not-found.tsx page
+    notFound();
   }
 
   return <ProductClient product={product} />;
-};
+}
 
 export default ProductPage;
