@@ -11,20 +11,20 @@ type Props = {
 };
 
 // app/products/[slug]/page.tsx
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+// export async function generateMetadata({ params }: Props): Promise<Metadata> {
+//   const { slug } = await params;
 
-  // Turns "nike-air-max" into "Nike Air Max"
-  const cleanTitle = slug
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+//   // Turns "nike-air-max" into "Nike Air Max"
+//   const cleanTitle = slug
+//     .split('-')
+//     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+//     .join(' ');
 
-  return {
-    title: `${cleanTitle} | E-commerce`,
-    description: `Buy ${cleanTitle} at the best price.`,
-  };
-}
+//   return {
+//     title: `${cleanTitle} | E-commerce`,
+//     description: `Buy ${cleanTitle} at the best price.`
+//   };
+// }
 
 const ProductPage = async ({ params }: Props) => {
   const { slug } = await params;
