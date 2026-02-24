@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import ProductClient from "@/components/product-details/ProductClient";
 import { SITE_CONFIG } from "@/lib/constants";
 import { getProductBySlug } from "@/lib/products";
