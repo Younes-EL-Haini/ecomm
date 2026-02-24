@@ -41,7 +41,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { Suspense, use } from "react"; // Add 'use' here
+import { Suspense, use } from "react";
 import ProductClient from "@/components/product-details/ProductClient";
 import ProductLoading from "./loading";
 import { getProductBySlug } from "@/lib/products";
