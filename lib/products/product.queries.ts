@@ -39,6 +39,7 @@ export async function getProducts(options?: {
 }
 
 export async function getProductBySlug(slug: string): Promise<ProductFullDetails | null> {
+  await new Promise(resolve => setTimeout(resolve, 3000));
   const product = await prisma.product.findUnique({
     where: { slug },
     include: { images: true, reviews: true, variants: true, category: true },
