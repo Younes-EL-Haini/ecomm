@@ -1,5 +1,3 @@
-"use client"; // Add this to ensure no streaming interruptions from UI logic
-
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProductLoading() {
@@ -12,12 +10,9 @@ export default function ProductLoading() {
           <Skeleton className="aspect-4/5 w-full rounded-3xl bg-zinc-100" />
 
           <div className="flex flex-wrap gap-3">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton
-                key={`thumb-${i}`}
-                className="h-20 w-20 rounded-2xl bg-zinc-100"
-              />
-            ))}
+            <Skeleton className="h-20 w-20 rounded-2xl bg-zinc-100" />
+            <Skeleton className="h-20 w-20 rounded-2xl bg-zinc-100" />
+            <Skeleton className="h-20 w-20 rounded-2xl bg-zinc-100" />
           </div>
         </div>
 
