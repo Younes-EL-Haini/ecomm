@@ -22,6 +22,7 @@ import prisma from "@/lib/prisma";
 import { CheckCircle2, Home, Package, Truck } from "lucide-react";
 import { getServerSession } from "next-auth";
 import Link from "next/link";
+import OrderSearch from "@/components/checkout/OrderSearch";
 
 type Props = {
   searchParams: Promise<{
@@ -64,22 +65,7 @@ export default async function PaymentSuccessPage({ searchParams }: Props) {
   });
 
   if (!order) {
-    return (
-      <div className="max-w-xl mx-auto p-10 text-center">
-        <h1 className="text-3xl font-bold text-red-600 mb-4">
-          Order Not Found
-        </h1>
-        <p className="text-muted-foreground mb-6">
-          We could not find an order for this payment. Please contact support.
-        </p>
-        <a
-          href="/"
-          className="inline-block bg-primary text-primary-foreground px-6 py-3 rounded-md"
-        >
-          Go Home
-        </a>
-      </div>
-    );
+    return <OrderSearch paymentIntent={params.payment_intent} />;
   }
   return (
     // This wrapper creates the gray background for the entire viewport
