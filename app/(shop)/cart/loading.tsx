@@ -8,7 +8,7 @@ export default function CartLoading() {
       {/* Title */}
       <Skeleton className="h-10 w-48 mb-8 bg-zinc-100" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 bg-zinc-50/50">
         {/* LEFT: ITEM LIST */}
         <div className="lg:col-span-2 space-y-8">
           {[1, 2, 3].map((i) => (
