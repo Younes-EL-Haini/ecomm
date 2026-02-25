@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function ProductLoading() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 bg-zinc-50/50">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
         {/* 1. GALLERY SKELETON */}
         <div className="flex flex-col gap-4">
           {/* Fixed aspect ratio syntax */}

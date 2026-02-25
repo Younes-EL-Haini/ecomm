@@ -15,7 +15,7 @@ const ProductClient = ({ product }: { product: ProductFullDetails }) => {
   );
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
+    <div className="mx-auto max-w-6xl px-4 py-10 bg-white">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
         <ProductGallery
           images={product.images}
