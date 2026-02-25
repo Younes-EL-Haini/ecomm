@@ -15,16 +15,18 @@ const ProductClient = ({ product }: { product: ProductFullDetails }) => {
   );
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 bg-white">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        <ProductGallery
-          images={product.images}
-          title={product.title}
-          selectedColor={selectedColor}
-        />
+    <div className="w-full bg-white min-h-screen">
+      <div className="mx-auto max-w-6xl px-4 py-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <ProductGallery
+            images={product.images}
+            title={product.title}
+            selectedColor={selectedColor}
+          />
 
-        <div className="lg:sticky lg:top-24">
-          <ProductInfo product={product} onColorChange={setSelectedColor} />
+          <div className="lg:sticky lg:top-24">
+            <ProductInfo product={product} onColorChange={setSelectedColor} />
+          </div>
         </div>
       </div>
     </div>
