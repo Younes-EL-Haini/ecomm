@@ -36,6 +36,7 @@ model User {
   reviews   Review[]
   addresses Address[]
   cartItems CartItem[]
+  chats     Chat[]     @relation("userChats")
 }
 
 model Account {
@@ -297,4 +298,25 @@ model TransactionLog {
   createdAt   DateTime @default(now())
 
   @@index([orderId])
+}
+
+model Chat {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String   @default("Shopping Assistant Chat")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User      @relation("userChats", fields: [userId], references: [id], onDelete: Cascade)
+  messages Message[]
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  chatId    String
+  role      String // "user" or "assistant"
+  content   String
+  createdAt DateTime @default(now())
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
 }
