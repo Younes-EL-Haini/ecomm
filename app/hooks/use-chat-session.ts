@@ -8,7 +8,7 @@ import {
   UseChatSessionProps, 
   UseChatSessionReturn, 
   UIMessage 
-} from "@/lib/chat/chat.types"; // Update path if needed
+} from "@/lib/chat";
 
 export function useChatSession({
   initialMessages,

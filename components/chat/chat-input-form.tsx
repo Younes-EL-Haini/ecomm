@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Send, X } from "lucide-react";
-import { ChatInputFormProps } from "@/lib/chat/chat.types";
+import { ChatInputFormProps } from "@/lib/chat";
 
 export function ChatInputForm({
   input,

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { MessageCircle, X } from "lucide-react";
 import { useChatSession } from "@/app/hooks/use-chat-session";
-import { ChatWidgetProps } from "@/lib/chat/chat.types";
+import { ChatWidgetProps } from "@/lib/chat";
 import { ChatHeader } from "./chat-header";
 import { ChatMessageList } from "./chat-message-list";
 import { ChatInputForm } from "./chat-input-form";

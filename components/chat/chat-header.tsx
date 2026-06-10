@@ -1,6 +1,6 @@
 "use client";
 
-import { ChatHeaderProps } from "@/lib/chat/chat.types";
+import { ChatHeaderProps } from "@/lib/chat";
 import { X } from "lucide-react";
 
 export function ChatHeader({ modelId, onClose }: ChatHeaderProps) {

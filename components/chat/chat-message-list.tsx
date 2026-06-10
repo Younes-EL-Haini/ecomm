@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { ChatMessageListProps, MessagePart } from "@/lib/chat/chat.types";
+import { ChatMessageListProps, MessagePart } from "@/lib/chat";
 
 export function ChatMessageList({ messages, status }: ChatMessageListProps) {
   if (messages.length === 0) {

@@ -4,7 +4,7 @@ import NavBar from "@/components/NavBar/NavBar";
 import { getServerSession } from "next-auth";
 import authOptions from "@/app/auth/authOptions";
 import prisma from "@/lib/prisma";
-import { DBHistoricalMessage } from "@/lib/chat/chat.types";
+import { DBHistoricalMessage } from "@/lib/chat";
 
 export default async function ShopLayout({
   children,
