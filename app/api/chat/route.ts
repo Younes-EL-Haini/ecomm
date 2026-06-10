@@ -1,8 +1,9 @@
 import { groq } from "@ai-sdk/groq";
 import { streamText, convertToModelMessages } from "ai";
 import prisma from "@/lib/prisma";
-import { getServerSession } from "next-auth";  // Make sure this path matches your AuthJS/NextAuth config
+import { getServerSession } from "next-auth";
 import authOptions from "@/app/auth/authOptions";
+import { getUserContext } from "@/lib/chat/get-user-context"; // 🌟 Import engine
 
 export const dynamic = "force-dynamic";
 
@@ -16,14 +17,38 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    // 🌟 Capture 'id' which is the stable native session identifier sent by useChat
     const { messages, id, modelId } = body;
 
     if (!messages || messages.length === 0) {
       return new Response(JSON.stringify({ error: "Messages array is required." }), { status: 400 });
     }
 
-    // Extract user prompt text
+    // 1. 🌟 FETCH PERSONALIZATION BLEND FROM POSTGRESQL
+    const userContext = await getUserContext(userId);
+
+    // 2. 🌟 BUILD COMPREHENSIVE DYNAMIC SYSTEM PROMPT BUILDER
+    const systemPrompt = `
+You are an expert AI Shopping Assistant on our premium e-commerce brand store. 
+Your objective is to provide elite, personalized support based on live data retrieved from our database.
+
+CURRENT CUSTOMER PROFILE:
+- Name: ${userContext.customerName}
+- User ID: ${userId}
+
+LIVE CART ITEMS (What they currently intend to purchase):
+${userContext.cartSummary}
+
+RECENT ORDERS HISTORY (To assist with order status checks or tracking inquiries):
+${userContext.recentOrdersSummary}
+
+BEHAVIORAL INSTRUCTIONS:
+1. Always address the customer by their name (${userContext.customerName}) naturally if appropriate, welcoming them back.
+2. If their cart has items, you can subtly suggest related products or offer to help them checkout.
+3. If they ask "Where is my package?" or "Check my order", cross-reference the RECENT ORDERS list above and report the order's exact status (e.g. PAID, SHIPPED, DELIVERED) immediately. Do not invent details.
+4. Keep answers brief, conversion-focused, polite, and helpful.
+`;
+
+    // Extract user prompt text for DB logging
     const lastMessage = messages[messages.length - 1];
     const userText = lastMessage.parts
       ?.filter((part: { type: string; text?: string }) => part.type === "text")
@@ -37,50 +62,34 @@ export async function POST(req: Request) {
     };
     const selectedGroqModel = groqModelMapping[modelId] || "llama-3.3-70b-versatile";
 
-    // 🌟 DYNAMIC UPSERT: Create the chat entry if it's the first message, otherwise skip.
+    // DB Operations (Upsert thread session)
     if (id && userText) {
       const title = userText.length > 30 ? `${userText.substring(0, 30)}...` : userText;
-
       await prisma.chat.upsert({
         where: { id: id },
-        update: {}, // If it already exists, do nothing here
-        create: {
-          id: id, // Bind the chat record directly to the SDK session ID
-          userId: userId,
-          title: title,
-        },
+        update: {},
+        create: { id: id, userId: userId, title: title },
       });
-
-      // Log the User's query message into PostgreSQL
       await prisma.message.create({
-        data: {
-          content: userText,
-          role: "user",
-          chatId: id,
-        },
+        data: { content: userText, role: "user", chatId: id },
       });
     }
 
-    // Initialize text streaming
+    // 3. 🌟 EXECUTE STREAM WITH CUSTOM INJECTED SYSTEM CONTEXT
     const result = streamText({
       model: groq(selectedGroqModel),
+      system: systemPrompt, // 🌟 Hand context straight into Llama's foundational context
       messages: await convertToModelMessages(messages),
       
-      // Save the complete model reply down to the thread when finished
       async onFinish(event) {
         if (id && event.text) {
           await prisma.message.create({
-            data: {
-              content: event.text,
-              role: "assistant",
-              chatId: id,
-            },
+            data: { content: event.text, role: "assistant", chatId: id },
           });
         }
       },
     });
 
-    // 🌟 Changed to use your working UI Message format stream wrapper
     return result.toUIMessageStreamResponse();
 
   } catch (error) {

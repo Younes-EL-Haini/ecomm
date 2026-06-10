@@ -61,3 +61,15 @@ export interface ChatHeaderProps {
   modelId: AIModelId;
   onClose: () => void;
 }
+
+export interface DBHistoricalMessage {
+  id: string;
+  role: string;
+  content: string;
+}
+
+export interface UserContextSummary {
+  customerName: string;
+  cartSummary: string;
+  recentOrdersSummary: string;
+}
