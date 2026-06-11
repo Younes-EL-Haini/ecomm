@@ -1,9 +1,10 @@
 import { groq } from "@ai-sdk/groq";
-import { streamText, convertToModelMessages } from "ai";
+import { streamText, convertToModelMessages, tool, stepCountIs } from "ai";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import authOptions from "@/app/auth/authOptions";
-import { getUserContext } from "@/lib/chat/get-user-context"; // 🌟 Import engine
+import { getUserContext, searchProducts, SearchProductsArgs } from "@/lib/chat"; // 🌟 Import engine
+import { z } from "zod"
 
 export const dynamic = "force-dynamic";
 
@@ -27,26 +28,23 @@ export async function POST(req: Request) {
     const userContext = await getUserContext(userId);
 
     // 2. 🌟 BUILD COMPREHENSIVE DYNAMIC SYSTEM PROMPT BUILDER
-    const systemPrompt = `
-You are an expert AI Shopping Assistant on our premium e-commerce brand store. 
-Your objective is to provide elite, personalized support based on live data retrieved from our database.
-
-CURRENT CUSTOMER PROFILE:
-- Name: ${userContext.customerName}
-- User ID: ${userId}
-
-LIVE CART ITEMS (What they currently intend to purchase):
+const systemPrompt = `
+You are a shopping assistant for our store.
+Customer Name: ${userContext.customerName}
+Current Cart:
 ${userContext.cartSummary}
-
-RECENT ORDERS HISTORY (To assist with order status checks or tracking inquiries):
+Recent Orders:
 ${userContext.recentOrdersSummary}
 
-BEHAVIORAL INSTRUCTIONS:
-1. Always address the customer by their name (${userContext.customerName}) naturally if appropriate, welcoming them back.
-2. If their cart has items, you can subtly suggest related products or offer to help them checkout.
-3. If they ask "Where is my package?" or "Check my order", cross-reference the RECENT ORDERS list above and report the order's exact status (e.g. PAID, SHIPPED, DELIVERED) immediately. Do not invent details.
-4. Keep answers brief, conversion-focused, polite, and helpful.
-`;
+Rules:
+1. Address the customer by name when natural.
+2. For ANY question about products, recommendations, inventory, availability, stock, or pricing you MUST call recommendProducts.
+3. Never invent products, prices, stock levels, or links.
+4. Use only information returned by tools.
+5. For order status questions, use the Recent Orders data provided above.
+6. Link products as [Product Name](/products/slug).
+7. Keep answers short, helpful, and friendly.
+`.trim();
 
     // Extract user prompt text for DB logging
     const lastMessage = messages[messages.length - 1];
@@ -80,6 +78,29 @@ BEHAVIORAL INSTRUCTIONS:
       model: groq(selectedGroqModel),
       system: systemPrompt, // 🌟 Hand context straight into Llama's foundational context
       messages: await convertToModelMessages(messages),
+      
+      stopWhen: stepCountIs(3),
+
+      tools: {
+        recommendProducts: tool({
+          description: "Searches our active store inventory product database catalog by keywords, category constraints, or maximum target price thresholds.",
+          inputSchema: z.object({
+            query: z.string().optional().transform(v => v?.trim() || undefined),
+            categorySlug: z.string().optional().transform(v => v?.trim() || undefined),
+            maxPrice: z.union([z.string(), z.number()]).optional().transform(v => {
+              if (v === "" || v === null || v === undefined) return undefined;
+            const n = Number(v);
+            return isNaN(n) ? undefined : n;
+          }),
+        }),
+
+          execute: async ({ query, categorySlug, maxPrice }: SearchProductsArgs) => {
+            // This function runs automatically on your server when Llama decides it needs inventory context
+            console.log("TOOL CALLED WITH:", { query, categorySlug, maxPrice });
+            return await searchProducts({ query, categorySlug, maxPrice });
+          },
+        }),
+      },
       
       async onFinish(event) {
         if (id && event.text) {

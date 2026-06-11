@@ -73,3 +73,9 @@ export interface UserContextSummary {
   cartSummary: string;
   recentOrdersSummary: string;
 }
+
+export interface SearchProductsArgs {
+  query?: string;
+  categorySlug?: string;
+  maxPrice?: number | string;
+}
