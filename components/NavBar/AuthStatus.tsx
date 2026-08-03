@@ -30,7 +30,8 @@ const AuthStatus = () => {
       try {
         const res = await fetch("/api/cart/count");
         const data = await res.json();
-        setCount(data.count);
+        // setCount(data.count);
+        useCartStore.getState().setCount(data.count);
       } catch (error) {
         console.error("Failed to fetch cart count", error);
       }

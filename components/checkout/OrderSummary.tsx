@@ -1,4 +1,5 @@
 import { CheckoutUIItem } from "@/lib/cart";
+import Image from "next/image";
 
 type Props = {
   items: CheckoutUIItem[];
@@ -14,10 +15,13 @@ export default function OrderSummary({ items, subtotal }: Props) {
         {items.map((item) => (
           <div key={item.variantId} className="flex gap-4">
             <div className="h-16 w-16 rounded-lg bg-zinc-100 border overflow-hidden shrink-0">
-              <img
+              <Image
                 src={item.image || "/images/hero-product.jpg"}
-                alt={item.title}
-                className="h-full w-full object-cover"
+                alt={item.title || "Product image"}
+                width={64}
+                height={64}
+                sizes="64px"
+                className="w-full h-full object-cover"
               />
             </div>
             <div className="flex-1 text-sm">

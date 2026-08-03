@@ -2,6 +2,7 @@
 
 import { Image as ImageIcon, X, Plus } from "lucide-react";
 import { CldUploadWidget } from "next-cloudinary";
+import Image from "next/image";
 
 interface MediaGalleryProps {
   images: any[];
@@ -56,10 +57,12 @@ export function MediaGallery({
             key={img.url}
             className="relative border group aspect-4/5 bg-slate-100 rounded-xl overflow-hidden shadow-sm"
           >
-            <img
+            <Image
               src={img.url}
-              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
-              alt="Product"
+              alt={img.color ? `${img.color} product image` : "Product image"}
+              fill
+              sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 20vw"
+              className="object-cover transition-transform duration-500 group-hover:scale-110"
             />
             <div className="absolute inset-x-0 bottom-0 p-1 bg-black/40">
               <p className="text-[8px] text-white text-center truncate">
@@ -81,7 +84,7 @@ export function MediaGallery({
             <button
               type="button"
               onClick={() => open()}
-              className="flex flex-col items-center justify-center transition border-2 border-dashed aspect-square border-slate-200 rounded-xl hover:bg-slate-50 hover:border-indigo-300 group"
+              className="flex flex-col items-center justify-center transition border-2 border-dashed aspect-4/5 border-slate-200 rounded-xl hover:bg-slate-50 hover:border-indigo-300 group"
             >
               <Plus
                 className="mb-1 text-slate-400 group-hover:text-indigo-500"

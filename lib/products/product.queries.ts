@@ -2,6 +2,7 @@
 import prisma from "@/lib/prisma";
 import { serializeProduct } from "./product.serializer";
 import { AdminProductWithRelations, ProductFullDetails, ProductWithRelations } from "./product.types";
+import { unstable_cache } from "next/cache";
 
 export async function getProducts(options?: {
   limit?: number;
@@ -46,6 +47,14 @@ export async function getProductBySlug(slug: string): Promise<ProductFullDetails
   return product ? (serializeProduct(product) as any) : null;
 }
 
+export async function getProductBySlugCached(slug: string) {
+  return unstable_cache(
+    async () => getProductBySlug(slug),
+    ["product-by-slug", slug],
+    { revalidate: 300 },
+  )();
+}
+
 export async function getAdminProducts(): Promise<AdminProductWithRelations[]> {
   return await prisma.product.findMany({
     where: { isArchived: false },
@@ -61,6 +70,12 @@ export async function getAdminProducts(): Promise<AdminProductWithRelations[]> {
 export async function getCategories() {
   return await prisma.category.findMany({ orderBy: { name: "asc" } });
 }
+
+export const getCategoriesCached = unstable_cache(
+  async () => getCategories(),
+  ["categories"],
+  { revalidate: 3600 },
+);
 
 export async function getHomeCategories() {
   return await prisma.category.findMany({

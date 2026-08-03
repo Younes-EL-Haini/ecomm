@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { SITE_CONFIG } from "@/lib/constants";
 import {
   Facebook,
@@ -11,33 +12,52 @@ import {
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const domainName = SITE_CONFIG.name.toLowerCase().replace(/\s+/g, "");
 
   return (
-    <footer className="bg-zinc-900 text-zinc-300">
+    <footer className="bg-zinc-950 text-zinc-300 border-t border-zinc-900">
       <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand Section */}
           <div className="space-y-6">
             <Link
               href="/"
-              className="text-2xl font-bold text-white tracking-tighter uppercase italic"
+              className="text-2xl font-black text-white tracking-tighter uppercase italic"
             >
               {SITE_CONFIG.name}
             </Link>
-            <p className="text-sm leading-relaxed text-zinc-400">
+            <p className="text-sm leading-relaxed text-zinc-400 max-w-sm">
               Elevating your lifestyle with curated premium goods. Quality meets
               craftsmanship in every piece we deliver.
             </p>
             <div className="flex gap-4">
-              <Link href="#" className="hover:text-white transition-colors">
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Instagram"
+                className="hover:text-white text-zinc-400 transition-colors"
+              >
                 <Instagram className="w-5 h-5" />
-              </Link>
-              <Link href="#" className="hover:text-white transition-colors">
+              </a>
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Facebook"
+                className="hover:text-white text-zinc-400 transition-colors"
+              >
                 <Facebook className="w-5 h-5" />
-              </Link>
-              <Link href="#" className="hover:text-white transition-colors">
+              </a>
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Twitter"
+                className="hover:text-white text-zinc-400 transition-colors"
+              >
                 <Twitter className="w-5 h-5" />
-              </Link>
+              </a>
             </div>
           </div>
 
@@ -46,7 +66,7 @@ const Footer = () => {
             <h3 className="text-white font-bold uppercase text-xs tracking-widest mb-6">
               Shop
             </h3>
-            <ul className="space-y-4 text-sm">
+            <ul className="space-y-3.5 text-sm text-zinc-400">
               <li>
                 <Link
                   href="/products"
@@ -82,12 +102,12 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Support */}
+          {/* Support Links */}
           <div>
             <h3 className="text-white font-bold uppercase text-xs tracking-widest mb-6">
               Support
             </h3>
-            <ul className="space-y-4 text-sm">
+            <ul className="space-y-3.5 text-sm text-zinc-400">
               <li>
                 <Link
                   href="/account/orders"
@@ -123,14 +143,14 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* Contact Details */}
           <div>
             <h3 className="text-white font-bold uppercase text-xs tracking-widest mb-6">
               Contact
             </h3>
-            <ul className="space-y-4 text-sm">
+            <ul className="space-y-4 text-sm text-zinc-400">
               <li className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 shrink-0 text-zinc-500" />
+                <MapPin className="w-5 h-5 shrink-0 text-zinc-500 mt-0.5" />
                 <span>
                   123 Fashion Ave,
                   <br />
@@ -143,34 +163,45 @@ const Footer = () => {
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-5 h-5 shrink-0 text-zinc-500" />
-                <span>hello@{SITE_CONFIG.name.toLowerCase()}.com</span>
+                <a
+                  href={`mailto:elhaini.youness@gmail.com`}
+                  className="hover:text-white transition-colors"
+                >
+                  elhaini.youness@gmail.com
+                </a>
               </li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-16 pt-8 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="mt-16 pt-8 border-t border-zinc-900 flex flex-col sm:flex-row justify-between items-center gap-6">
           <p className="text-xs text-zinc-500">
             © {currentYear} {SITE_CONFIG.name}. All rights reserved.
           </p>
 
-          {/* Payment Icons Placeholder */}
-          <div className="flex items-center gap-4 grayscale opacity-50">
-            <img
+          {/* Payment Badges */}
+          <div className="flex items-center gap-5 opacity-60 grayscale hover:grayscale-0 transition-all duration-300">
+            <Image
               src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg"
               alt="Visa"
-              className="h-3 w-auto"
+              width={40}
+              height={12}
+              className="h-3 w-auto object-contain"
             />
-            <img
+            <Image
               src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg"
               alt="Mastercard"
-              className="h-5 w-auto"
+              width={32}
+              height={20}
+              className="h-5 w-auto object-contain"
             />
-            <img
+            <Image
               src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg"
               alt="Stripe"
-              className="h-4 w-auto"
+              width={42}
+              height={16}
+              className="h-4 w-auto object-contain"
             />
           </div>
         </div>

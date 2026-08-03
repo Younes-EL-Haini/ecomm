@@ -32,7 +32,9 @@ const ProfilePage = async () => {
             <Image
               src={user.image || "/placeholder.png"}
               alt={user.name || "User"}
-              fill
+              width={128}
+              height={128}
+              sizes="128px"
               className="object-cover"
             />
           </div>

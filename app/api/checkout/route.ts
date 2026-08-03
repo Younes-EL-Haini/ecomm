@@ -5,10 +5,9 @@ import prisma from "@/lib/prisma";
 import Stripe from "stripe";
 import { CheckoutUIItem, CheckoutUIItemSchema } from "@/lib/cart";
 
-
 export async function POST(req: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: "2025-12-15.clover" as any,
+    apiVersion: "2025-12-15.clover", // Use a stable API version
   });
 
   try {
@@ -19,7 +18,7 @@ export async function POST(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const isDirect = searchParams.get("direct") === "true";
-    
+
     // Safely parse body
     let body: any = {};
     try {
@@ -33,79 +32,93 @@ export async function POST(req: Request) {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { cartItems: { include: { product: { include: { images: true } }, variant: true } } }
+      include: {
+        cartItems: {
+          include: {
+            product: { include: { images: true } },
+            variant: true,
+          },
+        },
+      },
     });
 
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
     userId = user.id;
 
     if (isDirect) {
-  // --- BUY IT NOW LOGIC ---
-  const { variantId, quantity } = body;
+      // --- BUY IT NOW LOGIC ---
+      const { variantId, quantity } = body;
 
-  if (!variantId)
-    return NextResponse.json({ error: "Variant ID missing" }, { status: 400 });
+      if (!variantId)
+        return NextResponse.json(
+          { error: "Variant ID missing" },
+          { status: 400 }
+        );
 
-  const variant = await prisma.productVariant.findUnique({
-    where: { id: variantId },
-    include: { product: { include: { images: true } } },
-  });
+      const variant = await prisma.productVariant.findUnique({
+        where: { id: variantId },
+        include: { product: { include: { images: true } } },
+      });
 
-  if (!variant)
-    return NextResponse.json({ error: "Variant not found" }, { status: 404 });
+      if (!variant)
+        return NextResponse.json({ error: "Variant not found" }, { status: 404 });
 
-  checkoutItems.push({
-    variantId: variant.id,
-    quantity: Number(quantity) || 1,
-    price: Number(variant.product.price) + Number(variant.priceDelta || 0),
-    title: variant.product.title,
-    image: variant.product.images[0]?.url || null,
-    variantName: `${variant.color} / ${variant.size}`,
-  });
-} else {
-  // --- NORMAL CART LOGIC ---
-  if (user.cartItems.length === 0) {
-    return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
-  }
+      checkoutItems.push({
+        variantId: variant.id,
+        quantity: Number(quantity) || 1,
+        price: Number(variant.product.price) + Number(variant.priceDelta || 0),
+        title: variant.product.title,
+        image: variant.product.images[0]?.url || null,
+        variantName: `${variant.color} / ${variant.size}`,
+      });
+    } else {
+      // --- NORMAL CART LOGIC ---
+      if (user.cartItems.length === 0) {
+        return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
+      }
 
-  checkoutItems = user.cartItems.map((item) => ({
-    variantId: item.variantId!,
-    quantity: item.quantity,
-    price:
-      Number(item.product.price) +
-      Number(item.variant?.priceDelta || 0),
-    title: item.product.title,
-    image: item.product.images[0]?.url || null,
-    variantName: `${item.variant?.color} / ${item.variant?.size}`,
-  }));
-}
+      checkoutItems = user.cartItems.map((item) => ({
+        variantId: item.variantId!,
+        quantity: item.quantity,
+        price:
+          Number(item.product.price) + Number(item.variant?.priceDelta || 0),
+        title: item.product.title,
+        image: item.product.images[0]?.url || null,
+        variantName: `${item.variant?.color} / ${item.variant?.size}`,
+        productId: item.productId,
+      }));
+    }
 
-
-    const totalAmount = checkoutItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    const totalAmount = checkoutItems.reduce(
+      (acc, item) => acc + item.price * item.quantity,
+      0
+    );
     if (checkoutItems.length === 0 || totalAmount <= 0) {
-  return NextResponse.json(
-    { error: "No items to checkout" },
-    { status: 400 }
-  );
-}
+      return NextResponse.json(
+        { error: "No items to checkout" },
+        { status: 400 }
+      );
+    }
+
+    // Create the PaymentIntent with optimized, minimal metadata
     const paymentIntent = await stripe.paymentIntents.create({
-  amount: Math.round(totalAmount * 100),
-  currency: "usd",
-  automatic_payment_methods: { enabled: true },
-  metadata: {
-    userId: userId,
-    isDirect: isDirect ? "true" : "false",
-    // MODIFIED THIS LINE BELOW:
-    cartItems: JSON.stringify(checkoutItems.map(i => ({
-      variantId: i.variantId,
-      quantity: i.quantity,   
-      title: i.title,     
-      image: i.image,     
-      variantName: i.variantName,
-      price: i.price          
-    })))
-  },
-});
+      amount: Math.round(totalAmount * 100), // Convert dollars to cents securely
+      currency: "usd",
+      automatic_payment_methods: { enabled: true },
+      metadata: {
+        userId: userId,
+        isDirect: isDirect ? "true" : "false",
+        // Metadata limit is strict, only store essential IDs and quantities
+        cartItems: JSON.stringify(
+          checkoutItems.map((i) => ({
+            v: i.variantId, // Lightweight key: v for variantId
+            q: i.quantity, // Lightweight key: q for quantity
+          }))
+        ),
+      },
+    });
 
     const safeItems = CheckoutUIItemSchema.array().parse(checkoutItems);
 
@@ -113,8 +126,8 @@ export async function POST(req: Request) {
       clientSecret: paymentIntent.client_secret,
       orderSummary: {
         items: safeItems,
-        subtotal: totalAmount
-      }
+        subtotal: totalAmount,
+      },
     });
   } catch (error: any) {
     console.error("STRIPE_API_ERROR:", error);

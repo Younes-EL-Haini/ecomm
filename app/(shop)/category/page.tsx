@@ -1,10 +1,11 @@
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
-import { getCategories } from "@/lib/products";
+import { getCategoriesCached } from "@/lib/products";
+import Image from "next/image";
 import Link from "next/link";
 
 export default async function CategoriesPage() {
-  const categories = await getCategories();
+  const categories = await getCategoriesCached();
 
   return (
     <main className="pt-24 min-h-screen max-w-7xl mx-auto px-4">
@@ -21,10 +22,12 @@ export default async function CategoriesPage() {
           >
             {/* Image */}
             <div className="relative w-full aspect-4/5">
-              <img
+              <Image
                 src={cat.imageUrl || "/placeholder-cat.jpg"}
                 alt={cat.name}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
               />
             </div>
 

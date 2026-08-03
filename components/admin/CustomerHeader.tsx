@@ -1,5 +1,3 @@
-"use client";
-
 import Image from "next/image";
 import { Mail, Calendar, ShieldCheck, User, ChevronLeft } from "lucide-react";
 import { CustomerHeaderData } from "@/lib/admin/admin.types";
@@ -10,19 +8,22 @@ export function CustomerHeader({ customer }: { customer: CustomerHeaderData }) {
     <div className="p-8 bg-white border border-slate-200 rounded-3xl shadow-sm">
       <Link
         href="/admin/customers"
-        className="text-sm text-slate-500 hover:text-black flex items-center gap-2 mb-4 transition-colors"
+        className="text-sm text-slate-500 hover:text-black flex items-center gap-2 mb-4 transition-colors w-fit"
       >
         <ChevronLeft size={16} /> Back to Customers
       </Link>
       <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
         {/* Avatar Section */}
-        <div className="relative h-24 w-24 rounded-3xl border-4 border-slate-50 overflow-hidden bg-slate-100 shadow-inner shrink-0">
+        <div className="h-24 w-24 rounded-3xl border-4 border-slate-50 overflow-hidden bg-slate-100 shadow-inner shrink-0">
           {customer.image ? (
             <Image
               src={customer.image}
-              alt={customer.name}
-              fill
-              className="object-cover"
+              alt={customer.name || "Customer avatar"}
+              width={96}
+              height={96}
+              sizes="96px"
+              className="w-full h-full object-cover"
+              priority
             />
           ) : (
             <div className="h-full w-full flex items-center justify-center text-slate-400 bg-slate-50">
@@ -57,10 +58,12 @@ export function CustomerHeader({ customer }: { customer: CustomerHeaderData }) {
               <Calendar size={16} className="text-slate-400" />
               Joined {customer.joinedDate}
             </div>
-            <div className="flex items-center gap-1.5">
-              <ShieldCheck size={16} className="text-indigo-400" />
-              Customer ID: {customer.id?.slice(-6).toUpperCase()}
-            </div>
+            {customer.id && (
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck size={16} className="text-indigo-400" />
+                Customer ID: {customer.id.slice(-6).toUpperCase()}
+              </div>
+            )}
           </div>
         </div>
       </div>

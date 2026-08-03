@@ -22,7 +22,9 @@ export async function getUserContext(userId: string): Promise<UserContextSummary
 
   // 1. Format Cart Context
   const cartSummary = cartItems.length > 0
-    ? cartItems.map(item => `- ${item.product.title} (Qty: ${item.quantity}, Price: $${item.product.price})`).join("\n")
+    ? cartItems.map(item => 
+      `- ${item.product.title} | Qty: ${item.quantity} | $${item.product.price}`
+      ).join("\n")
     : "The customer's shopping cart is currently empty.";
 
   // 2. Format Order Context
@@ -32,8 +34,9 @@ export async function getUserContext(userId: string): Promise<UserContextSummary
 
   return {
     customerName: user?.name || "Customer",
-    cartSummary,
+    // cartSummary,
     recentOrdersSummary
+    
   };
 }
 

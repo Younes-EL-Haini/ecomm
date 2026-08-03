@@ -70,8 +70,9 @@ export interface DBHistoricalMessage {
 
 export interface UserContextSummary {
   customerName: string;
-  cartSummary: string;
+  // cartSummary: string;
   recentOrdersSummary: string;
+
 }
 
 export interface SearchProductsArgs {

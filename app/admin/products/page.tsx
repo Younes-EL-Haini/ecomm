@@ -43,9 +43,10 @@ export default async function AdminProductsPage() {
                     <Image
                       src={mainImage}
                       alt={product.title}
-                      fill
+                      width={64}
+                      height={80}
                       sizes="64px"
-                      className="object-cover group-hover:scale-110 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full w-full text-slate-400">
@@ -118,10 +119,10 @@ export default async function AdminProductsPage() {
                     <Image
                       src={mainImage}
                       alt={product.title}
-                      fill
-                      sizes="80px"
-                      className="object-cover"
-                      unoptimized={true}
+                      width={64}
+                      height={80}
+                      sizes="64px"
+                      className="w-full h-full object-cover"
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full w-full text-slate-400">

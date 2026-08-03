@@ -1,13 +1,13 @@
 import { getServerSession } from "next-auth";
 import authOptions from "@/app/auth/authOptions";
 import { ShieldCheck, Mail } from "lucide-react";
+import Image from "next/image";
 
 export default async function SecurityPage() {
   const session = await getServerSession(authOptions);
 
   // Check if the user is using Google (OAuth)
-  // Most OAuth providers don't send a password hash to the DB
-  const isOAuth = !session?.user?.image?.includes("placeholder"); // Or check your DB 'password' field
+  const isOAuth = !session?.user?.image?.includes("placeholder"); //
 
   return (
     <div className="animate-in space-y-10">
@@ -43,7 +43,14 @@ export default async function SecurityPage() {
             <div className="pt-4 flex items-center gap-3">
               <div className="flex -space-x-2">
                 <div className="size-8 rounded-full border-2 border-white bg-zinc-200 flex items-center justify-center overflow-hidden">
-                  <img src={session?.user?.image || ""} alt="User" />
+                  <Image
+                    src={session?.user?.image || "/placeholder.png"}
+                    alt="User"
+                    width={32}
+                    height={32}
+                    sizes="32px"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               </div>
               <span className="text-xs font-black uppercase tracking-widest text-zinc-400">

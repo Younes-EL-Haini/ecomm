@@ -81,13 +81,14 @@ export default async function CartPage() {
 
               return (
                 <div key={item.id} className="flex gap-4 border-b pb-6">
-                  <div className="relative h-28 w-28 md:h-32 md:w-32 rounded-lg overflow-hidden border bg-white shrink-0 shadow-sm group">
+                  <div className="relative h-32 w-24 md:h-40 md:w-30 rounded-lg overflow-hidden border bg-white shrink-0 shadow-sm group">
                     <Image
                       src={image?.url || "/placeholder.png"}
                       alt={item.product.title}
-                      fill
-                      className="object-cover transition-transform duration-300 ease-out group-hover:scale-110"
-                      unoptimized={true}
+                      width={120}
+                      height={160}
+                      sizes="(max-width: 768px) 96px, 120px"
+                      className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-110"
                     />
 
                     {/* Hover overlay (desktop only) */}

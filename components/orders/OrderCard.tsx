@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ChevronDown, MapPin, Calendar, Package } from "lucide-react";
+import { ChevronDown, Calendar, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatMoney, toNumber } from "@/lib/utils/pricing";
 import { Badge } from "../ui/badge";
@@ -10,22 +10,30 @@ import { SerializedOrder, getStatusClasses } from "@/lib/orders";
 import OrderDetails from "./OrderDetails";
 
 interface OrderCardProps {
-  order: SerializedOrder; // No more 'any'!
+  order: SerializedOrder;
 }
 
 const OrderCard = ({ order }: OrderCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const firstItem = order.items?.[0];
+  const items = order.items ?? [];
+  const firstItem = items[0];
+
   const productImg =
-    firstItem?.product.images?.find(
+    firstItem?.product?.images?.find(
       (img) =>
         img.color?.toLowerCase() === firstItem.variant?.color?.toLowerCase(),
     ) ||
-    firstItem?.product.images?.find((img) => img.isMain) ||
-    firstItem?.product.images?.[0];
+    firstItem?.product?.images?.find((img) => img.isMain) ||
+    firstItem?.product?.images?.[0];
 
   const displayImage = productImg?.url || "/placeholder.png";
+
+  const formattedDate = new Date(order.createdAt).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 
   return (
     <div
@@ -36,92 +44,67 @@ const OrderCard = ({ order }: OrderCardProps) => {
           : "hover:border-zinc-300 shadow-sm",
       )}
     >
-      {/* CARD HEADER */}
+      {/* CARD HEADER TOGGLE */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-6 text-left cursor-pointer"
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="w-full p-6 text-left cursor-pointer focus:outline-none"
+        aria-expanded={isOpen}
       >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-6">
-            {/* ID & Status Block */}
+            {/* Image Preview Stack */}
+            <div className="relative size-16 shrink-0 group/img">
+              {items.length > 1 && (
+                <div className="absolute inset-0 bg-zinc-200 rounded-2xl translate-x-1.5 translate-y-1.5" />
+              )}
+
+              <div className="relative size-16 overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm transition-transform duration-500 group-hover/img:scale-105">
+                <Image
+                  src={displayImage}
+                  alt="Order preview"
+                  fill
+                  sizes="64px"
+                  className="object-cover"
+                />
+
+                {items.length > 1 && (
+                  <div className="absolute bottom-1 right-1 bg-zinc-900/80 backdrop-blur-md text-[8px] font-black text-white px-1.5 py-0.5 rounded-md">
+                    +{items.length - 1}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ID, Status & Meta Info */}
             <div className="space-y-1">
-              <div className="flex items-center gap-6">
-                {/* The Image Preview (Replacing the Package Icon) */}
-                <div className="relative size-16 shrink-0 group/img">
-                  {/* Decorative background "stack" for multiple items */}
-                  {order.items.length > 1 && (
-                    <div className="absolute inset-0 bg-zinc-200 rounded-2xl translate-x-1.5 translate-y-1.5" />
-                  )}
-
-                  <div className="relative size-16 overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm transition-transform duration-500 group-hover:scale-105">
-                    <Image
-                      src={displayImage || "/placeholder.png"}
-                      alt="Order preview"
-                      fill
-                      sizes="64px"
-                      className="object-cover"
-                      unoptimized={true}
-                    />
-
-                    {/* Subtle overlay if there are many items */}
-                    {order.items.length > 1 && (
-                      <div className="absolute bottom-1 right-1 bg-zinc-900/80 backdrop-blur-md text-[8px] font-black text-white px-1.5 py-0.5 rounded-md">
-                        +{order.items.length - 1}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* ID & Status Block */}
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-lg font-black text-zinc-900 tracking-tight">
-                      ORD-{order.id.slice(-5).toUpperCase()}
-                    </p>
-                    <Badge className={getStatusClasses(order.status, "md")}>
-                      {order.status}
-                    </Badge>
-                  </div>
-
-                  <div className="flex items-center gap-4 text-zinc-400">
-                    <div className="flex items-center gap-1.5">
-                      <Calendar size={12} />
-                      <span className="text-[10px] font-bold uppercase tracking-tight">
-                        {new Date(order.createdAt).toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Package size={12} />
-                      <span className="text-[10px] font-bold uppercase tracking-tight">
-                        {order.items.length}{" "}
-                        {order.items.length === 1 ? "Item" : "Items"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+              <div className="flex items-center gap-3 flex-wrap">
+                <p className="text-lg font-black text-zinc-900 tracking-tight">
+                  ORD-{order.id.slice(-5).toUpperCase()}
+                </p>
+                <Badge className={getStatusClasses(order.status, "md")}>
+                  {order.status}
+                </Badge>
               </div>
 
               <div className="flex items-center gap-4 text-zinc-400">
                 <div className="flex items-center gap-1.5">
                   <Calendar size={12} />
-                  <span className="text-[10px] font-bold uppercase">
-                    {new Date(order.createdAt).toLocaleDateString()}
+                  <span className="text-[10px] font-bold uppercase tracking-tight">
+                    {formattedDate}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <MapPin size={12} />
-                  <span className="text-[10px] font-bold uppercase">
-                    Shipping Address
+                  <Package size={12} />
+                  <span className="text-[10px] font-bold uppercase tracking-tight">
+                    {items.length} {items.length === 1 ? "Item" : "Items"}
                   </span>
                 </div>
               </div>
             </div>
           </div>
 
+          {/* Price & Chevron */}
           <div className="flex items-center justify-between md:justify-end gap-12 border-t md:border-t-0 border-zinc-50 pt-4 md:pt-0">
             <div className="text-right">
               <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
@@ -133,7 +116,7 @@ const OrderCard = ({ order }: OrderCardProps) => {
             </div>
             <ChevronDown
               className={cn(
-                "text-zinc-300 transition-transform duration-500",
+                "text-zinc-400 transition-transform duration-500",
                 isOpen && "rotate-180",
               )}
               size={24}
@@ -142,7 +125,7 @@ const OrderCard = ({ order }: OrderCardProps) => {
         </div>
       </button>
 
-      {/* EXPANSION AREA (Items list) */}
+      {/* EXPANDABLE DETAILS */}
       <OrderDetails order={order} isOpen={isOpen} />
     </div>
   );

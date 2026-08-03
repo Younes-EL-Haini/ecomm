@@ -3,12 +3,14 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import prisma from "@/lib/prisma";
 import Decimal from "decimal.js";
-import { getResendClient, resend } from "@/lib/resend";
+import { getResendClient } from "@/lib/resend";
 import OrderConfirmationEmail from "@/emails/OrderConfirmation";
-import { CartWithProducts, CheckoutUIItemSchema } from "@/lib/cart";
-import { z } from "zod"
 
-class OutOfStockError extends Error {}
+// Define shape for lightweight metadata parsed from Stripe
+interface MetadataCartItem {
+  v: string; // variantId
+  q: number; // quantity
+}
 
 export async function POST(req: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -27,43 +29,27 @@ export async function POST(req: Request) {
       process.env.STRIPE_WEBHOOK_SECRET!
     );
   } catch (err: any) {
-    console.error("❌ Webhook Signature Verification Failed:", err.message); // Add this!
+    console.error("❌ Webhook Signature Verification Failed:", err.message);
     return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
   }
 
+  // Handle successful payments
   if (stripeEvent.type === "payment_intent.succeeded") {
     const paymentIntent = stripeEvent.data.object as Stripe.PaymentIntent;
     const shipping = paymentIntent.shipping;
     const userId = paymentIntent.metadata?.userId;
     const isDirect = paymentIntent.metadata?.isDirect === "true";
 
-    // 1. Get items from metadata
-    const rawItems = JSON.parse(paymentIntent.metadata?.cartItems || "[]");
+    // 1. Get essential items (IDs/Quantities) from metadata
+    let rawItems: MetadataCartItem[] = [];
+    try {
+      rawItems = JSON.parse(paymentIntent.metadata?.cartItems || "[]");
+    } catch (err) {
+      console.error("❌ Error parsing cartItems metadata:", err);
+      return new NextResponse("Invalid cart metadata format", { status: 400 });
+    }
 
-    const validatedItems: z.infer<typeof CheckoutUIItemSchema>[] = [];
-      for (const item of rawItems) {
-        const parseResult = CheckoutUIItemSchema.safeParse(item);
-        if (!parseResult.success) {
-          console.error("Invalid cart item:", parseResult.error.format());
-          return new NextResponse("Invalid cart item data", { status: 400 });
-        }
-        validatedItems.push(parseResult.data);
-      }
-    
-    // 2. Normalize items: Ensure every item has a productId even if it came from a direct variant buy
-    const cartItems = await Promise.all(validatedItems.map(async (item) => {
-      if (item.variantId && !item.id) {
-        // If we only have variantId (Direct Buy), find the productId
-        const v = await prisma.productVariant.findUnique({
-          where: { id: item.variantId },
-          select: { productId: true }
-        });
-        return { ...item, id: v?.productId };
-      }
-      return item;
-    }));
-
-    if (!userId || cartItems.length === 0) {
+    if (!userId || rawItems.length === 0) {
       return new NextResponse("Missing metadata", { status: 400 });
     }
 
@@ -73,57 +59,93 @@ export async function POST(req: Request) {
 
     if (existingOrder) return new NextResponse("Order exists", { status: 200 });
 
-    // 3. Filter out undefined IDs before Prisma call
-    const productIds = cartItems.map(i => i.id).filter(Boolean) as string[];
-    const variantIds = cartItems.map(i => i.variantId).filter(Boolean) as string[];
+    // 2. Database Lookup: Fetch full product and variant information using the IDs
+    const variantIds = rawItems.map((i) => i.v).filter(Boolean);
 
-    const [products, variants] = await Promise.all([
-      prisma.product.findMany({
-        where: { id: { in: productIds } },
-        select: { id: true, price: true },
-      }),
-      variantIds.length
-        ? prisma.productVariant.findMany({
-            where: { id: { in: variantIds } },
-            select: { id: true, stock: true },
-          })
-        : Promise.resolve([]),
-    ]);
+    const variants = await prisma.productVariant.findMany({
+      where: { id: { in: variantIds } },
+      include: {
+        product: {
+          include: {
+            images: true,
+          },
+        },
+      },
+    });
 
-    const priceMap = new Map(products.map(p => [p.id, p.price]));
-    const validVariantIds = new Set(variants.map(v => v.id));
+    // Create a lookup map for fast item lookup in Step 3
+    const variantMap = new Map(variants.map((v) => [v.id, v]));
+
+    // 3. SECURE DATA RECONSTRUCTION: Rebuild normalized cart items from your DB source of truth
+    const cartItems = rawItems
+      .map((item) => {
+        const variant = variantMap.get(item.v);
+        // Safety check if variantId is invalid
+        if (!variant) {
+          console.error(`VariantId ${item.v} not found in DB`);
+          return null;
+        }
+
+        // Calculate final secure price from DB
+        const basePrice = Number(variant.product.price);
+        const delta = Number(variant.priceDelta || 0);
+        const finalUnitPrice = basePrice + delta;
+
+        // Collect needed properties for Stock and Resend later
+        return {
+          productId: variant.productId,
+          variantId: variant.id,
+          quantity: item.q,
+          secureUnitPrice: finalUnitPrice,
+          title: variant.product.title,
+          // Primary product image or safe placeholder
+          image:
+            variant.product.images[0]?.url || "https://placehold.co/100x100.png",
+          variantStock: variant.stock,
+          isDirect: isDirect,
+        };
+      })
+      .filter(Boolean); // Drop null entries
+
+    if (cartItems.length === 0) {
+      return new NextResponse("Invalid items in cart metadata", {
+        status: 400,
+      });
+    }
+
+    // Prepare address data, using shipping info provided to Stripe
+    const addressData = {
+      userId,
+      line1: shipping?.address?.line1 || "N/A",
+      line2: shipping?.address?.line2 || null,
+      city: shipping?.address?.city || "N/A",
+      fullName: shipping?.name || "Customer",
+      // Best practice: Store phone in shipping address if available
+      phone: shipping?.phone || "N/A",
+      postalCode: shipping?.address?.postal_code || "N/A",
+      country: shipping?.address?.country || "N/A",
+      state: shipping?.address?.state || null,
+    };
 
     try {
+      // Execute DB actions in a secure Transaction
       await prisma.$transaction(async (tx) => {
-        // Create Address
+        // Create the Shipping Address
         const address = await tx.address.create({
-          data: {
-            userId,
-            line1: shipping?.address?.line1 || "N/A",
-            city: shipping?.address?.city || "N/A",
-            fullName: shipping?.name || "Customer",
-            phone: paymentIntent.metadata?.phone || "N/A",
-            postalCode: shipping?.address?.postal_code || "N/A",
-            country: shipping?.address?.country || "N/A"
-          },
+          data: addressData,
         });
-        
-        const orderItemsData = cartItems
-  .filter((item): item is typeof item & { id: string } => !!item.id) // Only items with productId
-  .map(item => {
-    const price = priceMap.get(item.id)?.toNumber() || 0;
 
-    return {
-      productId: item.id,       // Prisma requires this
-      variantId: item.variantId,
-      quantity: item.quantity,
-      unitPrice: new Decimal(price),
-      totalPrice: new Decimal(price * item.quantity),
-    };
-  });
+        // Map reconstructed data to the prisma OrderItem schema
+        const orderItemsData = cartItems.map((item) => ({
+          productId: item!.productId, // Prisma requires productId link
+          variantId: item!.variantId,
+          quantity: item!.quantity,
+          // DB fields are Decimal, map correctly
+          unitPrice: new Decimal(item!.secureUnitPrice),
+          totalPrice: new Decimal(item!.secureUnitPrice * item!.quantity),
+        }));
 
-
-        // Create Order
+        // Create the PAID Order
         await tx.order.create({
           data: {
             userId,
@@ -132,14 +154,14 @@ export async function POST(req: Request) {
             totalPrice: new Decimal(paymentIntent.amount / 100),
             shippingAddressId: address.id,
             items: {
-              create: orderItemsData
+              create: orderItemsData,
             },
           },
         });
 
-        // Update Stock
+        // Secure Stock Management: Update Stock in Transaction
         for (const item of cartItems) {
-          if (item.variantId && validVariantIds.has(item.variantId)) {
+          if (item && item.variantId) {
             await tx.productVariant.update({
               where: { id: item.variantId },
               data: { stock: { decrement: item.quantity } },
@@ -147,61 +169,61 @@ export async function POST(req: Request) {
           }
         }
 
-        // 4. ONLY clear cart if NOT a direct buy
+        // 4. ONLY clear user cart if NOT a direct buy
         if (!isDirect) {
           await tx.cartItem.deleteMany({ where: { userId } });
         }
       });
     } catch (err) {
-      console.error("Transaction Error:", err);
+      console.error("Prisma transaction error in webhook:", err);
+      // Stripe will retry if we return 500
       return new NextResponse("Transaction Failed", { status: 500 });
     }
-    
-try {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { email: true, name: true }
-  });
 
-  const resendClient = getResendClient();
+    // --- SECURE ORDER CONFIRMATION EMAIL LOGIC ---
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, name: true },
+      });
 
-  if (user?.email && resendClient) {
-    // We map cartItems to ensure the email component gets exactly what it needs
-    const emailItems = cartItems.map((item) => {
-      // Find the product details from the 'products' array we fetched earlier
-      const productData = products.find(p => p.id === item.id);
-      
-      return {
-        name: item.name || "Product", // If name isn't in metadata, you might need to fetch it
-        q: item.quantity,
-        price: priceMap.get(item.id ?? "")?.toNumber() || 0,
-        // Ensure you have a valid image URL here
-        image: item.image || "https://placehold.co/100x100.png" 
-      };
-    });
+      const resendClient = getResendClient();
 
-    const { data, error } = await resendClient.emails.send({
-      from: 'Loko Shop <onboarding@resend.dev>',
-      to: user.email, 
-      subject: `Order Confirmation #${paymentIntent.id.slice(-8).toUpperCase()}`,
-      react: OrderConfirmationEmail({
-        orderId: paymentIntent.id,
-        customerName: user.name || 'Customer',
-        total: paymentIntent.amount / 100,
-        cartItems: emailItems, // <--- Passing the array here
-      }),
-    });
+      if (user?.email && resendClient) {
+        // Build emailItems from normalized cartItems, already containing image/title
+        const emailItems = cartItems.map((item) => ({
+          name: item!.title || "Product",
+          q: item!.quantity,
+          price: item!.secureUnitPrice || 0,
+          image: item!.image || "https://placehold.co/100x100.png",
+        }));
 
-    if (error) {
-      console.error("Resend API Error:", error);
-    } else {
-      console.log("Resend Success: Email sent with items list.");
+        const { data, error } = await resendClient.emails.send({
+          from: "Loko Shop <onboarding@resend.dev>",
+          to: user.email,
+          subject: `Order Confirmation #${paymentIntent.id
+            .slice(-8)
+            .toUpperCase()}`,
+          react: OrderConfirmationEmail({
+            orderId: paymentIntent.id,
+            customerName: user.name || "Customer",
+            total: paymentIntent.amount / 100,
+            cartItems: emailItems, // Passing array with image, name, q, price
+          }),
+        });
+
+        if (error) {
+          console.error("Resend API Error in webhook:", error);
+        } else {
+          console.log("Resend Success: Email sent with secure items list.");
+        }
+      }
+    } catch (error) {
+      // Don't crash webhook if email fails, order is secured
+      console.error("Logic Error in Webhook Email Block:", error);
     }
   }
-} catch (error) {
-  console.error("Logic Error in Email Block:", error);
-}
-  }
 
+  // Acknowledge event to Stripe
   return new NextResponse("Success", { status: 200 });
 }

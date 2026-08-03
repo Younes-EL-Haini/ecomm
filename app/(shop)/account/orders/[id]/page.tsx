@@ -90,9 +90,10 @@ const OrderPage = async ({ params }: Props) => {
                     <Image
                       src={image?.url || "/placeholder.png"}
                       alt={item.product.title}
-                      fill
+                      width={96}
+                      height={96}
+                      sizes="96px"
                       className="object-cover transition-transform duration-500 group-hover:scale-110"
-                      unoptimized={true}
                     />
                   </div>
 

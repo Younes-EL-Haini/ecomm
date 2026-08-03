@@ -35,13 +35,14 @@ export function LowStockAlerts({ products }: LowStockAlertsProps) {
             className="flex items-center justify-between group"
           >
             <div className="flex items-center gap-3">
-              <div className="relative w-16 h-20 rounded-xl overflow-hidden bg-gray-50 border">
+              <div className="w-16 h-20 rounded-xl overflow-hidden bg-gray-50 border shrink-0">
                 <Image
                   src={variant.product.images[0]?.url || "/placeholder.png"}
                   alt={variant.product.title || "image"}
-                  fill
-                  className="object-cover"
-                  unoptimized={true}
+                  width={64}
+                  height={80}
+                  sizes="64px"
+                  className="w-full h-full object-cover"
                 />
               </div>
               <div>
