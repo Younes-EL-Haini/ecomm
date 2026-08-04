@@ -1,9 +1,9 @@
 import ProductForm from "@/components/admin/ProductForm";
-import { getCategories } from "@/lib/products";
+import { getCategoriesCached } from "@/lib/products";
 
 export default async function NewProductPage() {
   // 1. Fetch data needed for the form
-  const categories = await getCategories();
+  const categories = await getCategoriesCached();
 
   return (
     <div className="min-h-screen bg-slate-50">

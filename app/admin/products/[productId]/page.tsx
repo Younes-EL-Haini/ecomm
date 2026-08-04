@@ -1,6 +1,6 @@
 import ProductForm from "@/components/admin/ProductForm";
 import { notFound } from "next/navigation";
-import { getCategories, getProductForEdit } from "@/lib/products";
+import { getCategoriesCached, getProductForEdit } from "@/lib/products";
 
 export default async function EditProductPage({
   params,
@@ -11,7 +11,7 @@ export default async function EditProductPage({
 
   const [product, categories] = await Promise.all([
     getProductForEdit(productId),
-    getCategories(),
+    getCategoriesCached(),
   ]);
 
   if (!product) notFound();

@@ -1,6 +1,8 @@
 // app/category/[slug]/page.tsx
+export const revalidate = 300;
+
 import ProductGrid from "@/components/products/ProductGrid";
-import { getCategoryBySlug } from "@/lib/products";
+import { getCategoryBySlugCached } from "@/lib/products";
 import { notFound } from "next/navigation";
 
 export default async function CategoryPage({
@@ -10,7 +12,7 @@ export default async function CategoryPage({
 }) {
   // We fetch the category name just for the Page Title
   const param = await params;
-  const category = await getCategoryBySlug(param.slug);
+  const category = await getCategoryBySlugCached(param.slug);
 
   if (!category) notFound();
 

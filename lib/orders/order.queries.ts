@@ -1,8 +1,8 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { serializeOrder, serializeAdminDetail } from "./order.serializer";
-import { SerializedOrder, AdminOrderSummary, OrderWithRelations, AdminOrderDetail } from "./order.types";
+import { serializeOrder } from "./order.serializer";
+import { SerializedOrder, OrderWithRelations, AdminOrderDetail } from "./order.types";
 
 export async function getMyOrders(email: string): Promise<SerializedOrder[]> {
   const orders = await prisma.order.findMany({

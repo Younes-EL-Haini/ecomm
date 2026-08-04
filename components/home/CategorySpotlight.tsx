@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { getHomeCategories } from "@/lib/products";
+import { getHomeCategoriesCached } from "@/lib/products";
 import Image from "next/image";
 
 export default async function CategorySpotlight() {
-  const categories = await getHomeCategories();
+  const categories = await getHomeCategoriesCached();
 
   if (!categories || categories.length === 0) return null;
 

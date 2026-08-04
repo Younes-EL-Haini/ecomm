@@ -1,5 +1,5 @@
 import ProductCard from "./ProductCard";
-import { getProducts } from "@/lib/products";
+import { getProductsCached } from "@/lib/products";
 
 interface ProductGridProps {
   limit?: number;
@@ -14,7 +14,11 @@ const ProductGrid = async ({
   title,
   categorySlug,
 }: ProductGridProps) => {
-  const products = await getProducts({ limit, featuredOnly, categorySlug });
+  const products = await getProductsCached({
+    limit,
+    featuredOnly,
+    categorySlug,
+  });
 
   if (products.length === 0) return null;
 

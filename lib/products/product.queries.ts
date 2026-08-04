@@ -39,6 +39,20 @@ export async function getProducts(options?: {
   });
 }
 
+export async function getProductsCached(options?: {
+  limit?: number;
+  featuredOnly?: boolean;
+  hideOutOfStock?: boolean;
+  categorySlug?: string;
+  sort?: string;
+}) {
+  return unstable_cache(
+    async () => getProducts(options),
+    ["products", JSON.stringify(options ?? {})],
+    { revalidate: 300 },
+  )();
+}
+
 export async function getProductBySlug(slug: string): Promise<ProductFullDetails | null> {
   const product = await prisma.product.findUnique({
     where: { slug },
@@ -89,6 +103,12 @@ export async function getHomeCategories() {
   });
 }
 
+export const getHomeCategoriesCached = unstable_cache(
+  async () => getHomeCategories(),
+  ["home-categories"],
+  { revalidate: 3600 },
+);
+
 export async function getCategoryBySlug(slug: string) {
   return await prisma.category.findUnique({
     where: { slug },
@@ -98,6 +118,14 @@ export async function getCategoryBySlug(slug: string) {
       slug: true,
     }
   });
+}
+
+export async function getCategoryBySlugCached(slug: string) {
+  return unstable_cache(
+    async () => getCategoryBySlug(slug),
+    ["category-by-slug", slug],
+    { revalidate: 300 },
+  )();
 }
 
 export async function getProductForEdit(productId: string) {
