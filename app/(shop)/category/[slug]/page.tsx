@@ -2,8 +2,10 @@
 export const revalidate = 300;
 
 import ProductGrid from "@/components/products/ProductGrid";
+import { ProductGridSkeleton } from "@/components/products/ProductGridSkeleton";
 import { getCategoryBySlugCached } from "@/lib/products";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 export default async function CategoryPage({
   params,
@@ -29,7 +31,9 @@ export default async function CategoryPage({
       </div>
 
       {/* The Grid filtered by the URL slug */}
-      <ProductGrid categorySlug={param.slug} />
+      <Suspense fallback={<ProductGridSkeleton />}>
+        <ProductGrid categorySlug={param.slug} />
+      </Suspense>
     </main>
   );
 }
