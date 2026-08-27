@@ -68,7 +68,7 @@ const MobileNav = () => {
         >
           <SheetHeader className="p-6 text-left border-b">
             <SheetTitle className="text-zinc-900 font-bold text-2xl tracking-tight">
-              STORE.
+              SABLE
             </SheetTitle>
           </SheetHeader>
 

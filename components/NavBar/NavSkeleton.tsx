@@ -6,7 +6,7 @@ const NavSkeleton = () => {
     <nav className="sticky top-0 z-50 w-full border-b border-black/5 bg-gray-100 backdrop-blur-xl h-12 flex items-center">
       <div className="max-w-7xl mx-auto w-full flex justify-between px-6 items-center">
         <div className="flex items-center gap-10">
-          {/* Match "STORE." text size with a skeleton */}
+          {/* Match "SABLE" text size with a skeleton */}
           <Skeleton className="h-5 w-16 bg-zinc-200" />
 
           <div className="hidden md:flex gap-8">

@@ -20,7 +20,7 @@ function LoginContent() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-white">
       <div className="text-center space-y-6">
         <h1 className="text-5xl font-black italic uppercase tracking-tighter">
-          Store. —
+          Sable. —
         </h1>
         <p className="text-zinc-500 font-medium uppercase text-xs tracking-[0.2em]">
           Identify yourself to continue

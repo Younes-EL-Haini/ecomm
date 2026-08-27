@@ -27,7 +27,7 @@ export default function ContactPage() {
               <ContactInfoItem
                 icon={<Mail className="w-5 h-5" />}
                 title="Email Us"
-                detail="support@yourstore.com"
+                detail="elhaini.youness@gmail.com"
               />
               <ContactInfoItem
                 icon={<Phone className="w-5 h-5" />}

@@ -22,7 +22,7 @@ const NavBar = () => {
             /* Removed blue, made it zinc-900, reduced size to text-lg */
             className="text-lg font-bold tracking-tighter text-zinc-900 hover:opacity-70 transition-opacity"
           >
-            STORE.
+            SABLE
           </Link>
 
           <div className="hidden md:block">
