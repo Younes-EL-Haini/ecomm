@@ -6,6 +6,23 @@ import { ProductGridSkeleton } from "@/components/products/ProductGridSkeleton";
 import { getCategoryBySlugCached } from "@/lib/products";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const category = await getCategoryBySlugCached(slug);
+
+  if (!category) return {};
+
+  return {
+    title: category.name,
+    description: `Browse all products in the ${category.name} collection.`,
+  };
+}
 
 export default async function CategoryPage({
   params,

@@ -5,5 +5,5 @@ export const SITE_CONFIG = {
   url: process.env.NODE_ENV === "development" 
     ? "http://localhost:3000" 
     : "https://ecomm-sandy-nine.vercel.app",
-  ogImage: "/og-image.jpg", // Path relative to your 'public' folder
+  ogImage: "/gemini-svg.png", // Path relative to your 'public' folder
 };

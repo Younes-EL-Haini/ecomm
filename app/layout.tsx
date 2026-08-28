@@ -4,6 +4,7 @@ import "./globals.css";
 import AuthProvider from "./auth/Provider";
 import { Toaster } from "sonner";
 import { SITE_CONFIG } from "@/lib/constants";
+import { Analytics } from "@vercel/analytics/react";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -54,6 +55,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           {children}
+          <Analytics />
           <Toaster
             toastOptions={{
               // className: "rounded-2xl border-zinc-200 shadow-lg", // Match your gallery rounded corners

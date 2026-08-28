@@ -1,6 +1,12 @@
 import { Suspense } from "react";
 import { ProductGridSkeleton } from "@/components/products/ProductGridSkeleton";
 import ProductGrid from "@/components/products/ProductGrid";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "All Products",
+  description: "Browse the complete collection of products at Sable.",
+};
 
 interface Props {
   searchParams: Promise<{ category?: string; sort?: string }>;

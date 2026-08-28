@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Solid Dark Background -->
+  <rect width="32" height="32" rx="6" fill="#09090b" />
+  
+  <!-- Stylized Geometric S -->
+  <path 
+    d="M22 10.5C22 8.567 20.433 7 18.5 7H12.5C10.567 7 9 8.567 9 10.5C9 12.433 10.567 14 12.5 14H19.5C21.433 14 23 15.567 23 17.5C23 19.433 21.433 21 19.5 21H13.5C11.567 21 10 19.433 10 17.5" 
+    fill="none" 
+    stroke="#ffffff" 
+    stroke-width="3.5" 
+    stroke-linecap="round"
+  />
+</svg>

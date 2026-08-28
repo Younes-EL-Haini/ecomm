@@ -12,15 +12,26 @@ import { Suspense } from "react";
 export const metadata: Metadata = {
   // We don't need 'title.template' here because it's in the layout!
   // Setting 'title' as a simple string here uses the 'default' from layout.
-  title: SITE_CONFIG.name,
+  title: {
+    absolute: SITE_CONFIG.name, // Renders strictly as "Sable"
+  },
   description: SITE_CONFIG.description,
 
   openGraph: {
     title: SITE_CONFIG.name,
     description: SITE_CONFIG.description,
     url: "/", // Points to the root
+    images: [
+      {
+        url: SITE_CONFIG.ogImage, // Points to "/gemini-svg.png"
+        width: 1200,
+        height: 630,
+        alt: `${SITE_CONFIG.name} Storefront`,
+      },
+    ],
   },
 };
+console.log(SITE_CONFIG.ogImage);
 
 const MainPage = () => {
   return (

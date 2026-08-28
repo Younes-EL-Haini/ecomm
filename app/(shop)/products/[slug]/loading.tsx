@@ -1,8 +1,13 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect } from "react";
 
 export default function ProductLoading() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const skeletonBg = "bg-zinc-200/80";
 
   return (
